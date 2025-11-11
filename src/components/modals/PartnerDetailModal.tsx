@@ -57,7 +57,6 @@ export const PartnerDetailModal = ({ open, onClose }: PartnerDetailModalProps) =
                 <TabsTrigger value="profile">ข้อมูล</TabsTrigger>
                 <TabsTrigger value="camps">แคมป์</TabsTrigger>
                 <TabsTrigger value="income">รายได้ & สถิติ</TabsTrigger>
-                <TabsTrigger value="notifications">แจ้งเตือน & บริการ</TabsTrigger>
                 <TabsTrigger value="payouts">การจ่ายเงิน</TabsTrigger>
                 <TabsTrigger value="activity">กิจกรรม & หมายเหตุ</TabsTrigger>
               </TabsList>
@@ -202,82 +201,6 @@ export const PartnerDetailModal = ({ open, onClose }: PartnerDetailModalProps) =
                 </div>
               </TabsContent>
 
-              <TabsContent value="notifications" className="space-y-4 mt-4">
-                <div className="flex gap-2 flex-wrap mb-4">
-                  <Button size="sm" variant="outline">ทั้งหมด</Button>
-                  <Button size="sm" variant="outline">
-                    <AlertTriangle className="w-3 h-3 mr-1" />
-                    อุบัติเหตุ
-                  </Button>
-                  <Button size="sm" variant="outline">
-                    <Wifi className="w-3 h-3 mr-1" />
-                    Off-grid
-                  </Button>
-                  <Button size="sm" variant="outline">
-                    <Battery className="w-3 h-3 mr-1" />
-                    แบตเตอรี่ต่ำ
-                  </Button>
-                  <Button size="sm" variant="outline">
-                    <Bell className="w-3 h-3 mr-1" />
-                    ระบบ
-                  </Button>
-                  <Button size="sm" variant="outline">คืนรถล่าช้า</Button>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="border rounded-lg p-4 space-y-2">
-                    <div className="flex items-start justify-between">
-                      <div className="flex gap-3">
-                        <div className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center">
-                          <AlertTriangle className="w-4 h-4 text-destructive" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium">อุบัติเหตุเล็กน้อย - โซนวิวภูเขา</p>
-                          <p className="text-xs text-muted-foreground mt-1">ลูกค้า: คุณสมชาย • รถ: กข 1234</p>
-                          <p className="text-xs text-muted-foreground">2 ชั่วโมงที่แล้ว</p>
-                        </div>
-                      </div>
-                      <Badge variant="outline">รอดำเนินการ</Badge>
-                    </div>
-                    <div className="flex gap-2 mt-2">
-                      <Button size="sm">ทำเครื่องหมายว่าแก้ไขแล้ว</Button>
-                      <Button size="sm" variant="outline">ตอบกลับ</Button>
-                    </div>
-                  </div>
-
-                  <div className="border rounded-lg p-4 space-y-2">
-                    <div className="flex items-start justify-between">
-                      <div className="flex gap-3">
-                        <div className="w-8 h-8 rounded-full bg-warning/10 flex items-center justify-center">
-                          <Battery className="w-4 h-4 text-warning" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium">แบตเตอรี่ต่ำ - รถบ้านเคลื่อนที่</p>
-                          <p className="text-xs text-muted-foreground mt-1">ลูกค้า: คุณนิตยา • รถ: ขค 5678</p>
-                          <p className="text-xs text-muted-foreground">5 ชั่วโมงที่แล้ว</p>
-                        </div>
-                      </div>
-                      <Badge className="bg-success text-success-foreground">แก้ไขแล้ว</Badge>
-                    </div>
-                  </div>
-
-                  <div className="border rounded-lg p-4 space-y-2">
-                    <div className="flex items-start justify-between">
-                      <div className="flex gap-3">
-                        <div className="w-8 h-8 rounded-full bg-info/10 flex items-center justify-center">
-                          <Wifi className="w-4 h-4 text-info" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium">Off-grid - โซนป่า</p>
-                          <p className="text-xs text-muted-foreground mt-1">ลูกค้า: คุณประยุทธ์ • รถ: งจ 9012</p>
-                          <p className="text-xs text-muted-foreground">1 วันที่แล้ว</p>
-                        </div>
-                      </div>
-                      <Badge className="bg-success text-success-foreground">แก้ไขแล้ว</Badge>
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
 
               <TabsContent value="payouts" className="space-y-4 mt-4">
                 <div className="space-y-3">
