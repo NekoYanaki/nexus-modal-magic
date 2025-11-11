@@ -177,25 +177,6 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
 
           {/* Right Sidebar (1/3) */}
           <div className="space-y-4">
-            {/* Customer Info Card */}
-            <Card className="p-4">
-              <h4 className="font-semibold mb-3">Customer Info</h4>
-              <div className="space-y-3 text-sm">
-                <div className="flex items-center gap-2">
-                  <UserIcon className="w-4 h-4 text-muted-foreground" />
-                  <span className="font-medium">{mockData.customerName}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-xs">{mockData.customerEmail}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-muted-foreground" />
-                  <span>{mockData.customerPhone}</span>
-                </div>
-              </div>
-            </Card>
-
             {/* Add-ons & Options Card */}
             <Card className="p-4">
               <h4 className="font-semibold mb-3 flex items-center gap-2">
@@ -247,9 +228,16 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Due</span>
+                  <span className="text-muted-foreground">Remaining</span>
                   <span className="font-semibold text-warning">
                     ฿{mockData.totalDue.toLocaleString()}
+                  </span>
+                </div>
+                <div className="h-px bg-border my-2" />
+                <div className="flex justify-between">
+                  <span className="font-semibold">Total</span>
+                  <span className="font-semibold text-lg">
+                    ฿{(mockData.totalPaid + mockData.totalDue).toLocaleString()}
                   </span>
                 </div>
               </div>
