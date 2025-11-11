@@ -5,7 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Download, RefreshCw, CreditCard, Building2, Bell, CheckCircle2, Calendar } from "lucide-react";
-
 interface PaymentDetailModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -55,20 +54,28 @@ interface PaymentDetailModalProps {
     customerLastBooking: string;
   };
 }
-
-export function PaymentDetailModal({ open, onOpenChange, payment }: PaymentDetailModalProps) {
+export function PaymentDetailModal({
+  open,
+  onOpenChange,
+  payment
+}: PaymentDetailModalProps) {
   if (!payment) return null;
-
   const statusConfig = {
-    success: { label: "Success", className: "bg-green-500/10 text-green-600 border-green-500/20" },
-    pending: { label: "Pending", className: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20" },
-    failed: { label: "Failed", className: "bg-red-500/10 text-red-600 border-red-500/20" },
+    success: {
+      label: "Success",
+      className: "bg-green-500/10 text-green-600 border-green-500/20"
+    },
+    pending: {
+      label: "Pending",
+      className: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20"
+    },
+    failed: {
+      label: "Failed",
+      className: "bg-red-500/10 text-red-600 border-red-500/20"
+    }
   };
-
   const currentStatus = statusConfig[payment.status];
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+  return <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <DialogHeader className="space-y-3 pb-4 border-b">
@@ -87,12 +94,10 @@ export function PaymentDetailModal({ open, onOpenChange, payment }: PaymentDetai
               <Download className="h-4 w-4 mr-2" />
               Download Receipt
             </Button>
-            {payment.status === "success" && (
-              <Button variant="outline" size="sm">
+            {payment.status === "success" && <Button variant="outline" size="sm">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Refund
-              </Button>
-            )}
+              </Button>}
           </div>
         </DialogHeader>
 
@@ -188,8 +193,7 @@ export function PaymentDetailModal({ open, onOpenChange, payment }: PaymentDetai
                     <CardTitle className="text-base">Settlement Information</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    {payment.partnerType === "Camper & Campsite" ? (
-                      <>
+                    {payment.partnerType === "Camper & Campsite" ? <>
                         {/* Camper Section */}
                         <div className="space-y-4">
                           <h4 className="font-semibold text-sm border-b pb-2">Camper Settlement</h4>
@@ -232,15 +236,11 @@ export function PaymentDetailModal({ open, onOpenChange, payment }: PaymentDetai
                           </div>
                         </div>
 
-                        {payment.payoutDate && (
-                          <div className="pt-2 border-t">
+                        {payment.payoutDate && <div className="pt-2 border-t">
                             <p className="text-sm text-muted-foreground">Payout Date</p>
                             <p className="font-medium">{payment.payoutDate}</p>
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <>
+                          </div>}
+                      </> : <>
                         {/* Single Partner (Camper or Campsite) */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                           <div>
@@ -251,12 +251,10 @@ export function PaymentDetailModal({ open, onOpenChange, payment }: PaymentDetai
                             <p className="text-sm text-muted-foreground">Type</p>
                             <p className="font-medium">{payment.partnerType}</p>
                           </div>
-                          {payment.payoutDate && (
-                            <div>
+                          {payment.payoutDate && <div>
                               <p className="text-sm text-muted-foreground">Payout Date</p>
                               <p className="font-medium">{payment.payoutDate}</p>
-                            </div>
-                          )}
+                            </div>}
                           <div>
                             <p className="text-sm text-muted-foreground">Commission Rate</p>
                             <p className="font-medium">{payment.commissionRate}%</p>
@@ -268,8 +266,7 @@ export function PaymentDetailModal({ open, onOpenChange, payment }: PaymentDetai
                             </p>
                           </div>
                         </div>
-                      </>
-                    )}
+                      </>}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -295,8 +292,7 @@ export function PaymentDetailModal({ open, onOpenChange, payment }: PaymentDetai
                         <p className="text-sm text-muted-foreground">Session ID</p>
                         <p className="font-medium font-mono text-sm">{payment.sessionId}</p>
                       </div>
-                      {payment.discountCode && (
-                        <>
+                      {payment.discountCode && <>
                           <div>
                             <p className="text-sm text-muted-foreground">Discount Code</p>
                             <p className="font-medium">{payment.discountCode}</p>
@@ -307,8 +303,7 @@ export function PaymentDetailModal({ open, onOpenChange, payment }: PaymentDetai
                               -฿{payment.discountAmount?.toLocaleString()}
                             </p>
                           </div>
-                        </>
-                      )}
+                        </>}
                       <div>
                         <p className="text-sm text-muted-foreground">Payment Type</p>
                         <p className="font-medium">{payment.paymentType}</p>
@@ -391,12 +386,7 @@ export function PaymentDetailModal({ open, onOpenChange, payment }: PaymentDetai
                 <CardTitle className="text-base">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                {payment.status === "pending" && (
-                  <Button variant="outline" size="sm" className="w-full justify-start">
-                    <Bell className="h-4 w-4 mr-2" />
-                    Send Payment Reminder
-                  </Button>
-                )}
+                {payment.status === "pending"}
                 <Button variant="outline" size="sm" className="w-full justify-start">
                   <CheckCircle2 className="h-4 w-4 mr-2" />
                   Mark as Verified
@@ -433,6 +423,5 @@ export function PaymentDetailModal({ open, onOpenChange, payment }: PaymentDetai
           </div>
         </div>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 }
