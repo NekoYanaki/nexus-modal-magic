@@ -35,9 +35,7 @@ export const CustomerDetailModal = ({ open, onClose }: CustomerDetailModalProps)
               </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">ติดต่อ</Button>
               <Button variant="outline" size="sm">แบน</Button>
-              <Button variant="outline" size="sm">ส่งออก</Button>
             </div>
           </div>
         </DialogHeader>
@@ -45,7 +43,7 @@ export const CustomerDetailModal = ({ open, onClose }: CustomerDetailModalProps)
         <div className="grid grid-cols-3 gap-6 p-6">
           {/* Main Content - 2/3 */}
           <div className="col-span-2 space-y-6">
-            <h3 className="text-lg font-semibold">ข้อมูล</h3>
+            <h3 className="text-lg font-semibold">รายละเอียดลูกค้า</h3>
 
             {/* ข้อมูลส่วนตัว Card */}
             <Card className="p-4">
@@ -76,12 +74,6 @@ export const CustomerDetailModal = ({ open, onClose }: CustomerDetailModalProps)
                 </div>
               </div>
               <Button variant="outline" size="sm" className="mt-4">แก้ไขข้อมูล</Button>
-            </Card>
-
-            {/* ความปลอดภัย Card */}
-            <Card className="p-4">
-              <h4 className="font-semibold mb-4">ความปลอดภัย</h4>
-              <Button variant="outline" size="sm">เปลี่ยนรหัสผ่าน</Button>
             </Card>
 
             {/* เอกสารประกอบ Card */}
