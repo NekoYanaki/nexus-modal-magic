@@ -30,7 +30,7 @@ const Index = () => {
     currency: "THB",
     refId: "TXN1122334455",
     partnerName: "แคมป์ดอยสุเทพ",
-    partnerType: "Campsite",
+    partnerType: "Campsite" as const,
     payoutDate: "20 พ.ย. 2025",
     commissionRate: 10,
     partnerNet: 7515,

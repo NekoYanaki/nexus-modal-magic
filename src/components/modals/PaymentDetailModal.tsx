@@ -25,10 +25,17 @@ interface PaymentDetailModalProps {
     currency: string;
     refId: string;
     partnerName: string;
-    partnerType: string;
+    partnerType: "Camper" | "Campsite" | "Camper & Campsite";
     payoutDate?: string;
     commissionRate: number;
     partnerNet: number;
+    // Additional fields for Camper & Campsite
+    camperPartner?: string;
+    camperNet?: number;
+    camperCommission?: number;
+    campsitePartner?: string;
+    campsiteNet?: number;
+    campsiteCommission?: number;
     transactionId: string;
     gateway: string;
     sessionId: string;
@@ -66,17 +73,15 @@ export function PaymentDetailModal({ open, onOpenChange, payment }: PaymentDetai
         {/* Header */}
         <DialogHeader className="space-y-3 pb-4 border-b">
           <div className="flex items-start justify-between">
-            <div className="space-y-2">
+            <div className="flex items-center gap-3">
               <DialogTitle className="text-2xl">Payment Details</DialogTitle>
-              <p className="text-sm text-muted-foreground">
-                {payment.id} • Booking {payment.bookingRef}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
               <Badge variant="outline" className={currentStatus.className}>
                 {currentStatus.label}
               </Badge>
             </div>
+            <p className="text-sm text-muted-foreground">
+              {payment.id} • Booking {payment.bookingRef}
+            </p>
           </div>
 
           <div className="flex gap-2">
@@ -93,9 +98,9 @@ export function PaymentDetailModal({ open, onOpenChange, payment }: PaymentDetai
           </div>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-4">
+        <div className="mt-4">
           {/* Main Content */}
-          <div className="lg:col-span-3">
+          <div>
             <Tabs defaultValue="summary" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="summary">Summary</TabsTrigger>
@@ -172,12 +177,6 @@ export function PaymentDetailModal({ open, onOpenChange, payment }: PaymentDetai
                         <p className="font-medium">{payment.currency}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Status</p>
-                        <Badge variant="outline" className={currentStatus.className}>
-                          {currentStatus.label}
-                        </Badge>
-                      </div>
-                      <div>
                         <p className="text-sm text-muted-foreground">Reference ID</p>
                         <p className="font-medium font-mono text-xs">{payment.refId}</p>
                       </div>
@@ -190,31 +189,89 @@ export function PaymentDetailModal({ open, onOpenChange, payment }: PaymentDetai
                   <CardHeader>
                     <CardTitle className="text-base">Settlement Information</CardTitle>
                   </CardHeader>
-                  <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Partner</p>
-                      <p className="font-medium">{payment.partnerName}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Type</p>
-                      <p className="font-medium">{payment.partnerType}</p>
-                    </div>
-                    {payment.payoutDate && (
-                      <div>
-                        <p className="text-sm text-muted-foreground">Payout Date</p>
-                        <p className="font-medium">{payment.payoutDate}</p>
-                      </div>
+                  <CardContent className="space-y-6">
+                    {payment.partnerType === "Camper & Campsite" ? (
+                      <>
+                        {/* Camper Section */}
+                        <div className="space-y-4">
+                          <h4 className="font-semibold text-sm border-b pb-2">Camper Settlement</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                              <p className="text-sm text-muted-foreground">Partner</p>
+                              <p className="font-medium">{payment.camperPartner || "N/A"}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-muted-foreground">Commission Rate</p>
+                              <p className="font-medium">{payment.camperCommission || 0}%</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-muted-foreground">Partner Net</p>
+                              <p className="text-lg font-bold text-primary">
+                                ฿{(payment.camperNet || 0).toLocaleString()}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Campsite Section */}
+                        <div className="space-y-4">
+                          <h4 className="font-semibold text-sm border-b pb-2">Campsite Settlement</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                              <p className="text-sm text-muted-foreground">Partner</p>
+                              <p className="font-medium">{payment.campsitePartner || "N/A"}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-muted-foreground">Commission Rate</p>
+                              <p className="font-medium">{payment.campsiteCommission || 0}%</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-muted-foreground">Partner Net</p>
+                              <p className="text-lg font-bold text-primary">
+                                ฿{(payment.campsiteNet || 0).toLocaleString()}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {payment.payoutDate && (
+                          <div className="pt-2 border-t">
+                            <p className="text-sm text-muted-foreground">Payout Date</p>
+                            <p className="font-medium">{payment.payoutDate}</p>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        {/* Single Partner (Camper or Campsite) */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          <div>
+                            <p className="text-sm text-muted-foreground">Partner</p>
+                            <p className="font-medium">{payment.partnerName}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">Type</p>
+                            <p className="font-medium">{payment.partnerType}</p>
+                          </div>
+                          {payment.payoutDate && (
+                            <div>
+                              <p className="text-sm text-muted-foreground">Payout Date</p>
+                              <p className="font-medium">{payment.payoutDate}</p>
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-sm text-muted-foreground">Commission Rate</p>
+                            <p className="font-medium">{payment.commissionRate}%</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">Partner Net</p>
+                            <p className="text-lg font-bold text-primary">
+                              ฿{payment.partnerNet.toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                      </>
                     )}
-                    <div>
-                      <p className="text-sm text-muted-foreground">Commission Rate</p>
-                      <p className="font-medium">{payment.commissionRate}%</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Partner Net</p>
-                      <p className="text-lg font-bold text-primary">
-                        ฿{payment.partnerNet.toLocaleString()}
-                      </p>
-                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
