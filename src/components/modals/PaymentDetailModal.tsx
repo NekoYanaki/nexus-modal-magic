@@ -72,17 +72,15 @@ export function PaymentDetailModal({ open, onOpenChange, payment }: PaymentDetai
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <DialogHeader className="space-y-3 pb-4 border-b">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <DialogTitle className="text-2xl">Payment Details</DialogTitle>
-              <Badge variant="outline" className={currentStatus.className}>
-                {currentStatus.label}
-              </Badge>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              {payment.id} • Booking {payment.bookingRef}
-            </p>
+          <div className="flex items-center gap-3">
+            <DialogTitle className="text-2xl">Payment Details</DialogTitle>
+            <Badge variant="outline" className={currentStatus.className}>
+              {currentStatus.label}
+            </Badge>
           </div>
+          <p className="text-sm text-muted-foreground">
+            {payment.id} • Booking {payment.bookingRef}
+          </p>
 
           <div className="flex gap-2">
             <Button variant="outline" size="sm">
