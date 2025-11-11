@@ -379,48 +379,7 @@ export function PaymentDetailModal({
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-4">
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {payment.status === "pending"}
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <CheckCircle2 className="h-4 w-4 mr-2" />
-                  Mark as Verified
-                </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Issue Refund
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Customer Summary */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Customer Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Name</p>
-                  <p className="font-medium">{payment.customerName}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Payments</p>
-                  <p className="font-medium">
-                    ฿{payment.customerTotalPayments.toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Last Booking</p>
-                  <p className="font-medium">{payment.customerLastBooking}</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          
         </div>
       </DialogContent>
     </Dialog>;
