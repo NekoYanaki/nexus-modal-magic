@@ -4,13 +4,54 @@ import { BookingDetailModal } from "@/components/modals/BookingDetailModal";
 import { PartnerDetailModal } from "@/components/modals/PartnerDetailModal";
 import { CampsiteDetailModal } from "@/components/modals/CampsiteDetailModal";
 import { CustomerDetailModal } from "@/components/modals/CustomerDetailModal";
-import { Calendar, Users, Tent, UserCircle } from "lucide-react";
+import { PaymentDetailModal } from "@/components/modals/PaymentDetailModal";
+import { Calendar, Users, Tent, UserCircle, CreditCard } from "lucide-react";
 
 const Index = () => {
   const [bookingOpen, setBookingOpen] = useState(false);
   const [partnerOpen, setPartnerOpen] = useState(false);
   const [campsiteOpen, setCampsiteOpen] = useState(false);
   const [customerOpen, setCustomerOpen] = useState(false);
+  const [paymentOpen, setPaymentOpen] = useState(false);
+
+  const mockPaymentData = {
+    id: "PAY005",
+    bookingRef: "BK0005",
+    status: "success" as const,
+    customerName: "สมชาย ใจดี",
+    email: "somchai@example.com",
+    phone: "081-234-5678",
+    paymentMethod: "Credit Card",
+    paymentChannel: "Visa **** 1234",
+    paymentDate: "15 พ.ย. 2025, 14:30 น.",
+    totalAmount: 8500,
+    feeAmount: 150,
+    netReceived: 8350,
+    currency: "THB",
+    refId: "TXN1122334455",
+    partnerName: "แคมป์ดอยสุเทพ",
+    partnerType: "Campsite",
+    payoutDate: "20 พ.ย. 2025",
+    commissionRate: 10,
+    partnerNet: 7515,
+    transactionId: "TXN-2025-11-001234",
+    gateway: "Omise",
+    sessionId: "sess_5f8a9b2c1d3e4f",
+    discountCode: "SUMMER2025",
+    discountAmount: 500,
+    paymentType: "Full Payment",
+    createdAt: "15 พ.ย. 2025, 14:25 น.",
+    updatedAt: "15 พ.ย. 2025, 14:30 น.",
+    bookingCode: "BK0005",
+    tripName: "เที่ยวภาคเหนือ 5 วัน 4 คืน",
+    vehicles: "Toyota Hiace Camper",
+    camps: "แคมป์ดอยสุเทพ",
+    startDate: "20 พ.ย. 2025",
+    endDate: "24 พ.ย. 2025",
+    bookingTotalPrice: 8500,
+    customerTotalPayments: 25600,
+    customerLastBooking: "15 พ.ย. 2025",
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
@@ -109,6 +150,27 @@ const Index = () => {
               </Button>
             </div>
           </div>
+
+          {/* Payment Detail Card */}
+          <div className="group relative bg-card border border-border rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative">
+              <div className="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center mb-4">
+                <CreditCard className="w-6 h-6 text-green-600" />
+              </div>
+              <h3 className="text-2xl font-semibold mb-2">Payment Details</h3>
+              <p className="text-muted-foreground mb-6">
+                View transaction info, settlement details, and related booking information
+              </p>
+              <Button 
+                onClick={() => setPaymentOpen(true)}
+                className="w-full"
+                variant="default"
+              >
+                View Payment Modal
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* Features Section */}
@@ -147,6 +209,7 @@ const Index = () => {
       <PartnerDetailModal open={partnerOpen} onClose={() => setPartnerOpen(false)} />
       <CampsiteDetailModal open={campsiteOpen} onClose={() => setCampsiteOpen(false)} />
       <CustomerDetailModal open={customerOpen} onClose={() => setCustomerOpen(false)} />
+      <PaymentDetailModal open={paymentOpen} onOpenChange={setPaymentOpen} payment={mockPaymentData} />
     </div>
   );
 };
