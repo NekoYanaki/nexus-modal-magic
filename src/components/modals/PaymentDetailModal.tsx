@@ -5,6 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Download, RefreshCw, CreditCard, Building2, Bell, CheckCircle2, Calendar } from "lucide-react";
+import { PaymentReceiptModal } from "./PaymentReceiptModal";
+import { useState } from "react";
 interface PaymentDetailModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -59,6 +61,8 @@ export function PaymentDetailModal({
   onOpenChange,
   payment
 }: PaymentDetailModalProps) {
+  const [showReceipt, setShowReceipt] = useState(false);
+  
   if (!payment) return null;
   const statusConfig = {
     success: {
@@ -90,7 +94,7 @@ export function PaymentDetailModal({
           </p>
 
           <div className="flex gap-2">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => setShowReceipt(true)}>
               <Download className="h-4 w-4 mr-2" />
               Download Receipt
             </Button>
@@ -382,5 +386,12 @@ export function PaymentDetailModal({
           
         </div>
       </DialogContent>
+      
+      {/* Payment Receipt Modal */}
+      <PaymentReceiptModal 
+        open={showReceipt}
+        onClose={() => setShowReceipt(false)}
+        paymentData={payment}
+      />
     </Dialog>;
 }
