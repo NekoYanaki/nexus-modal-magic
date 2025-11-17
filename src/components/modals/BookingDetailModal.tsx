@@ -3,7 +3,8 @@ import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import jsPDF from "jspdf";
+import { BookingDocumentModal } from "./BookingDocumentModal";
+import { useState } from "react";
 
 interface BookingDetailModalProps {
   open: boolean;
@@ -11,6 +12,8 @@ interface BookingDetailModalProps {
 }
 
 export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) => {
+  const [showDocument, setShowDocument] = useState(false);
+  
   // Mock data
   const mockData = {
     code: "BK002",
@@ -36,105 +39,7 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
   };
 
   const handlePrint = () => {
-    const doc = new jsPDF();
-    
-    // Set font for Thai support (using default font)
-    doc.setFont("helvetica");
-    
-    // Header
-    doc.setFontSize(20);
-    doc.setTextColor(59, 130, 246); // primary color
-    doc.text("BOOKING CONFIRMATION", 105, 20, { align: "center" });
-    
-    // Booking Code and Status
-    doc.setFontSize(14);
-    doc.setTextColor(0, 0, 0);
-    doc.text(`Booking ID: ${mockData.code}`, 20, 35);
-    doc.setTextColor(34, 197, 94); // success color
-    doc.text("Status: Confirmed", 120, 35);
-    
-    // Date Range
-    doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text(`Period: ${mockData.dateRange}`, 20, 42);
-    
-    // Divider
-    doc.setDrawColor(200, 200, 200);
-    doc.line(20, 48, 190, 48);
-    
-    // Customer Information
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    doc.text("Customer Information", 20, 58);
-    doc.setFontSize(10);
-    doc.setTextColor(60, 60, 60);
-    doc.text(`Name: ${mockData.customerName}`, 25, 66);
-    doc.text(`Phone: ${mockData.customerPhone}`, 25, 72);
-    doc.text(`Email: ${mockData.customerEmail}`, 25, 78);
-    doc.text(`Pick Up Date: ${mockData.pickupDate}`, 25, 84);
-    doc.text(`Total Days: ${mockData.totalDays} days`, 25, 90);
-    
-    // Vehicle Information
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    doc.text("Vehicle Information", 20, 105);
-    doc.setFontSize(10);
-    doc.setTextColor(60, 60, 60);
-    doc.text(`Model: ${mockData.vehicleModel}`, 25, 113);
-    doc.text(`License Plate: ${mockData.licensePlate}`, 25, 119);
-    doc.text(`Insurance: ${mockData.insurance}`, 25, 125);
-    
-    // Camp Information
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    doc.text("Camp Information", 20, 140);
-    doc.setFontSize(10);
-    doc.setTextColor(60, 60, 60);
-    doc.text(`Camp Name: ${mockData.campName}`, 25, 148);
-    doc.text(`Camp Tel: ${mockData.campPhone}`, 25, 154);
-    doc.text(`Camp Fee: ${mockData.campTotal.toLocaleString()} THB`, 25, 160);
-    
-    // Divider
-    doc.line(20, 170, 190, 170);
-    
-    // Payment Summary
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    doc.text("Payment Summary", 20, 180);
-    doc.setFontSize(10);
-    doc.setTextColor(60, 60, 60);
-    doc.text(`Deposit:`, 25, 188);
-    doc.text(`${mockData.deposit.toLocaleString()} THB`, 160, 188, { align: "right" });
-    doc.text(`Vehicle Rental:`, 25, 194);
-    doc.text(`${mockData.vehicleRental.toLocaleString()} THB`, 160, 194, { align: "right" });
-    doc.text(`Camp Fee:`, 25, 200);
-    doc.text(`${mockData.campFee.toLocaleString()} THB`, 160, 200, { align: "right" });
-    
-    // Divider
-    doc.setLineWidth(0.5);
-    doc.line(25, 205, 160, 205);
-    
-    // Totals
-    doc.setFontSize(11);
-    doc.setTextColor(0, 0, 0);
-    doc.text(`Total Paid:`, 25, 213);
-    doc.setTextColor(34, 197, 94); // success color
-    doc.text(`${mockData.totalPaid.toLocaleString()} THB`, 160, 213, { align: "right" });
-    
-    doc.setTextColor(0, 0, 0);
-    doc.text(`Total Due:`, 25, 221);
-    doc.setTextColor(239, 68, 68); // red color
-    doc.setFontSize(12);
-    doc.text(`${mockData.totalDue.toLocaleString()} THB`, 160, 221, { align: "right" });
-    
-    // Footer
-    doc.setFontSize(8);
-    doc.setTextColor(150, 150, 150);
-    doc.text("Thank you for your booking!", 105, 270, { align: "center" });
-    doc.text("For inquiries, please contact our customer service.", 105, 275, { align: "center" });
-    
-    // Open PDF in new window
-    window.open(doc.output('bloburl'), '_blank');
+    setShowDocument(true);
   };
 
   return (
@@ -348,6 +253,13 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
           </div>
         </div>
       </DialogContent>
+
+      {/* Booking Document Modal */}
+      <BookingDocumentModal 
+        open={showDocument}
+        onClose={() => setShowDocument(false)}
+        bookingData={mockData}
+      />
     </Dialog>
   );
 };
