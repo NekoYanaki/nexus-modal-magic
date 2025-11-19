@@ -95,7 +95,7 @@ export function PaymentDetailModal({
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => setShowReceipt(true)}>
               <Download className="h-4 w-4 mr-2" />
-              Download Receipt
+              Invoice.pdf
             </Button>
             {payment.status === "success" && <Button variant="outline" size="sm">
                 <RefreshCw className="h-4 w-4 mr-2" />
