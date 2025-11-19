@@ -76,49 +76,6 @@ export const CustomerDetailModal = ({ open, onClose }: CustomerDetailModalProps)
               <Button variant="outline" size="sm" className="mt-4">แก้ไขข้อมูล</Button>
             </Card>
 
-            {/* เอกสารประกอบ Card */}
-            <Card className="p-4">
-              <h4 className="font-semibold mb-4">เอกสารประกอบ</h4>
-              <div className="space-y-4">
-                {/* บัตรประชาชน */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">บัตรประชาชน</span>
-                    <span className="text-xs text-muted-foreground">1/1</span>
-                  </div>
-                  <div className="border-2 border-dashed rounded-lg p-4 flex items-center justify-center bg-muted/30">
-                    <div className="text-center">
-                      <div className="w-full h-48 bg-muted rounded flex items-center justify-center mb-2">
-                        <FileText className="w-12 h-12 text-muted-foreground" />
-                      </div>
-                      <Button variant="outline" size="sm">
-                        <ImageIcon className="w-3 h-3 mr-1" />
-                        ดูรูปภาพ
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* ใบขับขี่ */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">ใบขับขี่</span>
-                    <span className="text-xs text-muted-foreground">1/1</span>
-                  </div>
-                  <div className="border-2 border-dashed rounded-lg p-4 flex items-center justify-center bg-muted/30">
-                    <div className="text-center">
-                      <div className="w-full h-48 bg-muted rounded flex items-center justify-center mb-2">
-                        <FileText className="w-12 h-12 text-muted-foreground" />
-                      </div>
-                      <Button variant="outline" size="sm">
-                        <ImageIcon className="w-3 h-3 mr-1" />
-                        ดูรูปภาพ
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Card>
           </div>
 
           {/* Right Sidebar - 1/3 */}
