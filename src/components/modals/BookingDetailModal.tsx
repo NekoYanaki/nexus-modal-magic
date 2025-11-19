@@ -69,8 +69,8 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
                 </svg>
                 Print
               </Button>
-              <Button size="sm" className="bg-success hover:bg-success/90">
-                Approve
+              <Button size="sm" variant="destructive">
+                Reject
               </Button>
               <Button size="sm" variant="destructive">
                 Cancel
