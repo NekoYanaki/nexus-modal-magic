@@ -72,9 +72,6 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
               <Button size="sm" variant="destructive">
                 Reject
               </Button>
-              <Button size="sm" variant="destructive">
-                Cancel
-              </Button>
             </div>
           </div>
         </DialogHeader>
