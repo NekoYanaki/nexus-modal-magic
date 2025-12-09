@@ -1,11 +1,13 @@
-import { Car, Tent, Phone, Mail, User as UserIcon, MapPin } from "lucide-react";
+import { Car, Tent, MapPin, LogIn, LogOut } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { BookingDocumentModal } from "./BookingDocumentModal";
 import { InspectionCard } from "./InspectionCard";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface BookingDetailModalProps {
   open: boolean;
@@ -14,12 +16,16 @@ interface BookingDetailModalProps {
 
 export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) => {
   const [showDocument, setShowDocument] = useState(false);
+  const [bookingStatus, setBookingStatus] = useState("confirmed");
+  const [showPickupConfirm, setShowPickupConfirm] = useState(false);
+  const [showReturnConfirm, setShowReturnConfirm] = useState(false);
+  const [showRejectConfirm, setShowRejectConfirm] = useState(false);
   
   // Mock data
   const mockData = {
     code: "BK002",
     vehicleName: "Toyota Fortuner",
-    status: "confirmed",
+    status: bookingStatus,
     dateRange: "15–19 Mar 2024",
     customerName: "สมชาย ใจดี",
     customerPhone: "081-234-5678",
@@ -43,6 +49,39 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
     setShowDocument(true);
   };
 
+  const handlePickupConfirm = () => {
+    setBookingStatus("picked_up");
+    setShowPickupConfirm(false);
+    toast.success("อัปเดตสถานะเป็น Picked Up สำเร็จ");
+  };
+
+  const handleReturnConfirm = () => {
+    setBookingStatus("returned");
+    setShowReturnConfirm(false);
+    toast.success("อัปเดตสถานะเป็น Returned สำเร็จ");
+  };
+
+  const handleRejectConfirm = () => {
+    setBookingStatus("rejected");
+    setShowRejectConfirm(false);
+    toast.success("ปฏิเสธการจองสำเร็จ");
+  };
+
+  const getStatusBadge = () => {
+    switch (bookingStatus) {
+      case "confirmed":
+        return <Badge className="bg-success/10 text-success border-success/20">Confirmed</Badge>;
+      case "picked_up":
+        return <Badge className="bg-primary/10 text-primary border-primary/20">Picked Up</Badge>;
+      case "returned":
+        return <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20">Returned</Badge>;
+      case "rejected":
+        return <Badge className="bg-destructive/10 text-destructive border-destructive/20">Rejected</Badge>;
+      default:
+        return <Badge className="bg-muted/10 text-muted-foreground border-muted/20">{bookingStatus}</Badge>;
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-[960px] max-h-[90vh] overflow-y-auto p-0">
@@ -53,9 +92,7 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
               <div className="flex items-center gap-3">
                 <Car className="w-6 h-6 text-primary" />
                 <h2 className="text-2xl font-semibold">{mockData.code}</h2>
-                <Badge className="bg-success/10 text-success border-success/20">
-                  Confirmed
-                </Badge>
+                {getStatusBadge()}
                 <span className="text-sm text-muted-foreground">{mockData.dateRange}</span>
               </div>
               <p className="text-base font-medium">{mockData.vehicleName}</p>
@@ -70,7 +107,30 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
                 </svg>
                 Bookingconfirmation.pdf
               </Button>
-              <Button size="sm" variant="destructive">
+              <Button 
+                size="sm" 
+                className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                onClick={() => setShowPickupConfirm(true)}
+                disabled={bookingStatus !== "confirmed"}
+              >
+                <LogIn className="w-4 h-4" />
+                Pick Up
+              </Button>
+              <Button 
+                size="sm" 
+                className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={() => setShowReturnConfirm(true)}
+                disabled={bookingStatus !== "picked_up"}
+              >
+                <LogOut className="w-4 h-4" />
+                Return
+              </Button>
+              <Button 
+                size="sm" 
+                variant="destructive"
+                onClick={() => setShowRejectConfirm(true)}
+                disabled={bookingStatus === "rejected" || bookingStatus === "returned"}
+              >
                 Reject
               </Button>
             </div>
@@ -261,6 +321,72 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
         onClose={() => setShowDocument(false)}
         bookingData={mockData}
       />
+
+      {/* Pick Up Confirmation Dialog */}
+      <AlertDialog open={showPickupConfirm} onOpenChange={setShowPickupConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ยืนยันการรับรถ</AlertDialogTitle>
+            <AlertDialogDescription>
+              คุณต้องการเปลี่ยนสถานะการจอง <strong>{mockData.code}</strong> เป็น "Picked Up" ใช่หรือไม่?
+              <br /><br />
+              <span className="text-muted-foreground">ลูกค้า: {mockData.customerName}</span>
+              <br />
+              <span className="text-muted-foreground">รถ: {mockData.vehicleName}</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction onClick={handlePickupConfirm} className="bg-emerald-600 hover:bg-emerald-700">
+              ยืนยันรับรถ
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Return Confirmation Dialog */}
+      <AlertDialog open={showReturnConfirm} onOpenChange={setShowReturnConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ยืนยันการคืนรถ</AlertDialogTitle>
+            <AlertDialogDescription>
+              คุณต้องการเปลี่ยนสถานะการจอง <strong>{mockData.code}</strong> เป็น "Returned" ใช่หรือไม่?
+              <br /><br />
+              <span className="text-muted-foreground">ลูกค้า: {mockData.customerName}</span>
+              <br />
+              <span className="text-muted-foreground">รถ: {mockData.vehicleName}</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction onClick={handleReturnConfirm} className="bg-blue-600 hover:bg-blue-700">
+              ยืนยันคืนรถ
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Reject Confirmation Dialog */}
+      <AlertDialog open={showRejectConfirm} onOpenChange={setShowRejectConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ยืนยันการปฏิเสธ</AlertDialogTitle>
+            <AlertDialogDescription>
+              คุณต้องการปฏิเสธการจอง <strong>{mockData.code}</strong> ใช่หรือไม่?
+              <br /><br />
+              <span className="text-muted-foreground">ลูกค้า: {mockData.customerName}</span>
+              <br />
+              <span className="text-muted-foreground">รถ: {mockData.vehicleName}</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRejectConfirm} className="bg-destructive hover:bg-destructive/90">
+              ยืนยันปฏิเสธ
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 };
