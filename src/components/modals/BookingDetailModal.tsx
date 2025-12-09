@@ -178,6 +178,70 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
                 </div>
               </div>
             </Card>
+
+            {/* Inspection Card - รับรถ คืนรถ */}
+            <Card className="p-4">
+              <h4 className="font-semibold mb-3 flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+                Inspection รับรถ - คืนรถ
+              </h4>
+              <div className="grid grid-cols-2 gap-4">
+                {/* รับรถ */}
+                <div className="space-y-3">
+                  <h5 className="font-medium text-sm border-b border-border pb-2">รับรถ (Pick Up)</h5>
+                  <div className="text-sm space-y-2">
+                    <div>
+                      <p className="text-muted-foreground mb-1">วันที่รับรถ</p>
+                      <p className="font-medium">15 Mar 2024, 09:00</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground mb-1">เลขไมล์</p>
+                      <p className="font-medium">45,230 km</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground mb-1">ระดับน้ำมัน</p>
+                      <p className="font-medium">Full</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground mb-1">สภาพรถ</p>
+                      <p className="font-medium text-success">ปกติ ไม่มีรอยตำหนิ</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground mb-1">หมายเหตุ</p>
+                      <p className="font-medium">-</p>
+                    </div>
+                  </div>
+                </div>
+                {/* คืนรถ */}
+                <div className="space-y-3">
+                  <h5 className="font-medium text-sm border-b border-border pb-2">คืนรถ (Return)</h5>
+                  <div className="text-sm space-y-2">
+                    <div>
+                      <p className="text-muted-foreground mb-1">วันที่คืนรถ</p>
+                      <p className="font-medium">19 Mar 2024, 17:00</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground mb-1">เลขไมล์</p>
+                      <p className="font-medium">45,890 km</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground mb-1">ระดับน้ำมัน</p>
+                      <p className="font-medium">3/4</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground mb-1">สภาพรถ</p>
+                      <p className="font-medium text-success">ปกติ ไม่มีรอยตำหนิ</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground mb-1">หมายเหตุ</p>
+                      <p className="font-medium">-</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
           </div>
 
           {/* Right Sidebar (1/3) */}
