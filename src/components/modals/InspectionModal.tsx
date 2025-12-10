@@ -652,24 +652,15 @@ export const InspectionModal = ({
             
             {/* Payment Summary Section */}
             <div className="mt-3 pt-3 border-t border-primary/10">
-              <div className="grid grid-cols-3 gap-3">
-                <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-3 border border-amber-200 dark:border-amber-800">
-                  <p className="text-amber-700 dark:text-amber-400 text-xs mb-1">ยอดคงเหลือ</p>
-                  <p className="font-semibold text-lg text-amber-600">฿{payment.remainingBalance.toLocaleString()}</p>
-                </div>
+              <div className="grid grid-cols-2 gap-3">
                 <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-3 border border-emerald-200 dark:border-emerald-800">
                   <p className="text-emerald-700 dark:text-emerald-400 text-xs mb-1">รับเงินแล้ว</p>
                   <p className="font-semibold text-lg text-emerald-600">฿{totalCollected.toLocaleString()}</p>
                   <p className="text-xs text-muted-foreground">({pickup.paymentRecords.length + returnInspection.paymentRecords.length} รายการ)</p>
                 </div>
-                <div className={`rounded-lg p-3 border ${pendingAmount <= 0 ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800' : 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800'}`}>
-                  <p className={`text-xs mb-1 ${pendingAmount <= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'}`}>
-                    {pendingAmount <= 0 ? 'ชำระครบแล้ว' : 'ยอดค้างชำระ'}
-                  </p>
-                  <p className={`font-semibold text-lg ${pendingAmount <= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                    ฿{Math.abs(pendingAmount).toLocaleString()}
-                    {pendingAmount < 0 && <span className="text-xs ml-1">(เกิน)</span>}
-                  </p>
+                <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-3 border border-amber-200 dark:border-amber-800">
+                  <p className="text-amber-700 dark:text-amber-400 text-xs mb-1">ยอดคงเหลือ</p>
+                  <p className="font-semibold text-lg text-amber-600">฿{payment.remainingBalance.toLocaleString()}</p>
                 </div>
               </div>
             </div>
