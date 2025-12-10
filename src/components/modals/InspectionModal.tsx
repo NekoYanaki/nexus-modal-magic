@@ -63,9 +63,7 @@ const defaultPickup: InspectionData = {
   date: "15 Mar 2024, 09:00",
   mileage: "45,230",
   fuelLevel: "full",
-  conditions: [
-    { id: "1", title: "สภาพภายนอก", detail: "ปกติ ไม่มีรอยขีดข่วน", image: null },
-  ],
+  conditions: [],
   notes: "",
   paymentRecords: [],
 };
@@ -74,9 +72,7 @@ const defaultReturn: InspectionData = {
   date: "19 Mar 2024, 17:00",
   mileage: "45,890",
   fuelLevel: "3/4",
-  conditions: [
-    { id: "1", title: "สภาพภายนอก", detail: "ปกติ ไม่มีรอยขีดข่วน", image: null },
-  ],
+  conditions: [],
   notes: "",
   paymentRecords: [],
 };
@@ -277,111 +273,6 @@ export const InspectionModal = ({
     toast.success("อัปเดตสถานะเป็น Returned สำเร็จ");
   };
 
-  const renderConditionRecords = (
-    conditions: ConditionRecord[],
-    type: 'pickup' | 'return'
-  ) => (
-    <div className="space-y-3">
-      {conditions.map((condition, index) => (
-        <div key={condition.id} className="border border-border rounded-lg p-3 bg-muted/20">
-          <div className="flex items-start justify-between gap-2 mb-2">
-            <span className="text-xs text-muted-foreground font-medium">รายการ #{index + 1}</span>
-            {isEditing && conditions.length > 1 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                onClick={() => handleRemoveCondition(type, condition.id)}
-              >
-                <Trash2 className="w-3 h-3" />
-              </Button>
-            )}
-          </div>
-          
-          <div className="space-y-2">
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">หัวข้อ</p>
-              {isEditing ? (
-                <Input
-                  value={condition.title}
-                  onChange={(e) => handleConditionChange(type, condition.id, 'title', e.target.value)}
-                  className="h-8 text-sm"
-                  placeholder="เช่น รอยขีดข่วนประตูหน้า"
-                />
-              ) : (
-                <p className="font-medium text-sm">{condition.title || "-"}</p>
-              )}
-            </div>
-            
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">รายละเอียด</p>
-              {isEditing ? (
-                <Textarea
-                  value={condition.detail}
-                  onChange={(e) => handleConditionChange(type, condition.id, 'detail', e.target.value)}
-                  className="min-h-[50px] text-sm"
-                  placeholder="รายละเอียดสภาพ..."
-                />
-              ) : (
-                <p className="text-sm">{condition.detail || "-"}</p>
-              )}
-            </div>
-            
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">รูปประกอบ</p>
-              {condition.image ? (
-                <div className="relative w-20 h-20">
-                  <img
-                    src={condition.image}
-                    alt={condition.title}
-                    className="w-full h-full object-cover rounded-lg border border-border"
-                  />
-                  {isEditing && (
-                    <button
-                      onClick={() => handleConditionChange(type, condition.id, 'image', null)}
-                      className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/80"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  )}
-                </div>
-              ) : isEditing ? (
-                <label className="flex items-center justify-center w-20 h-20 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleConditionImageUpload(type, condition.id, file);
-                    }}
-                  />
-                  <Upload className="w-5 h-5 text-muted-foreground" />
-                </label>
-              ) : (
-                <div className="w-20 h-20 border border-dashed border-border rounded-lg flex items-center justify-center bg-muted/30">
-                  <Image className="w-5 h-5 text-muted-foreground/50" />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      ))}
-      
-      {isEditing && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full gap-2"
-          onClick={() => handleAddCondition(type)}
-        >
-          <Plus className="w-4 h-4" />
-          เพิ่มรายการสภาพรถ
-        </Button>
-      )}
-    </div>
-  );
-
   const renderInspectionSection = (
     title: string,
     data: InspectionData,
@@ -454,9 +345,112 @@ export const InspectionModal = ({
       </div>
 
       {/* Vehicle Condition Records */}
-      <div className="pt-2">
-        <p className="text-muted-foreground text-sm mb-2">สภาพรถ ({data.conditions.length} รายการ)</p>
-        {renderConditionRecords(data.conditions, type)}
+      <div className="pt-3 border-t border-border mt-3">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-muted-foreground text-sm">สภาพรถ ({data.conditions.length} รายการ)</p>
+          {isEditing && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-6 text-xs gap-1"
+              onClick={() => handleAddCondition(type)}
+            >
+              <Plus className="w-3 h-3" />
+              เพิ่มรายการ
+            </Button>
+          )}
+        </div>
+        {data.conditions.length > 0 ? (
+          <div className="space-y-3">
+            {data.conditions.map((condition, index) => (
+              <div key={condition.id} className="border border-border rounded-lg p-3 bg-muted/20">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <span className="text-xs text-muted-foreground font-medium">รายการ #{index + 1}</span>
+                  {isEditing && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                      onClick={() => handleRemoveCondition(type, condition.id)}
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  )}
+                </div>
+                
+                <div className="space-y-2">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">หัวข้อ</p>
+                    {isEditing ? (
+                      <Input
+                        value={condition.title}
+                        onChange={(e) => handleConditionChange(type, condition.id, 'title', e.target.value)}
+                        className="h-8 text-sm"
+                        placeholder="เช่น รอยขีดข่วนประตูหน้า"
+                      />
+                    ) : (
+                      <p className="font-medium text-sm">{condition.title || "-"}</p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">รายละเอียด</p>
+                    {isEditing ? (
+                      <Textarea
+                        value={condition.detail}
+                        onChange={(e) => handleConditionChange(type, condition.id, 'detail', e.target.value)}
+                        className="min-h-[50px] text-sm"
+                        placeholder="รายละเอียดสภาพ..."
+                      />
+                    ) : (
+                      <p className="text-sm">{condition.detail || "-"}</p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">รูปประกอบ</p>
+                    {condition.image ? (
+                      <div className="relative w-20 h-20">
+                        <img
+                          src={condition.image}
+                          alt={condition.title}
+                          className="w-full h-full object-cover rounded-lg border border-border"
+                        />
+                        {isEditing && (
+                          <button
+                            onClick={() => handleConditionChange(type, condition.id, 'image', null)}
+                            className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/80"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                    ) : isEditing ? (
+                      <label className="flex items-center justify-center w-20 h-20 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleConditionImageUpload(type, condition.id, file);
+                          }}
+                        />
+                        <Upload className="w-5 h-5 text-muted-foreground" />
+                      </label>
+                    ) : (
+                      <div className="w-20 h-20 border border-dashed border-border rounded-lg flex items-center justify-center bg-muted/30">
+                        <Image className="w-5 h-5 text-muted-foreground/50" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground text-center py-4">ไม่มีรายการสภาพรถ</p>
+        )}
       </div>
 
       {/* Payment Records Section */}
