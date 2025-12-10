@@ -16,12 +16,20 @@ interface ConditionRecord {
   image: string | null;
 }
 
+interface PaymentRecord {
+  id: string;
+  type: 'cash' | 'credit_card' | '';
+  amount: number;
+  proofImage: string | null;
+}
+
 interface InspectionData {
   date: string;
   mileage: string;
   fuelLevel: string;
   conditions: ConditionRecord[];
   notes: string;
+  paymentRecords: PaymentRecord[];
 }
 
 interface OtherCharge {
@@ -69,6 +77,7 @@ const defaultPickup: InspectionData = {
     { id: "1", title: "สภาพภายนอก", detail: "ปกติ ไม่มีรอยขีดข่วน", image: null },
   ],
   notes: "",
+  paymentRecords: [],
 };
 
 const defaultReturn: InspectionData = {
@@ -79,6 +88,7 @@ const defaultReturn: InspectionData = {
     { id: "1", title: "สภาพภายนอก", detail: "ปกติ ไม่มีรอยขีดข่วน", image: null },
   ],
   notes: "",
+  paymentRecords: [],
 };
 
 export const InspectionModal = ({
@@ -174,6 +184,14 @@ export const InspectionModal = ({
     toast.success("อัปโหลดรูปสำเร็จ");
   };
 
+  // Auto-calculate total and remaining balance
+  const calculateTotals = (charges: OtherCharge[], deposit: number, baseTotal: number) => {
+    const chargesTotal = charges.reduce((sum, c) => sum + c.amount, 0);
+    const totalAmount = baseTotal + chargesTotal;
+    const remainingBalance = totalAmount - deposit;
+    return { totalAmount, remainingBalance };
+  };
+
   // Payment charge handlers
   const handleAddCharge = () => {
     const newCharge: OtherCharge = {
@@ -181,33 +199,96 @@ export const InspectionModal = ({
       label: "",
       amount: 0,
     };
-    setPayment(prev => ({
-      ...prev,
-      otherCharges: [...prev.otherCharges, newCharge]
-    }));
+    setPayment(prev => {
+      const newCharges = [...prev.otherCharges, newCharge];
+      const { totalAmount, remainingBalance } = calculateTotals(newCharges, prev.deposit, 12000);
+      return { ...prev, otherCharges: newCharges, totalAmount, remainingBalance };
+    });
   };
 
   const handleRemoveCharge = (id: string) => {
-    setPayment(prev => ({
-      ...prev,
-      otherCharges: prev.otherCharges.filter(c => c.id !== id)
-    }));
+    setPayment(prev => {
+      const newCharges = prev.otherCharges.filter(c => c.id !== id);
+      const { totalAmount, remainingBalance } = calculateTotals(newCharges, prev.deposit, 12000);
+      return { ...prev, otherCharges: newCharges, totalAmount, remainingBalance };
+    });
   };
 
   const handleChargeChange = (id: string, field: 'label' | 'amount', value: string | number) => {
-    setPayment(prev => ({
-      ...prev,
-      otherCharges: prev.otherCharges.map(c => 
+    setPayment(prev => {
+      const newCharges = prev.otherCharges.map(c => 
         c.id === id ? { ...c, [field]: value } : c
-      )
-    }));
+      );
+      const { totalAmount, remainingBalance } = calculateTotals(newCharges, prev.deposit, 12000);
+      return { ...prev, otherCharges: newCharges, totalAmount, remainingBalance };
+    });
   };
 
-  const handlePaymentFieldChange = (field: 'deposit' | 'totalAmount' | 'remainingBalance', value: number) => {
-    setPayment(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  // Payment record handlers
+  const handleAddPaymentRecord = (type: 'pickup' | 'return') => {
+    const newRecord: PaymentRecord = {
+      id: generateId(),
+      type: '',
+      amount: 0,
+      proofImage: null,
+    };
+    if (type === 'pickup') {
+      setPickup(prev => ({
+        ...prev,
+        paymentRecords: [...prev.paymentRecords, newRecord]
+      }));
+    } else {
+      setReturnInspection(prev => ({
+        ...prev,
+        paymentRecords: [...prev.paymentRecords, newRecord]
+      }));
+    }
+  };
+
+  const handleRemovePaymentRecord = (type: 'pickup' | 'return', id: string) => {
+    if (type === 'pickup') {
+      setPickup(prev => ({
+        ...prev,
+        paymentRecords: prev.paymentRecords.filter(r => r.id !== id)
+      }));
+    } else {
+      setReturnInspection(prev => ({
+        ...prev,
+        paymentRecords: prev.paymentRecords.filter(r => r.id !== id)
+      }));
+    }
+  };
+
+  const handlePaymentRecordChange = (
+    type: 'pickup' | 'return',
+    id: string,
+    field: keyof PaymentRecord,
+    value: string | number | null
+  ) => {
+    const updateRecords = (records: PaymentRecord[]) =>
+      records.map(r => r.id === id ? { ...r, [field]: value } : r);
+
+    if (type === 'pickup') {
+      setPickup(prev => ({
+        ...prev,
+        paymentRecords: updateRecords(prev.paymentRecords)
+      }));
+    } else {
+      setReturnInspection(prev => ({
+        ...prev,
+        paymentRecords: updateRecords(prev.paymentRecords)
+      }));
+    }
+  };
+
+  const handlePaymentProofUpload = (type: 'pickup' | 'return', id: string, file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      handlePaymentRecordChange(type, id, 'proofImage', result);
+    };
+    reader.readAsDataURL(file);
+    toast.success("อัปโหลดหลักฐานการชำระเงินสำเร็จ");
   };
 
   const handleSave = () => {
@@ -416,6 +497,128 @@ export const InspectionModal = ({
         <p className="text-muted-foreground text-sm mb-2">สภาพรถ ({data.conditions.length} รายการ)</p>
         {renderConditionRecords(data.conditions, type)}
       </div>
+
+      {/* Payment Records Section */}
+      <div className="pt-3 border-t border-border mt-3">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-muted-foreground text-sm">บันทึกการรับเงิน ({data.paymentRecords.length} รายการ)</p>
+          {isEditing && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-6 text-xs gap-1"
+              onClick={() => handleAddPaymentRecord(type)}
+            >
+              <Plus className="w-3 h-3" />
+              เพิ่มรายการ
+            </Button>
+          )}
+        </div>
+        
+        <div className="space-y-2">
+          {data.paymentRecords.map((record, index) => (
+            <div key={record.id} className="border border-border rounded-lg p-3 bg-muted/20">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <span className="text-xs text-muted-foreground font-medium">รายการ #{index + 1}</span>
+                {isEditing && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                    onClick={() => handleRemovePaymentRecord(type, record.id)}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                )}
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">ประเภทการชำระ</p>
+                  {isEditing ? (
+                    <Select
+                      value={record.type}
+                      onValueChange={(value) => handlePaymentRecordChange(type, record.id, 'type', value)}
+                    >
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue placeholder="เลือกประเภท" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="cash">เงินสด</SelectItem>
+                        <SelectItem value="credit_card">บัตรเครดิต</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="font-medium text-sm">
+                      {record.type === 'cash' ? 'เงินสด' : record.type === 'credit_card' ? 'บัตรเครดิต' : '-'}
+                    </p>
+                  )}
+                </div>
+                
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">จำนวนเงิน</p>
+                  {isEditing ? (
+                    <div className="flex items-center gap-1">
+                      <span className="text-muted-foreground text-sm">฿</span>
+                      <Input
+                        type="number"
+                        value={record.amount}
+                        onChange={(e) => handlePaymentRecordChange(type, record.id, 'amount', Number(e.target.value))}
+                        className="h-8 text-sm"
+                        placeholder="0"
+                      />
+                    </div>
+                  ) : (
+                    <p className="font-medium text-sm text-primary">฿{record.amount.toLocaleString()}</p>
+                  )}
+                </div>
+              </div>
+              
+              <div className="mt-2">
+                <p className="text-xs text-muted-foreground mb-1">หลักฐานการชำระเงิน</p>
+                {record.proofImage ? (
+                  <div className="relative w-20 h-20">
+                    <img
+                      src={record.proofImage}
+                      alt="หลักฐานการชำระเงิน"
+                      className="w-full h-full object-cover rounded-lg border border-border"
+                    />
+                    {isEditing && (
+                      <button
+                        onClick={() => handlePaymentRecordChange(type, record.id, 'proofImage', null)}
+                        className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/80"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                ) : isEditing ? (
+                  <label className="flex items-center justify-center w-20 h-20 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handlePaymentProofUpload(type, record.id, file);
+                      }}
+                    />
+                    <Upload className="w-5 h-5 text-muted-foreground" />
+                  </label>
+                ) : (
+                  <div className="w-20 h-20 border border-dashed border-border rounded-lg flex items-center justify-center bg-muted/30">
+                    <Image className="w-5 h-5 text-muted-foreground/50" />
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+          
+          {data.paymentRecords.length === 0 && (
+            <p className="text-xs text-muted-foreground text-center py-2 bg-muted/20 rounded-lg">ยังไม่มีรายการบันทึกการรับเงิน</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 
@@ -462,42 +665,17 @@ export const InspectionModal = ({
             <div className="grid grid-cols-3 gap-4 text-sm">
               <div className="bg-background/50 rounded-lg p-3">
                 <p className="text-muted-foreground text-xs mb-1">ยอดมัดจำ</p>
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={payment.deposit}
-                    onChange={(e) => handlePaymentFieldChange('deposit', Number(e.target.value))}
-                    className="h-8 text-lg font-semibold"
-                  />
-                ) : (
-                  <p className="font-semibold text-lg text-primary">฿{payment.deposit.toLocaleString()}</p>
-                )}
+                <p className="font-semibold text-lg text-primary">฿{payment.deposit.toLocaleString()}</p>
               </div>
               <div className="bg-background/50 rounded-lg p-3">
                 <p className="text-muted-foreground text-xs mb-1">ยอดรวมทั้งหมด</p>
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={payment.totalAmount}
-                    onChange={(e) => handlePaymentFieldChange('totalAmount', Number(e.target.value))}
-                    className="h-8 text-lg font-semibold"
-                  />
-                ) : (
-                  <p className="font-semibold text-lg">฿{payment.totalAmount.toLocaleString()}</p>
-                )}
+                <p className="font-semibold text-lg">฿{payment.totalAmount.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">(คำนวณอัตโนมัติ)</p>
               </div>
               <div className="bg-background/50 rounded-lg p-3">
                 <p className="text-muted-foreground text-xs mb-1">ยอดคงเหลือ</p>
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={payment.remainingBalance}
-                    onChange={(e) => handlePaymentFieldChange('remainingBalance', Number(e.target.value))}
-                    className="h-8 text-lg font-semibold"
-                  />
-                ) : (
-                  <p className="font-semibold text-lg text-amber-600">฿{payment.remainingBalance.toLocaleString()}</p>
-                )}
+                <p className="font-semibold text-lg text-amber-600">฿{payment.remainingBalance.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">(คำนวณอัตโนมัติ)</p>
               </div>
             </div>
             
