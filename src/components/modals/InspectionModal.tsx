@@ -6,16 +6,29 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Pencil, Save, X, Upload, Image, LogIn, LogOut } from "lucide-react";
+import { Pencil, Save, X, Upload, Image, LogIn, LogOut, Plus, Trash2, CreditCard } from "lucide-react";
 import { toast } from "sonner";
+
+interface ConditionRecord {
+  id: string;
+  title: string;
+  detail: string;
+  image: string | null;
+}
 
 interface InspectionData {
   date: string;
   mileage: string;
   fuelLevel: string;
-  condition: string;
+  conditions: ConditionRecord[];
   notes: string;
-  images: string[];
+}
+
+interface PaymentDetail {
+  deposit: number;
+  totalAmount: number;
+  remainingBalance: number;
+  otherCharges: { label: string; amount: number }[];
 }
 
 interface InspectionModalProps {
@@ -28,25 +41,38 @@ interface InspectionModalProps {
   onStatusChange: (status: string) => void;
   pickupData?: InspectionData;
   returnData?: InspectionData;
+  paymentDetail?: PaymentDetail;
   onSave?: (pickup: InspectionData, returnData: InspectionData) => void;
 }
+
+const defaultPayment: PaymentDetail = {
+  deposit: 5000,
+  totalAmount: 12000,
+  remainingBalance: 7000,
+  otherCharges: [
+    { label: "ค่าทำความสะอาด", amount: 500 },
+    { label: "ค่าประกันเพิ่มเติม", amount: 1000 },
+  ],
+};
 
 const defaultPickup: InspectionData = {
   date: "15 Mar 2024, 09:00",
   mileage: "45,230",
   fuelLevel: "full",
-  condition: "ปกติ ไม่มีรอยตำหนิ",
+  conditions: [
+    { id: "1", title: "สภาพภายนอก", detail: "ปกติ ไม่มีรอยขีดข่วน", image: null },
+  ],
   notes: "",
-  images: [],
 };
 
 const defaultReturn: InspectionData = {
   date: "19 Mar 2024, 17:00",
   mileage: "45,890",
   fuelLevel: "3/4",
-  condition: "ปกติ ไม่มีรอยตำหนิ",
+  conditions: [
+    { id: "1", title: "สภาพภายนอก", detail: "ปกติ ไม่มีรอยขีดข่วน", image: null },
+  ],
   notes: "",
-  images: [],
 };
 
 export const InspectionModal = ({
@@ -59,6 +85,7 @@ export const InspectionModal = ({
   onStatusChange,
   pickupData = defaultPickup,
   returnData = defaultReturn,
+  paymentDetail = defaultPayment,
   onSave,
 }: InspectionModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -67,56 +94,77 @@ export const InspectionModal = ({
   const [showPickupConfirm, setShowPickupConfirm] = useState(false);
   const [showReturnConfirm, setShowReturnConfirm] = useState(false);
 
-  const pickupFileRef = useRef<HTMLInputElement>(null);
-  const returnFileRef = useRef<HTMLInputElement>(null);
+  const generateId = () => Math.random().toString(36).substr(2, 9);
 
-  const handleImageUpload = (type: 'pickup' | 'return', files: FileList | null) => {
-    if (!files) return;
-
-    const currentImages = type === 'pickup' ? pickup.images : returnInspection.images;
-    const remainingSlots = 6 - currentImages.length;
-
-    if (remainingSlots <= 0) {
-      toast.error("สามารถอัปโหลดได้สูงสุด 6 รูปเท่านั้น");
-      return;
-    }
-
-    const filesToProcess = Array.from(files).slice(0, remainingSlots);
-
-    filesToProcess.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        if (type === 'pickup') {
-          setPickup(prev => ({
-            ...prev,
-            images: [...prev.images, result].slice(0, 6)
-          }));
-        } else {
-          setReturnInspection(prev => ({
-            ...prev,
-            images: [...prev.images, result].slice(0, 6)
-          }));
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-
-    toast.success(`อัปโหลด ${filesToProcess.length} รูปสำเร็จ`);
-  };
-
-  const handleRemoveImage = (type: 'pickup' | 'return', index: number) => {
+  const handleAddCondition = (type: 'pickup' | 'return') => {
+    const newCondition: ConditionRecord = {
+      id: generateId(),
+      title: "",
+      detail: "",
+      image: null,
+    };
+    
     if (type === 'pickup') {
       setPickup(prev => ({
         ...prev,
-        images: prev.images.filter((_, i) => i !== index)
+        conditions: [...prev.conditions, newCondition]
       }));
     } else {
       setReturnInspection(prev => ({
         ...prev,
-        images: prev.images.filter((_, i) => i !== index)
+        conditions: [...prev.conditions, newCondition]
       }));
     }
+  };
+
+  const handleRemoveCondition = (type: 'pickup' | 'return', id: string) => {
+    if (type === 'pickup') {
+      setPickup(prev => ({
+        ...prev,
+        conditions: prev.conditions.filter(c => c.id !== id)
+      }));
+    } else {
+      setReturnInspection(prev => ({
+        ...prev,
+        conditions: prev.conditions.filter(c => c.id !== id)
+      }));
+    }
+  };
+
+  const handleConditionChange = (
+    type: 'pickup' | 'return',
+    id: string,
+    field: keyof ConditionRecord,
+    value: string | null
+  ) => {
+    const updateConditions = (conditions: ConditionRecord[]) =>
+      conditions.map(c => c.id === id ? { ...c, [field]: value } : c);
+
+    if (type === 'pickup') {
+      setPickup(prev => ({
+        ...prev,
+        conditions: updateConditions(prev.conditions)
+      }));
+    } else {
+      setReturnInspection(prev => ({
+        ...prev,
+        conditions: updateConditions(prev.conditions)
+      }));
+    }
+  };
+
+  const handleConditionImageUpload = (
+    type: 'pickup' | 'return',
+    id: string,
+    file: File
+  ) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      handleConditionChange(type, id, 'image', result);
+    };
+    reader.readAsDataURL(file);
+    toast.success("อัปโหลดรูปสำเร็จ");
   };
 
   const handleSave = () => {
@@ -143,46 +191,116 @@ export const InspectionModal = ({
     toast.success("อัปเดตสถานะเป็น Returned สำเร็จ");
   };
 
-  const renderImageGrid = (images: string[], type: 'pickup' | 'return') => {
-    const slots = Array(6).fill(null);
-    images.forEach((img, i) => {
-      if (i < 6) slots[i] = img;
-    });
-
-    return (
-      <div className="grid grid-cols-3 gap-2 mt-3">
-        {slots.map((img, index) => (
-          <div
-            key={index}
-            className="aspect-square border border-dashed border-border rounded-lg overflow-hidden relative bg-muted/30 flex items-center justify-center"
-          >
-            {img ? (
-              <>
-                <img src={img} alt={`${type} ${index + 1}`} className="w-full h-full object-cover" />
-                {isEditing && (
-                  <button
-                    onClick={() => handleRemoveImage(type, index)}
-                    className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/80"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                )}
-              </>
-            ) : (
-              <Image className="w-6 h-6 text-muted-foreground/50" />
+  const renderConditionRecords = (
+    conditions: ConditionRecord[],
+    type: 'pickup' | 'return'
+  ) => (
+    <div className="space-y-3">
+      {conditions.map((condition, index) => (
+        <div key={condition.id} className="border border-border rounded-lg p-3 bg-muted/20">
+          <div className="flex items-start justify-between gap-2 mb-2">
+            <span className="text-xs text-muted-foreground font-medium">รายการ #{index + 1}</span>
+            {isEditing && conditions.length > 1 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                onClick={() => handleRemoveCondition(type, condition.id)}
+              >
+                <Trash2 className="w-3 h-3" />
+              </Button>
             )}
           </div>
-        ))}
-      </div>
-    );
-  };
+          
+          <div className="space-y-2">
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">หัวข้อ</p>
+              {isEditing ? (
+                <Input
+                  value={condition.title}
+                  onChange={(e) => handleConditionChange(type, condition.id, 'title', e.target.value)}
+                  className="h-8 text-sm"
+                  placeholder="เช่น รอยขีดข่วนประตูหน้า"
+                />
+              ) : (
+                <p className="font-medium text-sm">{condition.title || "-"}</p>
+              )}
+            </div>
+            
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">รายละเอียด</p>
+              {isEditing ? (
+                <Textarea
+                  value={condition.detail}
+                  onChange={(e) => handleConditionChange(type, condition.id, 'detail', e.target.value)}
+                  className="min-h-[50px] text-sm"
+                  placeholder="รายละเอียดสภาพ..."
+                />
+              ) : (
+                <p className="text-sm">{condition.detail || "-"}</p>
+              )}
+            </div>
+            
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">รูปประกอบ</p>
+              {condition.image ? (
+                <div className="relative w-20 h-20">
+                  <img
+                    src={condition.image}
+                    alt={condition.title}
+                    className="w-full h-full object-cover rounded-lg border border-border"
+                  />
+                  {isEditing && (
+                    <button
+                      onClick={() => handleConditionChange(type, condition.id, 'image', null)}
+                      className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/80"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              ) : isEditing ? (
+                <label className="flex items-center justify-center w-20 h-20 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleConditionImageUpload(type, condition.id, file);
+                    }}
+                  />
+                  <Upload className="w-5 h-5 text-muted-foreground" />
+                </label>
+              ) : (
+                <div className="w-20 h-20 border border-dashed border-border rounded-lg flex items-center justify-center bg-muted/30">
+                  <Image className="w-5 h-5 text-muted-foreground/50" />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
+      
+      {isEditing && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full gap-2"
+          onClick={() => handleAddCondition(type)}
+        >
+          <Plus className="w-4 h-4" />
+          เพิ่มรายการสภาพรถ
+        </Button>
+      )}
+    </div>
+  );
 
   const renderInspectionSection = (
     title: string,
     data: InspectionData,
     setData: React.Dispatch<React.SetStateAction<InspectionData>>,
-    type: 'pickup' | 'return',
-    fileRef: React.RefObject<HTMLInputElement>
+    type: 'pickup' | 'return'
   ) => (
     <div className="space-y-3">
       <h5 className="font-medium text-sm border-b border-border pb-2">{title}</h5>
@@ -235,18 +353,6 @@ export const InspectionModal = ({
           )}
         </div>
         <div>
-          <p className="text-muted-foreground mb-1">สภาพรถ</p>
-          {isEditing ? (
-            <Input
-              value={data.condition}
-              onChange={(e) => setData(prev => ({ ...prev, condition: e.target.value }))}
-              className="h-8"
-            />
-          ) : (
-            <p className="font-medium text-success">{data.condition}</p>
-          )}
-        </div>
-        <div>
           <p className="text-muted-foreground mb-1">หมายเหตุ</p>
           {isEditing ? (
             <Textarea
@@ -261,33 +367,10 @@ export const InspectionModal = ({
         </div>
       </div>
 
-      {/* Image Upload Section */}
+      {/* Vehicle Condition Records */}
       <div className="pt-2">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-muted-foreground text-sm">รูปภาพ ({data.images.length}/6)</p>
-          {isEditing && data.images.length < 6 && (
-            <>
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={(e) => handleImageUpload(type, e.target.files)}
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 text-xs"
-                onClick={() => fileRef.current?.click()}
-              >
-                <Upload className="w-3 h-3 mr-1" />
-                อัปโหลดรูป
-              </Button>
-            </>
-          )}
-        </div>
-        {renderImageGrid(data.images, type)}
+        <p className="text-muted-foreground text-sm mb-2">สภาพรถ ({data.conditions.length} รายการ)</p>
+        {renderConditionRecords(data.conditions, type)}
       </div>
     </div>
   );
@@ -295,7 +378,7 @@ export const InspectionModal = ({
   return (
     <>
       <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="max-w-[800px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[900px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <div className="flex items-center justify-between">
               <DialogTitle className="flex items-center gap-2">
@@ -326,9 +409,44 @@ export const InspectionModal = ({
             </div>
           </DialogHeader>
 
+          {/* Payment Details Section */}
+          <Card className="p-4 mt-4 bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+            <div className="flex items-center gap-2 mb-3">
+              <CreditCard className="w-4 h-4 text-primary" />
+              <h5 className="font-medium text-sm">รายละเอียดชำระเงิน</h5>
+            </div>
+            <div className="grid grid-cols-3 gap-4 text-sm">
+              <div className="bg-background/50 rounded-lg p-3">
+                <p className="text-muted-foreground text-xs mb-1">ยอดมัดจำ</p>
+                <p className="font-semibold text-lg text-primary">฿{paymentDetail.deposit.toLocaleString()}</p>
+              </div>
+              <div className="bg-background/50 rounded-lg p-3">
+                <p className="text-muted-foreground text-xs mb-1">ยอดรวมทั้งหมด</p>
+                <p className="font-semibold text-lg">฿{paymentDetail.totalAmount.toLocaleString()}</p>
+              </div>
+              <div className="bg-background/50 rounded-lg p-3">
+                <p className="text-muted-foreground text-xs mb-1">ยอดคงเหลือ</p>
+                <p className="font-semibold text-lg text-amber-600">฿{paymentDetail.remainingBalance.toLocaleString()}</p>
+              </div>
+            </div>
+            {paymentDetail.otherCharges.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-primary/10">
+                <p className="text-xs text-muted-foreground mb-2">ค่าใช้จ่ายอื่นๆ</p>
+                <div className="flex flex-wrap gap-2">
+                  {paymentDetail.otherCharges.map((charge, idx) => (
+                    <div key={idx} className="bg-background/70 rounded-full px-3 py-1 text-xs flex items-center gap-2">
+                      <span className="text-muted-foreground">{charge.label}</span>
+                      <span className="font-medium">฿{charge.amount.toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </Card>
+
           <div className="grid grid-cols-2 gap-6 mt-4">
             <Card className="p-4">
-              {renderInspectionSection("รับรถ (Pick Up)", pickup, setPickup, 'pickup', pickupFileRef)}
+              {renderInspectionSection("รับรถ (Pick Up)", pickup, setPickup, 'pickup')}
               <div className="mt-4 pt-4 border-t border-border">
                 <Button
                   className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
@@ -342,7 +460,7 @@ export const InspectionModal = ({
             </Card>
 
             <Card className="p-4">
-              {renderInspectionSection("คืนรถ (Return)", returnInspection, setReturnInspection, 'return', returnFileRef)}
+              {renderInspectionSection("คืนรถ (Return)", returnInspection, setReturnInspection, 'return')}
               <div className="mt-4 pt-4 border-t border-border">
                 <Button
                   className="w-full gap-2 bg-blue-600 hover:bg-blue-700 text-white"
