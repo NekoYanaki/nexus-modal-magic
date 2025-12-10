@@ -18,6 +18,7 @@ interface ConditionRecord {
 
 interface PaymentRecord {
   id: string;
+  label: string;
   type: 'cash' | 'credit_card' | '';
   amount: number;
   proofImage: string | null;
@@ -228,6 +229,7 @@ export const InspectionModal = ({
   const handleAddPaymentRecord = (type: 'pickup' | 'return') => {
     const newRecord: PaymentRecord = {
       id: generateId(),
+      label: '',
       type: '',
       amount: 0,
       proofImage: null,
@@ -532,45 +534,61 @@ export const InspectionModal = ({
                 )}
               </div>
               
-              <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-3">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">ประเภทการชำระ</p>
+                  <p className="text-xs text-muted-foreground mb-1">หัวข้อรายการ</p>
                   {isEditing ? (
-                    <Select
-                      value={record.type}
-                      onValueChange={(value) => handlePaymentRecordChange(type, record.id, 'type', value)}
-                    >
-                      <SelectTrigger className="h-8 text-sm">
-                        <SelectValue placeholder="เลือกประเภท" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="cash">เงินสด</SelectItem>
-                        <SelectItem value="credit_card">บัตรเครดิต</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Input
+                      value={record.label}
+                      onChange={(e) => handlePaymentRecordChange(type, record.id, 'label', e.target.value)}
+                      className="h-8 text-sm"
+                      placeholder="เช่น ชำระค่าเช่าคงเหลือ, ค่าน้ำมัน"
+                    />
                   ) : (
-                    <p className="font-medium text-sm">
-                      {record.type === 'cash' ? 'เงินสด' : record.type === 'credit_card' ? 'บัตรเครดิต' : '-'}
-                    </p>
+                    <p className="font-medium text-sm">{record.label || "-"}</p>
                   )}
                 </div>
                 
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">จำนวนเงิน</p>
-                  {isEditing ? (
-                    <div className="flex items-center gap-1">
-                      <span className="text-muted-foreground text-sm">฿</span>
-                      <Input
-                        type="number"
-                        value={record.amount}
-                        onChange={(e) => handlePaymentRecordChange(type, record.id, 'amount', Number(e.target.value))}
-                        className="h-8 text-sm"
-                        placeholder="0"
-                      />
-                    </div>
-                  ) : (
-                    <p className="font-medium text-sm text-primary">฿{record.amount.toLocaleString()}</p>
-                  )}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">ประเภทการชำระ</p>
+                    {isEditing ? (
+                      <Select
+                        value={record.type}
+                        onValueChange={(value) => handlePaymentRecordChange(type, record.id, 'type', value)}
+                      >
+                        <SelectTrigger className="h-8 text-sm">
+                          <SelectValue placeholder="เลือกประเภท" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="cash">เงินสด</SelectItem>
+                          <SelectItem value="credit_card">บัตรเครดิต</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <p className="font-medium text-sm">
+                        {record.type === 'cash' ? 'เงินสด' : record.type === 'credit_card' ? 'บัตรเครดิต' : '-'}
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">จำนวนเงิน</p>
+                    {isEditing ? (
+                      <div className="flex items-center gap-1">
+                        <span className="text-muted-foreground text-sm">฿</span>
+                        <Input
+                          type="number"
+                          value={record.amount}
+                          onChange={(e) => handlePaymentRecordChange(type, record.id, 'amount', Number(e.target.value))}
+                          className="h-8 text-sm"
+                          placeholder="0"
+                        />
+                      </div>
+                    ) : (
+                      <p className="font-medium text-sm text-primary">฿{record.amount.toLocaleString()}</p>
+                    )}
+                  </div>
                 </div>
               </div>
               
