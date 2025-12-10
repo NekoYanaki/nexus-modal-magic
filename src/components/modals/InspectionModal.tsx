@@ -24,11 +24,17 @@ interface InspectionData {
   notes: string;
 }
 
+interface OtherCharge {
+  id: string;
+  label: string;
+  amount: number;
+}
+
 interface PaymentDetail {
   deposit: number;
   totalAmount: number;
   remainingBalance: number;
-  otherCharges: { label: string; amount: number }[];
+  otherCharges: OtherCharge[];
 }
 
 interface InspectionModalProps {
@@ -42,7 +48,7 @@ interface InspectionModalProps {
   pickupData?: InspectionData;
   returnData?: InspectionData;
   paymentDetail?: PaymentDetail;
-  onSave?: (pickup: InspectionData, returnData: InspectionData) => void;
+  onSave?: (pickup: InspectionData, returnData: InspectionData, payment: PaymentDetail) => void;
 }
 
 const defaultPayment: PaymentDetail = {
@@ -50,8 +56,8 @@ const defaultPayment: PaymentDetail = {
   totalAmount: 12000,
   remainingBalance: 7000,
   otherCharges: [
-    { label: "ค่าทำความสะอาด", amount: 500 },
-    { label: "ค่าประกันเพิ่มเติม", amount: 1000 },
+    { id: "1", label: "ค่าทำความสะอาด", amount: 500 },
+    { id: "2", label: "ค่าประกันเพิ่มเติม", amount: 1000 },
   ],
 };
 
@@ -91,6 +97,7 @@ export const InspectionModal = ({
   const [isEditing, setIsEditing] = useState(false);
   const [pickup, setPickup] = useState<InspectionData>(pickupData);
   const [returnInspection, setReturnInspection] = useState<InspectionData>(returnData);
+  const [payment, setPayment] = useState<PaymentDetail>(paymentDetail);
   const [showPickupConfirm, setShowPickupConfirm] = useState(false);
   const [showReturnConfirm, setShowReturnConfirm] = useState(false);
 
@@ -167,9 +174,45 @@ export const InspectionModal = ({
     toast.success("อัปโหลดรูปสำเร็จ");
   };
 
+  // Payment charge handlers
+  const handleAddCharge = () => {
+    const newCharge: OtherCharge = {
+      id: generateId(),
+      label: "",
+      amount: 0,
+    };
+    setPayment(prev => ({
+      ...prev,
+      otherCharges: [...prev.otherCharges, newCharge]
+    }));
+  };
+
+  const handleRemoveCharge = (id: string) => {
+    setPayment(prev => ({
+      ...prev,
+      otherCharges: prev.otherCharges.filter(c => c.id !== id)
+    }));
+  };
+
+  const handleChargeChange = (id: string, field: 'label' | 'amount', value: string | number) => {
+    setPayment(prev => ({
+      ...prev,
+      otherCharges: prev.otherCharges.map(c => 
+        c.id === id ? { ...c, [field]: value } : c
+      )
+    }));
+  };
+
+  const handlePaymentFieldChange = (field: 'deposit' | 'totalAmount' | 'remainingBalance', value: number) => {
+    setPayment(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
   const handleSave = () => {
     setIsEditing(false);
-    onSave?.(pickup, returnInspection);
+    onSave?.(pickup, returnInspection, payment);
     toast.success("บันทึกข้อมูล Inspection สำเร็จ");
   };
 
@@ -177,6 +220,7 @@ export const InspectionModal = ({
     setIsEditing(false);
     setPickup(pickupData);
     setReturnInspection(returnData);
+    setPayment(paymentDetail);
   };
 
   const handlePickupConfirm = () => {
@@ -418,30 +462,111 @@ export const InspectionModal = ({
             <div className="grid grid-cols-3 gap-4 text-sm">
               <div className="bg-background/50 rounded-lg p-3">
                 <p className="text-muted-foreground text-xs mb-1">ยอดมัดจำ</p>
-                <p className="font-semibold text-lg text-primary">฿{paymentDetail.deposit.toLocaleString()}</p>
+                {isEditing ? (
+                  <Input
+                    type="number"
+                    value={payment.deposit}
+                    onChange={(e) => handlePaymentFieldChange('deposit', Number(e.target.value))}
+                    className="h-8 text-lg font-semibold"
+                  />
+                ) : (
+                  <p className="font-semibold text-lg text-primary">฿{payment.deposit.toLocaleString()}</p>
+                )}
               </div>
               <div className="bg-background/50 rounded-lg p-3">
                 <p className="text-muted-foreground text-xs mb-1">ยอดรวมทั้งหมด</p>
-                <p className="font-semibold text-lg">฿{paymentDetail.totalAmount.toLocaleString()}</p>
+                {isEditing ? (
+                  <Input
+                    type="number"
+                    value={payment.totalAmount}
+                    onChange={(e) => handlePaymentFieldChange('totalAmount', Number(e.target.value))}
+                    className="h-8 text-lg font-semibold"
+                  />
+                ) : (
+                  <p className="font-semibold text-lg">฿{payment.totalAmount.toLocaleString()}</p>
+                )}
               </div>
               <div className="bg-background/50 rounded-lg p-3">
                 <p className="text-muted-foreground text-xs mb-1">ยอดคงเหลือ</p>
-                <p className="font-semibold text-lg text-amber-600">฿{paymentDetail.remainingBalance.toLocaleString()}</p>
+                {isEditing ? (
+                  <Input
+                    type="number"
+                    value={payment.remainingBalance}
+                    onChange={(e) => handlePaymentFieldChange('remainingBalance', Number(e.target.value))}
+                    className="h-8 text-lg font-semibold"
+                  />
+                ) : (
+                  <p className="font-semibold text-lg text-amber-600">฿{payment.remainingBalance.toLocaleString()}</p>
+                )}
               </div>
             </div>
-            {paymentDetail.otherCharges.length > 0 && (
-              <div className="mt-3 pt-3 border-t border-primary/10">
-                <p className="text-xs text-muted-foreground mb-2">ค่าใช้จ่ายอื่นๆ</p>
-                <div className="flex flex-wrap gap-2">
-                  {paymentDetail.otherCharges.map((charge, idx) => (
-                    <div key={idx} className="bg-background/70 rounded-full px-3 py-1 text-xs flex items-center gap-2">
-                      <span className="text-muted-foreground">{charge.label}</span>
-                      <span className="font-medium">฿{charge.amount.toLocaleString()}</span>
+            
+            {/* Other Charges Section */}
+            <div className="mt-3 pt-3 border-t border-primary/10">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs text-muted-foreground">ค่าใช้จ่ายอื่นๆ ({payment.otherCharges.length} รายการ)</p>
+                {isEditing && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-6 text-xs gap-1"
+                    onClick={handleAddCharge}
+                  >
+                    <Plus className="w-3 h-3" />
+                    เพิ่มรายการ
+                  </Button>
+                )}
+              </div>
+              
+              {isEditing ? (
+                <div className="space-y-2">
+                  {payment.otherCharges.map((charge) => (
+                    <div key={charge.id} className="flex items-center gap-2 bg-background/70 rounded-lg p-2">
+                      <Input
+                        value={charge.label}
+                        onChange={(e) => handleChargeChange(charge.id, 'label', e.target.value)}
+                        className="h-8 flex-1 text-sm"
+                        placeholder="ชื่อรายการ"
+                      />
+                      <div className="flex items-center gap-1">
+                        <span className="text-muted-foreground text-sm">฿</span>
+                        <Input
+                          type="number"
+                          value={charge.amount}
+                          onChange={(e) => handleChargeChange(charge.id, 'amount', Number(e.target.value))}
+                          className="h-8 w-24 text-sm"
+                          placeholder="0"
+                        />
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                        onClick={() => handleRemoveCharge(charge.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   ))}
+                  {payment.otherCharges.length === 0 && (
+                    <p className="text-xs text-muted-foreground text-center py-2">ไม่มีรายการค่าใช้จ่ายอื่นๆ</p>
+                  )}
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {payment.otherCharges.length > 0 ? (
+                    payment.otherCharges.map((charge) => (
+                      <div key={charge.id} className="bg-background/70 rounded-full px-3 py-1 text-xs flex items-center gap-2">
+                        <span className="text-muted-foreground">{charge.label}</span>
+                        <span className="font-medium">฿{charge.amount.toLocaleString()}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-muted-foreground">ไม่มีรายการค่าใช้จ่ายอื่นๆ</p>
+                  )}
+                </div>
+              )}
+            </div>
           </Card>
 
           <div className="grid grid-cols-2 gap-6 mt-4">
