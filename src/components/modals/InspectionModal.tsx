@@ -1,10 +1,12 @@
 import { useState, useRef } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Pencil, Save, X, Upload, Trash2, Image } from "lucide-react";
+import { Pencil, Save, X, Upload, Image, LogIn, LogOut } from "lucide-react";
 import { toast } from "sonner";
 
 interface InspectionData {
@@ -16,7 +18,14 @@ interface InspectionData {
   images: string[];
 }
 
-interface InspectionCardProps {
+interface InspectionModalProps {
+  open: boolean;
+  onClose: () => void;
+  bookingCode: string;
+  customerName: string;
+  vehicleName: string;
+  bookingStatus: string;
+  onStatusChange: (status: string) => void;
   pickupData?: InspectionData;
   returnData?: InspectionData;
   onSave?: (pickup: InspectionData, returnData: InspectionData) => void;
@@ -40,31 +49,40 @@ const defaultReturn: InspectionData = {
   images: [],
 };
 
-export const InspectionCard = ({ 
-  pickupData = defaultPickup, 
+export const InspectionModal = ({
+  open,
+  onClose,
+  bookingCode,
+  customerName,
+  vehicleName,
+  bookingStatus,
+  onStatusChange,
+  pickupData = defaultPickup,
   returnData = defaultReturn,
-  onSave 
-}: InspectionCardProps) => {
+  onSave,
+}: InspectionModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [pickup, setPickup] = useState<InspectionData>(pickupData);
   const [returnInspection, setReturnInspection] = useState<InspectionData>(returnData);
-  
+  const [showPickupConfirm, setShowPickupConfirm] = useState(false);
+  const [showReturnConfirm, setShowReturnConfirm] = useState(false);
+
   const pickupFileRef = useRef<HTMLInputElement>(null);
   const returnFileRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = (type: 'pickup' | 'return', files: FileList | null) => {
     if (!files) return;
-    
+
     const currentImages = type === 'pickup' ? pickup.images : returnInspection.images;
     const remainingSlots = 6 - currentImages.length;
-    
+
     if (remainingSlots <= 0) {
       toast.error("สามารถอัปโหลดได้สูงสุด 6 รูปเท่านั้น");
       return;
     }
 
     const filesToProcess = Array.from(files).slice(0, remainingSlots);
-    
+
     filesToProcess.forEach(file => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -83,7 +101,7 @@ export const InspectionCard = ({
       };
       reader.readAsDataURL(file);
     });
-    
+
     toast.success(`อัปโหลด ${filesToProcess.length} รูปสำเร็จ`);
   };
 
@@ -113,6 +131,18 @@ export const InspectionCard = ({
     setReturnInspection(returnData);
   };
 
+  const handlePickupConfirm = () => {
+    onStatusChange("picked_up");
+    setShowPickupConfirm(false);
+    toast.success("อัปเดตสถานะเป็น Picked Up สำเร็จ");
+  };
+
+  const handleReturnConfirm = () => {
+    onStatusChange("returned");
+    setShowReturnConfirm(false);
+    toast.success("อัปเดตสถานะเป็น Returned สำเร็จ");
+  };
+
   const renderImageGrid = (images: string[], type: 'pickup' | 'return') => {
     const slots = Array(6).fill(null);
     images.forEach((img, i) => {
@@ -122,8 +152,8 @@ export const InspectionCard = ({
     return (
       <div className="grid grid-cols-3 gap-2 mt-3">
         {slots.map((img, index) => (
-          <div 
-            key={index} 
+          <div
+            key={index}
             className="aspect-square border border-dashed border-border rounded-lg overflow-hidden relative bg-muted/30 flex items-center justify-center"
           >
             {img ? (
@@ -160,8 +190,8 @@ export const InspectionCard = ({
         <div>
           <p className="text-muted-foreground mb-1">วันที่{type === 'pickup' ? 'รับรถ' : 'คืนรถ'}</p>
           {isEditing ? (
-            <Input 
-              value={data.date} 
+            <Input
+              value={data.date}
               onChange={(e) => setData(prev => ({ ...prev, date: e.target.value }))}
               className="h-8"
             />
@@ -172,8 +202,8 @@ export const InspectionCard = ({
         <div>
           <p className="text-muted-foreground mb-1">เลขไมล์</p>
           {isEditing ? (
-            <Input 
-              value={data.mileage} 
+            <Input
+              value={data.mileage}
               onChange={(e) => setData(prev => ({ ...prev, mileage: e.target.value }))}
               className="h-8"
               placeholder="km"
@@ -185,8 +215,8 @@ export const InspectionCard = ({
         <div>
           <p className="text-muted-foreground mb-1">ระดับน้ำมัน</p>
           {isEditing ? (
-            <Select 
-              value={data.fuelLevel} 
+            <Select
+              value={data.fuelLevel}
               onValueChange={(value) => setData(prev => ({ ...prev, fuelLevel: value }))}
             >
               <SelectTrigger className="h-8">
@@ -207,8 +237,8 @@ export const InspectionCard = ({
         <div>
           <p className="text-muted-foreground mb-1">สภาพรถ</p>
           {isEditing ? (
-            <Input 
-              value={data.condition} 
+            <Input
+              value={data.condition}
               onChange={(e) => setData(prev => ({ ...prev, condition: e.target.value }))}
               className="h-8"
             />
@@ -219,8 +249,8 @@ export const InspectionCard = ({
         <div>
           <p className="text-muted-foreground mb-1">หมายเหตุ</p>
           {isEditing ? (
-            <Textarea 
-              value={data.notes} 
+            <Textarea
+              value={data.notes}
               onChange={(e) => setData(prev => ({ ...prev, notes: e.target.value }))}
               className="min-h-[60px] text-sm"
               placeholder="หมายเหตุเพิ่มเติม..."
@@ -245,9 +275,9 @@ export const InspectionCard = ({
                 className="hidden"
                 onChange={(e) => handleImageUpload(type, e.target.files)}
               />
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 className="h-7 text-xs"
                 onClick={() => fileRef.current?.click()}
               >
@@ -263,38 +293,114 @@ export const InspectionCard = ({
   );
 
   return (
-    <Card className="p-4">
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="font-semibold flex items-center gap-2">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-          </svg>
-          Inspection รับรถ - คืนรถ
-        </h4>
-        <div className="flex gap-2">
-          {isEditing ? (
-            <>
-              <Button variant="outline" size="sm" className="h-7 text-xs" onClick={handleCancel}>
-                <X className="w-3 h-3 mr-1" />
-                ยกเลิก
-              </Button>
-              <Button size="sm" className="h-7 text-xs" onClick={handleSave}>
-                <Save className="w-3 h-3 mr-1" />
-                บันทึก
-              </Button>
-            </>
-          ) : (
-            <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setIsEditing(true)}>
-              <Pencil className="w-3 h-3 mr-1" />
-              แก้ไข
-            </Button>
-          )}
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        {renderInspectionSection("รับรถ (Pick Up)", pickup, setPickup, 'pickup', pickupFileRef)}
-        {renderInspectionSection("คืนรถ (Return)", returnInspection, setReturnInspection, 'return', returnFileRef)}
-      </div>
-    </Card>
+    <>
+      <Dialog open={open} onOpenChange={onClose}>
+        <DialogContent className="max-w-[800px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+                Inspection รับรถ - คืนรถ
+              </DialogTitle>
+              <div className="flex gap-2">
+                {isEditing ? (
+                  <>
+                    <Button variant="outline" size="sm" className="h-8" onClick={handleCancel}>
+                      <X className="w-4 h-4 mr-1" />
+                      ยกเลิก
+                    </Button>
+                    <Button size="sm" className="h-8" onClick={handleSave}>
+                      <Save className="w-4 h-4 mr-1" />
+                      บันทึก
+                    </Button>
+                  </>
+                ) : (
+                  <Button variant="outline" size="sm" className="h-8" onClick={() => setIsEditing(true)}>
+                    <Pencil className="w-4 h-4 mr-1" />
+                    แก้ไข
+                  </Button>
+                )}
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="grid grid-cols-2 gap-6 mt-4">
+            <Card className="p-4">
+              {renderInspectionSection("รับรถ (Pick Up)", pickup, setPickup, 'pickup', pickupFileRef)}
+              <div className="mt-4 pt-4 border-t border-border">
+                <Button
+                  className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                  onClick={() => setShowPickupConfirm(true)}
+                  disabled={bookingStatus !== "confirmed"}
+                >
+                  <LogIn className="w-4 h-4" />
+                  ยืนยันรับรถ (Pick Up)
+                </Button>
+              </div>
+            </Card>
+
+            <Card className="p-4">
+              {renderInspectionSection("คืนรถ (Return)", returnInspection, setReturnInspection, 'return', returnFileRef)}
+              <div className="mt-4 pt-4 border-t border-border">
+                <Button
+                  className="w-full gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={() => setShowReturnConfirm(true)}
+                  disabled={bookingStatus !== "picked_up"}
+                >
+                  <LogOut className="w-4 h-4" />
+                  ยืนยันคืนรถ (Return)
+                </Button>
+              </div>
+            </Card>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Pick Up Confirmation Dialog */}
+      <AlertDialog open={showPickupConfirm} onOpenChange={setShowPickupConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ยืนยันการรับรถ</AlertDialogTitle>
+            <AlertDialogDescription>
+              คุณต้องการเปลี่ยนสถานะการจอง <strong>{bookingCode}</strong> เป็น "Picked Up" ใช่หรือไม่?
+              <br /><br />
+              <span className="text-muted-foreground">ลูกค้า: {customerName}</span>
+              <br />
+              <span className="text-muted-foreground">รถ: {vehicleName}</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction onClick={handlePickupConfirm} className="bg-emerald-600 hover:bg-emerald-700">
+              ยืนยันรับรถ
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Return Confirmation Dialog */}
+      <AlertDialog open={showReturnConfirm} onOpenChange={setShowReturnConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ยืนยันการคืนรถ</AlertDialogTitle>
+            <AlertDialogDescription>
+              คุณต้องการเปลี่ยนสถานะการจอง <strong>{bookingCode}</strong> เป็น "Returned" ใช่หรือไม่?
+              <br /><br />
+              <span className="text-muted-foreground">ลูกค้า: {customerName}</span>
+              <br />
+              <span className="text-muted-foreground">รถ: {vehicleName}</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction onClick={handleReturnConfirm} className="bg-blue-600 hover:bg-blue-700">
+              ยืนยันคืนรถ
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };

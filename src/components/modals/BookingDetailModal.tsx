@@ -1,11 +1,11 @@
-import { Car, Tent, MapPin, LogIn, LogOut } from "lucide-react";
+import { Car, Tent, MapPin, ClipboardCheck } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { BookingDocumentModal } from "./BookingDocumentModal";
-import { InspectionCard } from "./InspectionCard";
+import { InspectionModal } from "./InspectionModal";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -16,9 +16,8 @@ interface BookingDetailModalProps {
 
 export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) => {
   const [showDocument, setShowDocument] = useState(false);
+  const [showInspection, setShowInspection] = useState(false);
   const [bookingStatus, setBookingStatus] = useState("confirmed");
-  const [showPickupConfirm, setShowPickupConfirm] = useState(false);
-  const [showReturnConfirm, setShowReturnConfirm] = useState(false);
   const [showRejectConfirm, setShowRejectConfirm] = useState(false);
   
   // Mock data
@@ -49,16 +48,8 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
     setShowDocument(true);
   };
 
-  const handlePickupConfirm = () => {
-    setBookingStatus("picked_up");
-    setShowPickupConfirm(false);
-    toast.success("อัปเดตสถานะเป็น Picked Up สำเร็จ");
-  };
-
-  const handleReturnConfirm = () => {
-    setBookingStatus("returned");
-    setShowReturnConfirm(false);
-    toast.success("อัปเดตสถานะเป็น Returned สำเร็จ");
+  const handleStatusChange = (status: string) => {
+    setBookingStatus(status);
   };
 
   const handleRejectConfirm = () => {
@@ -109,21 +100,12 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
               </Button>
               <Button 
                 size="sm" 
-                className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
-                onClick={() => setShowPickupConfirm(true)}
-                disabled={bookingStatus !== "confirmed"}
+                className="gap-2"
+                variant="outline"
+                onClick={() => setShowInspection(true)}
               >
-                <LogIn className="w-4 h-4" />
-                Pick Up
-              </Button>
-              <Button 
-                size="sm" 
-                className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
-                onClick={() => setShowReturnConfirm(true)}
-                disabled={bookingStatus !== "picked_up"}
-              >
-                <LogOut className="w-4 h-4" />
-                Return
+                <ClipboardCheck className="w-4 h-4" />
+                Inspection
               </Button>
               <Button 
                 size="sm" 
@@ -239,9 +221,6 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
                 </div>
               </div>
             </Card>
-
-            {/* Inspection Card - รับรถ คืนรถ */}
-            <InspectionCard />
           </div>
 
           {/* Right Sidebar (1/3) */}
@@ -322,49 +301,16 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
         bookingData={mockData}
       />
 
-      {/* Pick Up Confirmation Dialog */}
-      <AlertDialog open={showPickupConfirm} onOpenChange={setShowPickupConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>ยืนยันการรับรถ</AlertDialogTitle>
-            <AlertDialogDescription>
-              คุณต้องการเปลี่ยนสถานะการจอง <strong>{mockData.code}</strong> เป็น "Picked Up" ใช่หรือไม่?
-              <br /><br />
-              <span className="text-muted-foreground">ลูกค้า: {mockData.customerName}</span>
-              <br />
-              <span className="text-muted-foreground">รถ: {mockData.vehicleName}</span>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
-            <AlertDialogAction onClick={handlePickupConfirm} className="bg-emerald-600 hover:bg-emerald-700">
-              ยืนยันรับรถ
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Return Confirmation Dialog */}
-      <AlertDialog open={showReturnConfirm} onOpenChange={setShowReturnConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>ยืนยันการคืนรถ</AlertDialogTitle>
-            <AlertDialogDescription>
-              คุณต้องการเปลี่ยนสถานะการจอง <strong>{mockData.code}</strong> เป็น "Returned" ใช่หรือไม่?
-              <br /><br />
-              <span className="text-muted-foreground">ลูกค้า: {mockData.customerName}</span>
-              <br />
-              <span className="text-muted-foreground">รถ: {mockData.vehicleName}</span>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
-            <AlertDialogAction onClick={handleReturnConfirm} className="bg-blue-600 hover:bg-blue-700">
-              ยืนยันคืนรถ
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Inspection Modal */}
+      <InspectionModal
+        open={showInspection}
+        onClose={() => setShowInspection(false)}
+        bookingCode={mockData.code}
+        customerName={mockData.customerName}
+        vehicleName={mockData.vehicleName}
+        bookingStatus={bookingStatus}
+        onStatusChange={handleStatusChange}
+      />
 
       {/* Reject Confirmation Dialog */}
       <AlertDialog open={showRejectConfirm} onOpenChange={setShowRejectConfirm}>
