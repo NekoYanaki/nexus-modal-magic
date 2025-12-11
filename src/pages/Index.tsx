@@ -91,65 +91,23 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Partner Detail Card */}
+          {/* Inspection Card */}
           <div className="group relative bg-card border border-border rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="relative">
-              <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center mb-4">
-                <Users className="w-6 h-6 text-accent" />
+              <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mb-4">
+                <ClipboardCheck className="w-6 h-6 text-blue-600" />
               </div>
-              <h3 className="text-2xl font-semibold mb-2">Partner Details</h3>
+              <h3 className="text-2xl font-semibold mb-2">Vehicle Inspection</h3>
               <p className="text-muted-foreground mb-6">
-                Manage campsite partners, verification, payouts, and performance tracking
+                ตรวจสภาพรถก่อน/หลังเช่า บันทึกความเสียหาย และจัดการการเงิน
               </p>
               <Button 
-                onClick={() => setPartnerOpen(true)}
+                onClick={() => setInspectionOpen(true)}
                 className="w-full"
                 variant="default"
               >
-                View Partner Modal
-              </Button>
-            </div>
-          </div>
-
-          {/* Campsite Detail Card */}
-          <div className="group relative bg-card border border-border rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative">
-              <div className="w-12 h-12 bg-success/10 rounded-xl flex items-center justify-center mb-4">
-                <Tent className="w-6 h-6 text-success" />
-              </div>
-              <h3 className="text-2xl font-semibold mb-2">Campsite Details</h3>
-              <p className="text-muted-foreground mb-6">
-                View zones, pricing, availability calendar, and customer reviews
-              </p>
-              <Button 
-                onClick={() => setCampsiteOpen(true)}
-                className="w-full"
-                variant="default"
-              >
-                View Campsite Modal
-              </Button>
-            </div>
-          </div>
-
-          {/* Customer Detail Card */}
-          <div className="group relative bg-card border border-border rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative">
-              <div className="w-12 h-12 bg-warning/10 rounded-xl flex items-center justify-center mb-4">
-                <UserCircle className="w-6 h-6 text-warning" />
-              </div>
-              <h3 className="text-2xl font-semibold mb-2">Customer Details</h3>
-              <p className="text-muted-foreground mb-6">
-                Access booking history, payment records, reviews, and customer notes
-              </p>
-              <Button 
-                onClick={() => setCustomerOpen(true)}
-                className="w-full"
-                variant="default"
-              >
-                View Customer Modal
+                View Inspection Modal
               </Button>
             </div>
           </div>
@@ -175,23 +133,65 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Inspection Card */}
+          {/* Customer Detail Card */}
           <div className="group relative bg-card border border-border rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="relative">
-              <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mb-4">
-                <ClipboardCheck className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-warning/10 rounded-xl flex items-center justify-center mb-4">
+                <UserCircle className="w-6 h-6 text-warning" />
               </div>
-              <h3 className="text-2xl font-semibold mb-2">Vehicle Inspection</h3>
+              <h3 className="text-2xl font-semibold mb-2">Customer Details</h3>
               <p className="text-muted-foreground mb-6">
-                ตรวจสภาพรถก่อน/หลังเช่า บันทึกความเสียหาย และจัดการการเงิน
+                Access booking history, payment records, reviews, and customer notes
               </p>
               <Button 
-                onClick={() => setInspectionOpen(true)}
+                onClick={() => setCustomerOpen(true)}
                 className="w-full"
                 variant="default"
               >
-                View Inspection Modal
+                View Customer Modal
+              </Button>
+            </div>
+          </div>
+
+          {/* Campsite Detail Card */}
+          <div className="group relative bg-card border border-border rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative">
+              <div className="w-12 h-12 bg-success/10 rounded-xl flex items-center justify-center mb-4">
+                <Tent className="w-6 h-6 text-success" />
+              </div>
+              <h3 className="text-2xl font-semibold mb-2">Campsite Details</h3>
+              <p className="text-muted-foreground mb-6">
+                View zones, pricing, availability calendar, and customer reviews
+              </p>
+              <Button 
+                onClick={() => setCampsiteOpen(true)}
+                className="w-full"
+                variant="default"
+              >
+                View Campsite Modal
+              </Button>
+            </div>
+          </div>
+
+          {/* Partner Detail Card */}
+          <div className="group relative bg-card border border-border rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative">
+              <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center mb-4">
+                <Users className="w-6 h-6 text-accent" />
+              </div>
+              <h3 className="text-2xl font-semibold mb-2">Partner Details</h3>
+              <p className="text-muted-foreground mb-6">
+                Manage campsite partners, verification, payouts, and performance tracking
+              </p>
+              <Button 
+                onClick={() => setPartnerOpen(true)}
+                className="w-full"
+                variant="default"
+              >
+                View Partner Modal
               </Button>
             </div>
           </div>
