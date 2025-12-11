@@ -206,6 +206,12 @@ export const InspectionModal = ({
   const totalCollected = calculateTotalCollected();
   const pendingAmount = payment.remainingBalance - totalCollected;
 
+  // Calculate total damage amount from all conditions
+  const totalDamageAmount = [...pickup.conditions, ...returnInspection.conditions].reduce(
+    (sum, condition) => sum + (condition.price || 0),
+    0
+  );
+
   // Finance record handlers
   const handleFinanceRecordChange = (
     type: 'pickup' | 'return',
@@ -719,24 +725,21 @@ export const InspectionModal = ({
               <CreditCard className="w-4 h-4 text-primary" />
               <h5 className="font-medium text-sm">รายละเอียดชำระเงิน</h5>
             </div>
-            <div className="grid grid-cols-3 gap-4 text-sm">
+            {/* Payment Section */}
+            <div className="grid grid-cols-4 gap-3 text-sm">
               <div className="bg-background/50 rounded-lg p-3">
                 <p className="text-muted-foreground text-xs mb-1">ยอดมัดจำ</p>
                 <p className="font-semibold text-lg text-primary">฿{payment.deposit.toLocaleString()}</p>
               </div>
               <div className="bg-background/50 rounded-lg p-3">
-                <p className="text-muted-foreground text-xs mb-1">ยอดมัดจำความเสียหาย</p>
-                <p className="font-semibold text-lg text-orange-600">฿{payment.damageDeposit.toLocaleString()}</p>
-              </div>
-              <div className="bg-background/50 rounded-lg p-3">
                 <p className="text-muted-foreground text-xs mb-1">ยอดรวมทั้งหมด</p>
                 <p className="font-semibold text-lg">฿{payment.totalAmount.toLocaleString()}</p>
               </div>
-            </div>
-            
-            {/* Editable remaining balance */}
-            <div className="mt-3">
-              <div className="bg-background/50 rounded-lg p-3">
+              <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-3 border border-emerald-200 dark:border-emerald-800">
+                <p className="text-emerald-700 dark:text-emerald-400 text-xs mb-1">รับเงินแล้ว</p>
+                <p className="font-semibold text-lg text-emerald-600">฿{totalCollected.toLocaleString()}</p>
+              </div>
+              <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-3 border border-amber-200 dark:border-amber-800">
                 <p className="text-muted-foreground text-xs mb-1">ยอดคงเหลือ</p>
                 {isEditing ? (
                   <div className="flex items-center gap-1">
@@ -745,7 +748,7 @@ export const InspectionModal = ({
                       type="number"
                       value={payment.remainingBalance}
                       onChange={(e) => setPayment(prev => ({ ...prev, remainingBalance: Number(e.target.value) }))}
-                      className="h-8 text-sm w-32"
+                      className="h-8 text-sm w-24"
                     />
                   </div>
                 ) : (
@@ -754,16 +757,20 @@ export const InspectionModal = ({
               </div>
             </div>
             
-            {/* Payment Summary Section */}
+            {/* Damage Section */}
             <div className="mt-3 pt-3 border-t border-primary/10">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-3 border border-emerald-200 dark:border-emerald-800">
-                  <p className="text-emerald-700 dark:text-emerald-400 text-xs mb-1">รับเงินแล้ว</p>
-                  <p className="font-semibold text-lg text-emerald-600">฿{totalCollected.toLocaleString()}</p>
+              <div className="grid grid-cols-3 gap-3 text-sm">
+                <div className="bg-orange-50 dark:bg-orange-950/30 rounded-lg p-3 border border-orange-200 dark:border-orange-800">
+                  <p className="text-orange-700 dark:text-orange-400 text-xs mb-1">ยอดมัดจำความเสียหาย</p>
+                  <p className="font-semibold text-lg text-orange-600">฿{payment.damageDeposit.toLocaleString()}</p>
                 </div>
-                <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-3 border border-amber-200 dark:border-amber-800">
-                  <p className="text-amber-700 dark:text-amber-400 text-xs mb-1">ยอดคงเหลือ</p>
-                  <p className="font-semibold text-lg text-amber-600">฿{payment.remainingBalance.toLocaleString()}</p>
+                <div className="bg-red-50 dark:bg-red-950/30 rounded-lg p-3 border border-red-200 dark:border-red-800">
+                  <p className="text-red-700 dark:text-red-400 text-xs mb-1">ยอดรวมความเสียหาย</p>
+                  <p className="font-semibold text-lg text-red-600">฿{totalDamageAmount.toLocaleString()}</p>
+                </div>
+                <div className="bg-background/50 rounded-lg p-3">
+                  <p className="text-muted-foreground text-xs mb-1">ยอดคงเหลือ</p>
+                  <p className="font-semibold text-lg text-muted-foreground">฿{Math.max(0, payment.damageDeposit - totalDamageAmount).toLocaleString()}</p>
                 </div>
               </div>
             </div>
