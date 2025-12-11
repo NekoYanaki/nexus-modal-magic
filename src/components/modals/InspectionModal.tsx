@@ -6,20 +6,32 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Pencil, Save, X, Upload, Image, LogIn, LogOut, Plus, Trash2, CreditCard } from "lucide-react";
+import { Pencil, Save, X, Upload, Image, LogIn, LogOut, Plus, Trash2, CreditCard, FileText } from "lucide-react";
 import { toast } from "sonner";
+import jsPDF from "jspdf";
+
+type SeverityLevel = 'low' | 'medium' | 'high' | 'critical' | '';
+type DamageType = 'new' | 'existing' | '';
 
 interface ConditionRecord {
   id: string;
   title: string;
   detail: string;
   image: string | null;
+  severityLevel: SeverityLevel;
+  damageType: DamageType;
 }
 
 interface PaymentRecord {
   id: string;
   label: string;
   type: 'cash' | 'credit_card' | '';
+  amount: number;
+  proofImage: string | null;
+}
+
+interface DamageDeposit {
+  date: string;
   amount: number;
   proofImage: string | null;
 }
@@ -35,8 +47,10 @@ interface InspectionData {
 
 interface PaymentDetail {
   deposit: number;
+  damageDeposit: number;
   totalAmount: number;
   remainingBalance: number;
+  damageDepositRecord: DamageDeposit | null;
 }
 
 interface InspectionModalProps {
@@ -55,8 +69,10 @@ interface InspectionModalProps {
 
 const defaultPayment: PaymentDetail = {
   deposit: 5000,
+  damageDeposit: 3000,
   totalAmount: 12000,
   remainingBalance: 7000,
+  damageDepositRecord: null,
 };
 
 const defaultPickup: InspectionData = {
@@ -105,6 +121,8 @@ export const InspectionModal = ({
       title: "",
       detail: "",
       image: null,
+      severityLevel: '',
+      damageType: '',
     };
     
     if (type === 'pickup') {
@@ -261,6 +279,69 @@ export const InspectionModal = ({
     setPayment(paymentDetail);
   };
 
+  // Damage Deposit handlers
+  const handleCreateDamageDeposit = () => {
+    if (payment.damageDepositRecord) {
+      toast.error("สร้างยอดมัดจำความเสียหายได้เพียงครั้งเดียว");
+      return;
+    }
+    setPayment(prev => ({
+      ...prev,
+      damageDepositRecord: {
+        date: new Date().toISOString().split('T')[0],
+        amount: 0,
+        proofImage: null,
+      }
+    }));
+  };
+
+  const handleDamageDepositChange = (field: keyof DamageDeposit, value: string | number | null) => {
+    setPayment(prev => ({
+      ...prev,
+      damageDepositRecord: prev.damageDepositRecord
+        ? { ...prev.damageDepositRecord, [field]: value }
+        : null
+    }));
+  };
+
+  const handleDamageDepositProofUpload = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      handleDamageDepositChange('proofImage', result);
+    };
+    reader.readAsDataURL(file);
+    toast.success("อัปโหลดหลักฐานสำเร็จ");
+  };
+
+  const handlePrintDamageDepositReceipt = () => {
+    if (!payment.damageDepositRecord) return;
+
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFontSize(18);
+    doc.text("ใบเสร็จยอดมัดจำความเสียหาย", 105, 20, { align: "center" });
+    
+    doc.setFontSize(12);
+    doc.text(`รหัสการจอง: ${bookingCode}`, 20, 40);
+    doc.text(`ลูกค้า: ${customerName}`, 20, 50);
+    doc.text(`รถ: ${vehicleName}`, 20, 60);
+    
+    doc.line(20, 70, 190, 70);
+    
+    doc.text(`วันที่ทำรายการ: ${payment.damageDepositRecord.date}`, 20, 85);
+    doc.text(`จำนวนเงินมัดจำความเสียหาย: ${payment.damageDepositRecord.amount.toLocaleString()} บาท`, 20, 95);
+    
+    doc.line(20, 110, 190, 110);
+    
+    doc.setFontSize(10);
+    doc.text("เอกสารนี้ออกโดยระบบอัตโนมัติ", 105, 130, { align: "center" });
+
+    doc.save(`damage-deposit-receipt-${bookingCode}.pdf`);
+    toast.success("ดาวน์โหลดใบเสร็จสำเร็จ");
+  };
+
   const handlePickupConfirm = () => {
     onStatusChange("picked_up");
     setShowPickupConfirm(false);
@@ -391,6 +472,59 @@ export const InspectionModal = ({
                     ) : (
                       <p className="font-medium text-sm">{condition.title || "-"}</p>
                     )}
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">ระดับความรุนแรง</p>
+                      {isEditing ? (
+                        <Select
+                          value={condition.severityLevel}
+                          onValueChange={(value) => handleConditionChange(type, condition.id, 'severityLevel', value)}
+                        >
+                          <SelectTrigger className="h-8 text-sm">
+                            <SelectValue placeholder="เลือกระดับ" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="low">น้อย</SelectItem>
+                            <SelectItem value="medium">ปานกลาง</SelectItem>
+                            <SelectItem value="high">มาก</SelectItem>
+                            <SelectItem value="critical">รุนแรงมาก</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <p className="font-medium text-sm">
+                          {condition.severityLevel === 'low' && <span className="text-emerald-600">น้อย</span>}
+                          {condition.severityLevel === 'medium' && <span className="text-amber-600">ปานกลาง</span>}
+                          {condition.severityLevel === 'high' && <span className="text-orange-600">มาก</span>}
+                          {condition.severityLevel === 'critical' && <span className="text-red-600">รุนแรงมาก</span>}
+                          {!condition.severityLevel && "-"}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">ประเภทความเสียหาย</p>
+                      {isEditing ? (
+                        <Select
+                          value={condition.damageType}
+                          onValueChange={(value) => handleConditionChange(type, condition.id, 'damageType', value)}
+                        >
+                          <SelectTrigger className="h-8 text-sm">
+                            <SelectValue placeholder="เลือกประเภท" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="new">ความเสียหายใหม่</SelectItem>
+                            <SelectItem value="existing">มีมาก่อน</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <p className="font-medium text-sm">
+                          {condition.damageType === 'new' && <span className="text-red-600">ความเสียหายใหม่</span>}
+                          {condition.damageType === 'existing' && <span className="text-muted-foreground">มีมาก่อน</span>}
+                          {!condition.damageType && "-"}
+                        </p>
+                      )}
+                    </div>
                   </div>
                   
                   <div>
@@ -633,14 +767,38 @@ export const InspectionModal = ({
               <CreditCard className="w-4 h-4 text-primary" />
               <h5 className="font-medium text-sm">รายละเอียดชำระเงิน</h5>
             </div>
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-3 gap-4 text-sm">
               <div className="bg-background/50 rounded-lg p-3">
                 <p className="text-muted-foreground text-xs mb-1">ยอดมัดจำ</p>
                 <p className="font-semibold text-lg text-primary">฿{payment.deposit.toLocaleString()}</p>
               </div>
               <div className="bg-background/50 rounded-lg p-3">
+                <p className="text-muted-foreground text-xs mb-1">ยอดมัดจำความเสียหาย</p>
+                <p className="font-semibold text-lg text-orange-600">฿{payment.damageDeposit.toLocaleString()}</p>
+              </div>
+              <div className="bg-background/50 rounded-lg p-3">
                 <p className="text-muted-foreground text-xs mb-1">ยอดรวมทั้งหมด</p>
                 <p className="font-semibold text-lg">฿{payment.totalAmount.toLocaleString()}</p>
+              </div>
+            </div>
+            
+            {/* Editable remaining balance */}
+            <div className="mt-3">
+              <div className="bg-background/50 rounded-lg p-3">
+                <p className="text-muted-foreground text-xs mb-1">ยอดคงเหลือ</p>
+                {isEditing ? (
+                  <div className="flex items-center gap-1">
+                    <span className="text-muted-foreground">฿</span>
+                    <Input
+                      type="number"
+                      value={payment.remainingBalance}
+                      onChange={(e) => setPayment(prev => ({ ...prev, remainingBalance: Number(e.target.value) }))}
+                      className="h-8 text-sm w-32"
+                    />
+                  </div>
+                ) : (
+                  <p className="font-semibold text-lg text-amber-600">฿{payment.remainingBalance.toLocaleString()}</p>
+                )}
               </div>
             </div>
             
@@ -657,6 +815,112 @@ export const InspectionModal = ({
                   <p className="font-semibold text-lg text-amber-600">฿{payment.remainingBalance.toLocaleString()}</p>
                 </div>
               </div>
+            </div>
+
+            {/* Damage Deposit Creation Section */}
+            <div className="mt-4 pt-4 border-t border-primary/10">
+              <div className="flex items-center justify-between mb-3">
+                <h6 className="font-medium text-sm">สร้างยอดมัดจำความเสียหาย</h6>
+                {!payment.damageDepositRecord && isEditing && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs gap-1"
+                    onClick={handleCreateDamageDeposit}
+                  >
+                    <Plus className="w-3 h-3" />
+                    สร้างรายการ
+                  </Button>
+                )}
+              </div>
+              
+              {payment.damageDepositRecord ? (
+                <div className="border border-border rounded-lg p-3 bg-muted/20 space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">วันที่ทำรายการ</p>
+                      {isEditing ? (
+                        <Input
+                          type="date"
+                          value={payment.damageDepositRecord.date}
+                          onChange={(e) => handleDamageDepositChange('date', e.target.value)}
+                          className="h-8 text-sm"
+                        />
+                      ) : (
+                        <p className="font-medium text-sm">{payment.damageDepositRecord.date}</p>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">จำนวนเงิน</p>
+                      {isEditing ? (
+                        <div className="flex items-center gap-1">
+                          <span className="text-muted-foreground text-sm">฿</span>
+                          <Input
+                            type="number"
+                            value={payment.damageDepositRecord.amount}
+                            onChange={(e) => handleDamageDepositChange('amount', Number(e.target.value))}
+                            className="h-8 text-sm"
+                          />
+                        </div>
+                      ) : (
+                        <p className="font-medium text-sm text-primary">฿{payment.damageDepositRecord.amount.toLocaleString()}</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">หลักฐาน</p>
+                    {payment.damageDepositRecord.proofImage ? (
+                      <div className="relative w-20 h-20">
+                        <img
+                          src={payment.damageDepositRecord.proofImage}
+                          alt="หลักฐานมัดจำความเสียหาย"
+                          className="w-full h-full object-cover rounded-lg border border-border"
+                        />
+                        {isEditing && (
+                          <button
+                            onClick={() => handleDamageDepositChange('proofImage', null)}
+                            className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/80"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                    ) : isEditing ? (
+                      <label className="flex items-center justify-center w-20 h-20 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleDamageDepositProofUpload(file);
+                          }}
+                        />
+                        <Upload className="w-5 h-5 text-muted-foreground" />
+                      </label>
+                    ) : (
+                      <div className="w-20 h-20 border border-dashed border-border rounded-lg flex items-center justify-center bg-muted/30">
+                        <Image className="w-5 h-5 text-muted-foreground/50" />
+                      </div>
+                    )}
+                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full gap-2"
+                    onClick={handlePrintDamageDepositReceipt}
+                  >
+                    <FileText className="w-4 h-4" />
+                    พิมพ์ใบเสร็จมัดจำความเสียหาย
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4 bg-muted/20 rounded-lg">
+                  ยังไม่มีรายการมัดจำความเสียหาย
+                </p>
+              )}
             </div>
           </Card>
 
