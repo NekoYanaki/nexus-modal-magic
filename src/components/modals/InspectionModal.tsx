@@ -768,6 +768,112 @@ export const InspectionModal = ({
               </div>
             </div>
 
+            {/* Damage Deposit Creation Section */}
+            <div className="mt-4 pt-4 border-t border-primary/10">
+              <div className="flex items-center justify-between mb-3">
+                <h6 className="font-medium text-sm">สร้างยอดมัดจำความเสียหาย</h6>
+                {!payment.damageDepositRecord && isEditing && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs gap-1"
+                    onClick={handleCreateDamageDeposit}
+                  >
+                    <Plus className="w-3 h-3" />
+                    สร้างรายการ
+                  </Button>
+                )}
+              </div>
+              
+              {payment.damageDepositRecord ? (
+                <div className="border border-border rounded-lg p-3 bg-muted/20 space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">วันที่ทำรายการ</p>
+                      {isEditing ? (
+                        <Input
+                          type="date"
+                          value={payment.damageDepositRecord.date}
+                          onChange={(e) => handleDamageDepositChange('date', e.target.value)}
+                          className="h-8 text-sm"
+                        />
+                      ) : (
+                        <p className="font-medium text-sm">{payment.damageDepositRecord.date}</p>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">จำนวนเงิน</p>
+                      {isEditing ? (
+                        <div className="flex items-center gap-1">
+                          <span className="text-muted-foreground text-sm">฿</span>
+                          <Input
+                            type="number"
+                            value={payment.damageDepositRecord.amount}
+                            onChange={(e) => handleDamageDepositChange('amount', Number(e.target.value))}
+                            className="h-8 text-sm"
+                          />
+                        </div>
+                      ) : (
+                        <p className="font-medium text-sm text-primary">฿{payment.damageDepositRecord.amount.toLocaleString()}</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">หลักฐาน</p>
+                    {payment.damageDepositRecord.proofImage ? (
+                      <div className="relative w-20 h-20">
+                        <img
+                          src={payment.damageDepositRecord.proofImage}
+                          alt="หลักฐานมัดจำความเสียหาย"
+                          className="w-full h-full object-cover rounded-lg border border-border"
+                        />
+                        {isEditing && (
+                          <button
+                            onClick={() => handleDamageDepositChange('proofImage', null)}
+                            className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/80"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                    ) : isEditing ? (
+                      <label className="flex items-center justify-center w-20 h-20 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleDamageDepositProofUpload(file);
+                          }}
+                        />
+                        <Upload className="w-5 h-5 text-muted-foreground" />
+                      </label>
+                    ) : (
+                      <div className="w-20 h-20 border border-dashed border-border rounded-lg flex items-center justify-center bg-muted/30">
+                        <Image className="w-5 h-5 text-muted-foreground/50" />
+                      </div>
+                    )}
+                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full gap-2"
+                    onClick={handlePrintDamageDepositReceipt}
+                  >
+                    <FileText className="w-4 h-4" />
+                    พิมพ์ใบเสร็จมัดจำความเสียหาย
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4 bg-muted/20 rounded-lg">
+                  ยังไม่มีรายการมัดจำความเสียหาย
+                </p>
+              )}
+            </div>
+
           </Card>
 
           <div className="grid grid-cols-2 gap-6 mt-4">
