@@ -1,11 +1,10 @@
-import { Car, Tent, MapPin, ClipboardCheck } from "lucide-react";
+import { Car, Tent, MapPin } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { BookingDocumentModal } from "./BookingDocumentModal";
-import { InspectionModal } from "./InspectionModal";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -16,7 +15,6 @@ interface BookingDetailModalProps {
 
 export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) => {
   const [showDocument, setShowDocument] = useState(false);
-  const [showInspection, setShowInspection] = useState(false);
   const [bookingStatus, setBookingStatus] = useState("confirmed");
   const [showRejectConfirm, setShowRejectConfirm] = useState(false);
   
@@ -97,15 +95,6 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                 </svg>
                 Bookingconfirmation.pdf
-              </Button>
-              <Button 
-                size="sm" 
-                className="gap-2"
-                variant="outline"
-                onClick={() => setShowInspection(true)}
-              >
-                <ClipboardCheck className="w-4 h-4" />
-                Inspection
               </Button>
               <Button 
                 size="sm" 
@@ -299,17 +288,6 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
         open={showDocument}
         onClose={() => setShowDocument(false)}
         bookingData={mockData}
-      />
-
-      {/* Inspection Modal */}
-      <InspectionModal
-        open={showInspection}
-        onClose={() => setShowInspection(false)}
-        bookingCode={mockData.code}
-        customerName={mockData.customerName}
-        vehicleName={mockData.vehicleName}
-        bookingStatus={bookingStatus}
-        onStatusChange={handleStatusChange}
       />
 
       {/* Reject Confirmation Dialog */}
