@@ -5,7 +5,8 @@ import { PartnerDetailModal } from "@/components/modals/PartnerDetailModal";
 import { CampsiteDetailModal } from "@/components/modals/CampsiteDetailModal";
 import { CustomerDetailModal } from "@/components/modals/CustomerDetailModal";
 import { PaymentDetailModal } from "@/components/modals/PaymentDetailModal";
-import { Calendar, Users, Tent, UserCircle, CreditCard } from "lucide-react";
+import { InspectionModal } from "@/components/modals/InspectionModal";
+import { Calendar, Users, Tent, UserCircle, CreditCard, ClipboardCheck } from "lucide-react";
 
 const Index = () => {
   const [bookingOpen, setBookingOpen] = useState(false);
@@ -13,6 +14,8 @@ const Index = () => {
   const [campsiteOpen, setCampsiteOpen] = useState(false);
   const [customerOpen, setCustomerOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
+  const [inspectionOpen, setInspectionOpen] = useState(false);
+  const [inspectionStatus, setInspectionStatus] = useState("confirmed");
 
   const mockPaymentData = {
     id: "PAY005",
@@ -171,6 +174,27 @@ const Index = () => {
               </Button>
             </div>
           </div>
+
+          {/* Inspection Card */}
+          <div className="group relative bg-card border border-border rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative">
+              <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mb-4">
+                <ClipboardCheck className="w-6 h-6 text-blue-600" />
+              </div>
+              <h3 className="text-2xl font-semibold mb-2">Vehicle Inspection</h3>
+              <p className="text-muted-foreground mb-6">
+                ตรวจสภาพรถก่อน/หลังเช่า บันทึกความเสียหาย และจัดการการเงิน
+              </p>
+              <Button 
+                onClick={() => setInspectionOpen(true)}
+                className="w-full"
+                variant="default"
+              >
+                View Inspection Modal
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* Features Section */}
@@ -210,6 +234,15 @@ const Index = () => {
       <CampsiteDetailModal open={campsiteOpen} onClose={() => setCampsiteOpen(false)} />
       <CustomerDetailModal open={customerOpen} onClose={() => setCustomerOpen(false)} />
       <PaymentDetailModal open={paymentOpen} onOpenChange={setPaymentOpen} payment={mockPaymentData} />
+      <InspectionModal 
+        open={inspectionOpen} 
+        onClose={() => setInspectionOpen(false)}
+        bookingCode="BK002"
+        customerName="สมชาย ใจดี"
+        vehicleName="Toyota Fortuner"
+        bookingStatus={inspectionStatus}
+        onStatusChange={setInspectionStatus}
+      />
     </div>
   );
 };
