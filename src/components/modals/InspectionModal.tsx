@@ -13,9 +13,25 @@ import jsPDF from "jspdf";
 type SeverityLevel = 'low' | 'medium' | 'high' | 'critical' | '';
 type DamageType = 'new' | 'existing' | '';
 
+// Master list of damage options
+const DAMAGE_OPTIONS = [
+  { value: 'scratch', label: 'รอยขีดข่วน' },
+  { value: 'dent', label: 'รอยบุบ' },
+  { value: 'crack', label: 'รอยแตกร้าว' },
+  { value: 'broken_mirror', label: 'กระจกแตก/ชำรุด' },
+  { value: 'bumper_damage', label: 'กันชนเสียหาย' },
+  { value: 'paint_damage', label: 'สีลอก/ถลอก' },
+  { value: 'light_damage', label: 'ไฟชำรุด' },
+  { value: 'interior_damage', label: 'ภายในเสียหาย' },
+  { value: 'tire_damage', label: 'ยางชำรุด' },
+  { value: 'mechanical_issue', label: 'ปัญหาเครื่องยนต์' },
+  { value: 'other', label: 'อื่นๆ' },
+];
+
 interface ConditionRecord {
   id: string;
   title: string;
+  customTitle: string;
   detail: string;
   image: string | null;
   severityLevel: SeverityLevel;
@@ -128,6 +144,7 @@ export const InspectionModal = ({
     const newCondition: ConditionRecord = {
       id: generateId(),
       title: "",
+      customTitle: "",
       detail: "",
       image: null,
       severityLevel: '',
@@ -440,14 +457,42 @@ export const InspectionModal = ({
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">หัวข้อ</p>
                     {isEditing ? (
-                      <Input
-                        value={condition.title}
-                        onChange={(e) => handleConditionChange(type, condition.id, 'title', e.target.value)}
-                        className="h-8 text-sm"
-                        placeholder="เช่น รอยขีดข่วนประตูหน้า"
-                      />
+                      <div className="space-y-2">
+                        <Select
+                          value={condition.title}
+                          onValueChange={(value) => {
+                            handleConditionChange(type, condition.id, 'title', value);
+                            if (value !== 'other') {
+                              handleConditionChange(type, condition.id, 'customTitle', '');
+                            }
+                          }}
+                        >
+                          <SelectTrigger className="h-8 text-sm">
+                            <SelectValue placeholder="เลือกประเภทความเสียหาย" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {DAMAGE_OPTIONS.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {condition.title === 'other' && (
+                          <Input
+                            value={condition.customTitle}
+                            onChange={(e) => handleConditionChange(type, condition.id, 'customTitle', e.target.value)}
+                            className="h-8 text-sm"
+                            placeholder="ระบุความเสียหาย..."
+                          />
+                        )}
+                      </div>
                     ) : (
-                      <p className="font-medium text-sm">{condition.title || "-"}</p>
+                      <p className="font-medium text-sm">
+                        {condition.title === 'other' 
+                          ? condition.customTitle || 'อื่นๆ'
+                          : DAMAGE_OPTIONS.find(o => o.value === condition.title)?.label || condition.title || "-"}
+                      </p>
                     )}
                   </div>
                   
