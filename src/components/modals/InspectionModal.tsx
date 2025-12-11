@@ -20,10 +20,10 @@ interface ConditionRecord {
   image: string | null;
   severityLevel: SeverityLevel;
   damageType: DamageType;
+  price: number;
 }
 
-interface PaymentRecord {
-  id: string;
+interface FinanceRecord {
   label: string;
   type: 'cash' | 'credit_card' | '';
   amount: number;
@@ -42,7 +42,7 @@ interface InspectionData {
   fuelLevel: string;
   conditions: ConditionRecord[];
   notes: string;
-  paymentRecords: PaymentRecord[];
+  financeRecord: FinanceRecord;
 }
 
 interface PaymentDetail {
@@ -75,13 +75,20 @@ const defaultPayment: PaymentDetail = {
   damageDepositRecord: null,
 };
 
+const defaultFinanceRecord: FinanceRecord = {
+  label: '',
+  type: '',
+  amount: 0,
+  proofImage: null,
+};
+
 const defaultPickup: InspectionData = {
   date: "15 Mar 2024, 09:00",
   mileage: "45,230",
   fuelLevel: "full",
   conditions: [],
   notes: "",
-  paymentRecords: [],
+  financeRecord: { ...defaultFinanceRecord },
 };
 
 const defaultReturn: InspectionData = {
@@ -90,7 +97,7 @@ const defaultReturn: InspectionData = {
   fuelLevel: "3/4",
   conditions: [],
   notes: "",
-  paymentRecords: [],
+  financeRecord: { ...defaultFinanceRecord },
 };
 
 export const InspectionModal = ({
@@ -125,6 +132,7 @@ export const InspectionModal = ({
       image: null,
       severityLevel: '',
       damageType: '',
+      price: 0,
     };
     
     if (type === 'pickup') {
@@ -192,77 +200,36 @@ export const InspectionModal = ({
 
   // Calculate total collected payments
   const calculateTotalCollected = () => {
-    const pickupTotal = pickup.paymentRecords.reduce((sum, r) => sum + r.amount, 0);
-    const returnTotal = returnInspection.paymentRecords.reduce((sum, r) => sum + r.amount, 0);
-    return pickupTotal + returnTotal;
+    return pickup.financeRecord.amount + returnInspection.financeRecord.amount;
   };
 
   const totalCollected = calculateTotalCollected();
   const pendingAmount = payment.remainingBalance - totalCollected;
 
-  // Payment record handlers
-  const handleAddPaymentRecord = (type: 'pickup' | 'return') => {
-    const newRecord: PaymentRecord = {
-      id: generateId(),
-      label: '',
-      type: '',
-      amount: 0,
-      proofImage: null,
-    };
-    if (type === 'pickup') {
-      setPickup(prev => ({
-        ...prev,
-        paymentRecords: [...prev.paymentRecords, newRecord]
-      }));
-    } else {
-      setReturnInspection(prev => ({
-        ...prev,
-        paymentRecords: [...prev.paymentRecords, newRecord]
-      }));
-    }
-  };
-
-  const handleRemovePaymentRecord = (type: 'pickup' | 'return', id: string) => {
-    if (type === 'pickup') {
-      setPickup(prev => ({
-        ...prev,
-        paymentRecords: prev.paymentRecords.filter(r => r.id !== id)
-      }));
-    } else {
-      setReturnInspection(prev => ({
-        ...prev,
-        paymentRecords: prev.paymentRecords.filter(r => r.id !== id)
-      }));
-    }
-  };
-
-  const handlePaymentRecordChange = (
+  // Finance record handlers
+  const handleFinanceRecordChange = (
     type: 'pickup' | 'return',
-    id: string,
-    field: keyof PaymentRecord,
+    field: keyof FinanceRecord,
     value: string | number | null
   ) => {
-    const updateRecords = (records: PaymentRecord[]) =>
-      records.map(r => r.id === id ? { ...r, [field]: value } : r);
-
     if (type === 'pickup') {
       setPickup(prev => ({
         ...prev,
-        paymentRecords: updateRecords(prev.paymentRecords)
+        financeRecord: { ...prev.financeRecord, [field]: value }
       }));
     } else {
       setReturnInspection(prev => ({
         ...prev,
-        paymentRecords: updateRecords(prev.paymentRecords)
+        financeRecord: { ...prev.financeRecord, [field]: value }
       }));
     }
   };
 
-  const handlePaymentProofUpload = (type: 'pickup' | 'return', id: string, file: File) => {
+  const handleFinanceProofUpload = (type: 'pickup' | 'return', file: File) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const result = e.target?.result as string;
-      handlePaymentRecordChange(type, id, 'proofImage', result);
+      handleFinanceRecordChange(type, 'proofImage', result);
     };
     reader.readAsDataURL(file);
     toast.success("อัปโหลดหลักฐานการชำระเงินสำเร็จ");
@@ -546,6 +513,24 @@ export const InspectionModal = ({
                   </div>
                   
                   <div>
+                    <p className="text-xs text-muted-foreground mb-1">ราคา</p>
+                    {isEditing ? (
+                      <div className="flex items-center gap-1">
+                        <span className="text-muted-foreground text-sm">฿</span>
+                        <Input
+                          type="number"
+                          value={condition.price}
+                          onChange={(e) => handleConditionChange(type, condition.id, 'price', e.target.value)}
+                          className="h-8 text-sm w-32"
+                          placeholder="0"
+                        />
+                      </div>
+                    ) : (
+                      <p className="font-medium text-sm text-primary">฿{condition.price.toLocaleString()}</p>
+                    )}
+                  </div>
+                  
+                  <div>
                     <p className="text-xs text-muted-foreground mb-1">รูปประกอบ</p>
                     {condition.image ? (
                       <div className="relative w-20 h-20">
@@ -591,141 +576,104 @@ export const InspectionModal = ({
         )}
       </div>
 
-      {/* Payment Records Section */}
+      {/* Finance Record Section */}
       <div className="pt-3 border-t border-border mt-3">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-muted-foreground text-sm">บันทึกการรับเงิน ({data.paymentRecords.length} รายการ)</p>
-          {isEditing && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-6 text-xs gap-1"
-              onClick={() => handleAddPaymentRecord(type)}
-            >
-              <Plus className="w-3 h-3" />
-              เพิ่มรายการ
-            </Button>
-          )}
-        </div>
+        <p className="text-muted-foreground text-sm mb-2">บันทึกการเงิน</p>
         
-        <div className="space-y-2">
-          {data.paymentRecords.map((record, index) => (
-            <div key={record.id} className="border border-border rounded-lg p-3 bg-muted/20">
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <span className="text-xs text-muted-foreground font-medium">รายการ #{index + 1}</span>
-                {isEditing && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                    onClick={() => handleRemovePaymentRecord(type, record.id)}
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
-                )}
-              </div>
-              
-              <div className="space-y-3">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">หัวข้อรายการ</p>
-                  {isEditing ? (
-                    <Input
-                      value={record.label}
-                      onChange={(e) => handlePaymentRecordChange(type, record.id, 'label', e.target.value)}
-                      className="h-8 text-sm"
-                      placeholder="เช่น ชำระค่าเช่าคงเหลือ, ค่าน้ำมัน"
-                    />
-                  ) : (
-                    <p className="font-medium text-sm">{record.label || "-"}</p>
-                  )}
-                </div>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">ประเภทการชำระ</p>
-                    {isEditing ? (
-                      <Select
-                        value={record.type}
-                        onValueChange={(value) => handlePaymentRecordChange(type, record.id, 'type', value)}
-                      >
-                        <SelectTrigger className="h-8 text-sm">
-                          <SelectValue placeholder="เลือกประเภท" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="cash">เงินสด</SelectItem>
-                          <SelectItem value="credit_card">บัตรเครดิต</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <p className="font-medium text-sm">
-                        {record.type === 'cash' ? 'เงินสด' : record.type === 'credit_card' ? 'บัตรเครดิต' : '-'}
-                      </p>
-                    )}
-                  </div>
-                  
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">จำนวนเงิน</p>
-                    {isEditing ? (
-                      <div className="flex items-center gap-1">
-                        <span className="text-muted-foreground text-sm">฿</span>
-                        <Input
-                          type="number"
-                          value={record.amount}
-                          onChange={(e) => handlePaymentRecordChange(type, record.id, 'amount', Number(e.target.value))}
-                          className="h-8 text-sm"
-                          placeholder="0"
-                        />
-                      </div>
-                    ) : (
-                      <p className="font-medium text-sm text-primary">฿{record.amount.toLocaleString()}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mt-2">
-                <p className="text-xs text-muted-foreground mb-1">หลักฐานการชำระเงิน</p>
-                {record.proofImage ? (
-                  <div className="relative w-20 h-20">
-                    <img
-                      src={record.proofImage}
-                      alt="หลักฐานการชำระเงิน"
-                      className="w-full h-full object-cover rounded-lg border border-border"
-                    />
-                    {isEditing && (
-                      <button
-                        onClick={() => handlePaymentRecordChange(type, record.id, 'proofImage', null)}
-                        className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/80"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    )}
-                  </div>
-                ) : isEditing ? (
-                  <label className="flex items-center justify-center w-20 h-20 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handlePaymentProofUpload(type, record.id, file);
-                      }}
-                    />
-                    <Upload className="w-5 h-5 text-muted-foreground" />
-                  </label>
-                ) : (
-                  <div className="w-20 h-20 border border-dashed border-border rounded-lg flex items-center justify-center bg-muted/30">
-                    <Image className="w-5 h-5 text-muted-foreground/50" />
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
+        <div className="border border-border rounded-lg p-3 bg-muted/20 space-y-3">
+          <div>
+            <p className="text-xs text-muted-foreground mb-1">หัวข้อรายการ</p>
+            {isEditing ? (
+              <Input
+                value={data.financeRecord.label}
+                onChange={(e) => handleFinanceRecordChange(type, 'label', e.target.value)}
+                className="h-8 text-sm"
+                placeholder="เช่น ชำระค่าเช่าคงเหลือ, ค่าน้ำมัน"
+              />
+            ) : (
+              <p className="font-medium text-sm">{data.financeRecord.label || "-"}</p>
+            )}
+          </div>
           
-          {data.paymentRecords.length === 0 && (
-            <p className="text-xs text-muted-foreground text-center py-2 bg-muted/20 rounded-lg">ยังไม่มีรายการบันทึกการรับเงิน</p>
-          )}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">ประเภทการชำระ</p>
+              {isEditing ? (
+                <Select
+                  value={data.financeRecord.type}
+                  onValueChange={(value) => handleFinanceRecordChange(type, 'type', value)}
+                >
+                  <SelectTrigger className="h-8 text-sm">
+                    <SelectValue placeholder="เลือกประเภท" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cash">เงินสด</SelectItem>
+                    <SelectItem value="credit_card">บัตรเครดิต</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <p className="font-medium text-sm">
+                  {data.financeRecord.type === 'cash' ? 'เงินสด' : data.financeRecord.type === 'credit_card' ? 'บัตรเครดิต' : '-'}
+                </p>
+              )}
+            </div>
+            
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">จำนวนเงิน</p>
+              {isEditing ? (
+                <div className="flex items-center gap-1">
+                  <span className="text-muted-foreground text-sm">฿</span>
+                  <Input
+                    type="number"
+                    value={data.financeRecord.amount}
+                    onChange={(e) => handleFinanceRecordChange(type, 'amount', Number(e.target.value))}
+                    className="h-8 text-sm"
+                    placeholder="0"
+                  />
+                </div>
+              ) : (
+                <p className="font-medium text-sm text-primary">฿{data.financeRecord.amount.toLocaleString()}</p>
+              )}
+            </div>
+          </div>
+          
+          <div>
+            <p className="text-xs text-muted-foreground mb-1">หลักฐานการชำระเงิน</p>
+            {data.financeRecord.proofImage ? (
+              <div className="relative w-20 h-20">
+                <img
+                  src={data.financeRecord.proofImage}
+                  alt="หลักฐานการชำระเงิน"
+                  className="w-full h-full object-cover rounded-lg border border-border"
+                />
+                {isEditing && (
+                  <button
+                    onClick={() => handleFinanceRecordChange(type, 'proofImage', null)}
+                    className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/80"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+            ) : isEditing ? (
+              <label className="flex items-center justify-center w-20 h-20 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFinanceProofUpload(type, file);
+                  }}
+                />
+                <Upload className="w-5 h-5 text-muted-foreground" />
+              </label>
+            ) : (
+              <div className="w-20 h-20 border border-dashed border-border rounded-lg flex items-center justify-center bg-muted/30">
+                <Image className="w-5 h-5 text-muted-foreground/50" />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -812,7 +760,6 @@ export const InspectionModal = ({
                 <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-3 border border-emerald-200 dark:border-emerald-800">
                   <p className="text-emerald-700 dark:text-emerald-400 text-xs mb-1">รับเงินแล้ว</p>
                   <p className="font-semibold text-lg text-emerald-600">฿{totalCollected.toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground">({pickup.paymentRecords.length + returnInspection.paymentRecords.length} รายการ)</p>
                 </div>
                 <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-3 border border-amber-200 dark:border-amber-800">
                   <p className="text-amber-700 dark:text-amber-400 text-xs mb-1">ยอดคงเหลือ</p>
