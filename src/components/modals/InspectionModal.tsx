@@ -924,7 +924,7 @@ export const InspectionModal = ({
                   <div className="pt-4 mt-4 border-t border-emerald-200 dark:border-emerald-800">
                     <Button className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700" onClick={handleSavePickup}>
                       <Save className="w-4 h-4" />
-                      บันทึกข้อมูลรับรถ
+                      บันทึก
                     </Button>
                   </div>
                 )}
@@ -1085,7 +1085,7 @@ export const InspectionModal = ({
                   <div className="pt-4 mt-4 border-t border-blue-200 dark:border-blue-800">
                     <Button className="w-full gap-2 bg-blue-600 hover:bg-blue-700" onClick={handleSaveReturn}>
                       <Save className="w-4 h-4" />
-                      บันทึกข้อมูลคืนรถ
+                      บันทึก
                     </Button>
                   </div>
                 )}
