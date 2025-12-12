@@ -697,19 +697,7 @@ export const InspectionModal = ({
                   </div>
                   <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-3 border border-amber-200 dark:border-amber-800">
                     <p className="text-muted-foreground text-xs mb-1">ยอดคงเหลือ</p>
-                    {isEditingPickup ? (
-                      <div className="flex items-center gap-1">
-                        <span className="text-muted-foreground">฿</span>
-                        <Input
-                          type="number"
-                          value={payment.remainingBalance}
-                          onChange={(e) => setPayment(prev => ({ ...prev, remainingBalance: Number(e.target.value) }))}
-                          className="h-8 text-sm w-24"
-                        />
-                      </div>
-                    ) : (
-                      <p className="font-semibold text-lg text-amber-600">฿{payment.remainingBalance.toLocaleString()}</p>
-                    )}
+                    <p className="font-semibold text-lg text-amber-600">฿{payment.remainingBalance.toLocaleString()}</p>
                   </div>
                 </div>
 
