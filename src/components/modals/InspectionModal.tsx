@@ -129,7 +129,8 @@ export const InspectionModal = ({
   paymentDetail = defaultPayment,
   onSave,
 }: InspectionModalProps) => {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditingPickup, setIsEditingPickup] = useState(false);
+  const [isEditingReturn, setIsEditingReturn] = useState(false);
   const [pickup, setPickup] = useState<InspectionData>(pickupData);
   const [returnInspection, setReturnInspection] = useState<InspectionData>(returnData);
   const [payment, setPayment] = useState<PaymentDetail>(paymentDetail);
@@ -258,17 +259,27 @@ export const InspectionModal = ({
     toast.success("อัปโหลดหลักฐานการชำระเงินสำเร็จ");
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
+  const handleSavePickup = () => {
+    setIsEditingPickup(false);
     onSave?.(pickup, returnInspection, payment);
-    toast.success("บันทึกข้อมูล Inspection สำเร็จ");
+    toast.success("บันทึกข้อมูลรับรถสำเร็จ");
   };
 
-  const handleCancel = () => {
-    setIsEditing(false);
+  const handleSaveReturn = () => {
+    setIsEditingReturn(false);
+    onSave?.(pickup, returnInspection, payment);
+    toast.success("บันทึกข้อมูลคืนรถสำเร็จ");
+  };
+
+  const handleCancelPickup = () => {
+    setIsEditingPickup(false);
     setPickup(pickupData);
-    setReturnInspection(returnData);
     setPayment(paymentDetail);
+  };
+
+  const handleCancelReturn = () => {
+    setIsEditingReturn(false);
+    setReturnInspection(returnData);
   };
 
   // Damage Deposit handlers
@@ -352,7 +363,8 @@ export const InspectionModal = ({
     title: string,
     data: InspectionData,
     setData: React.Dispatch<React.SetStateAction<InspectionData>>,
-    type: 'pickup' | 'return'
+    type: 'pickup' | 'return',
+    isEditing: boolean
   ) => (
     <div className="space-y-3">
       <h5 className="font-medium text-sm border-b border-border pb-2">{title}</h5>
@@ -642,33 +654,29 @@ export const InspectionModal = ({
                 </svg>
                 Inspection รับรถ - คืนรถ
               </DialogTitle>
-              <div className="flex gap-2">
-                {isEditing ? (
-                  <>
-                    <Button variant="outline" size="sm" className="h-8" onClick={handleCancel}>
-                      <X className="w-4 h-4 mr-1" />
-                      ยกเลิก
-                    </Button>
-                    <Button size="sm" className="h-8" onClick={handleSave}>
-                      <Save className="w-4 h-4 mr-1" />
-                      บันทึก
-                    </Button>
-                  </>
-                ) : (
-                  <Button variant="outline" size="sm" className="h-8" onClick={() => setIsEditing(true)}>
-                    <Pencil className="w-4 h-4 mr-1" />
-                    แก้ไข
-                  </Button>
-                )}
-              </div>
             </div>
           </DialogHeader>
 
           <div className="grid grid-cols-2 gap-6 mt-4">
             {/* Left Card - รับรถ (Pick Up) */}
             <Card className="p-4 bg-gradient-to-br from-emerald-50/50 to-emerald-100/30 dark:from-emerald-950/20 dark:to-emerald-900/10 border-emerald-200 dark:border-emerald-800">
+              {/* Edit Button for Pickup */}
+              <div className="flex justify-end mb-2">
+                {isEditingPickup ? (
+                  <Button variant="outline" size="sm" className="h-7 text-xs" onClick={handleCancelPickup}>
+                    <X className="w-3 h-3 mr-1" />
+                    ยกเลิก
+                  </Button>
+                ) : (
+                  <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setIsEditingPickup(true)}>
+                    <Pencil className="w-3 h-3 mr-1" />
+                    แก้ไข
+                  </Button>
+                )}
+              </div>
+              
               {/* Inspection Section */}
-              {renderInspectionSection("รับรถ (Pick Up)", pickup, setPickup, 'pickup')}
+              {renderInspectionSection("รับรถ (Pick Up)", pickup, setPickup, 'pickup', isEditingPickup)}
               
               {/* Payment Section - Separator */}
               <div className="mt-6 pt-4 border-t-2 border-emerald-300 dark:border-emerald-700">
@@ -689,7 +697,7 @@ export const InspectionModal = ({
                   </div>
                   <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-3 border border-amber-200 dark:border-amber-800">
                     <p className="text-muted-foreground text-xs mb-1">ยอดคงเหลือ</p>
-                    {isEditing ? (
+                    {isEditingPickup ? (
                       <div className="flex items-center gap-1">
                         <span className="text-muted-foreground">฿</span>
                         <Input
@@ -711,7 +719,7 @@ export const InspectionModal = ({
                   <div className="border border-border rounded-lg p-3 bg-background/50 space-y-3">
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">หัวข้อรายการ</p>
-                      {isEditing ? (
+                      {isEditingPickup ? (
                         <Input
                           value={pickup.financeRecord.label}
                           onChange={(e) => handleFinanceRecordChange('pickup', 'label', e.target.value)}
@@ -726,7 +734,7 @@ export const InspectionModal = ({
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <p className="text-xs text-muted-foreground mb-1">ประเภทการชำระ</p>
-                        {isEditing ? (
+                        {isEditingPickup ? (
                           <Select
                             value={pickup.financeRecord.type}
                             onValueChange={(value) => handleFinanceRecordChange('pickup', 'type', value)}
@@ -748,7 +756,7 @@ export const InspectionModal = ({
                       
                       <div>
                         <p className="text-xs text-muted-foreground mb-1">จำนวนเงิน</p>
-                        {isEditing ? (
+                        {isEditingPickup ? (
                           <div className="flex items-center gap-1">
                             <span className="text-muted-foreground text-sm">฿</span>
                             <Input
@@ -774,7 +782,7 @@ export const InspectionModal = ({
                             alt="หลักฐานการชำระเงิน"
                             className="w-full h-full object-cover rounded-lg border border-border"
                           />
-                          {isEditing && (
+                          {isEditingPickup && (
                             <button
                               onClick={() => handleFinanceRecordChange('pickup', 'proofImage', null)}
                               className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/80"
@@ -783,7 +791,7 @@ export const InspectionModal = ({
                             </button>
                           )}
                         </div>
-                      ) : isEditing ? (
+                      ) : isEditingPickup ? (
                         <label className="flex items-center justify-center w-16 h-16 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
                           <input
                             type="file"
@@ -809,7 +817,7 @@ export const InspectionModal = ({
                 <div className="pt-4 border-t border-emerald-200 dark:border-emerald-800 mt-4">
                   <div className="flex items-center justify-between mb-3">
                     <h6 className="font-medium text-sm">สร้างยอดมัดจำความเสียหาย</h6>
-                    {!payment.damageDepositRecord && isEditing && (
+                    {!payment.damageDepositRecord && isEditingPickup && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -827,7 +835,7 @@ export const InspectionModal = ({
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <p className="text-xs text-muted-foreground mb-1">วันที่ทำรายการ</p>
-                          {isEditing ? (
+                          {isEditingPickup ? (
                             <Input
                               type="date"
                               value={payment.damageDepositRecord.date}
@@ -840,7 +848,7 @@ export const InspectionModal = ({
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground mb-1">จำนวนเงิน</p>
-                          {isEditing ? (
+                          {isEditingPickup ? (
                             <div className="flex items-center gap-1">
                               <span className="text-muted-foreground text-sm">฿</span>
                               <Input
@@ -865,7 +873,7 @@ export const InspectionModal = ({
                               alt="หลักฐานมัดจำความเสียหาย"
                               className="w-full h-full object-cover rounded-lg border border-border"
                             />
-                            {isEditing && (
+                            {isEditingPickup && (
                               <button
                                 onClick={() => handleDamageDepositChange('proofImage', null)}
                                 className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/80"
@@ -874,7 +882,7 @@ export const InspectionModal = ({
                               </button>
                             )}
                           </div>
-                        ) : isEditing ? (
+                        ) : isEditingPickup ? (
                           <label className="flex items-center justify-center w-16 h-16 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
                             <input
                               type="file"
@@ -910,13 +918,38 @@ export const InspectionModal = ({
                     </p>
                   )}
                 </div>
+
+                {/* Save Button for Pickup */}
+                {isEditingPickup && (
+                  <div className="pt-4 mt-4 border-t border-emerald-200 dark:border-emerald-800">
+                    <Button className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700" onClick={handleSavePickup}>
+                      <Save className="w-4 h-4" />
+                      บันทึกข้อมูลรับรถ
+                    </Button>
+                  </div>
+                )}
               </div>
             </Card>
 
             {/* Right Card - คืนรถ (Return) */}
             <Card className="p-4 bg-gradient-to-br from-blue-50/50 to-blue-100/30 dark:from-blue-950/20 dark:to-blue-900/10 border-blue-200 dark:border-blue-800">
+              {/* Edit Button for Return */}
+              <div className="flex justify-end mb-2">
+                {isEditingReturn ? (
+                  <Button variant="outline" size="sm" className="h-7 text-xs" onClick={handleCancelReturn}>
+                    <X className="w-3 h-3 mr-1" />
+                    ยกเลิก
+                  </Button>
+                ) : (
+                  <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setIsEditingReturn(true)}>
+                    <Pencil className="w-3 h-3 mr-1" />
+                    แก้ไข
+                  </Button>
+                )}
+              </div>
+              
               {/* Inspection Section */}
-              {renderInspectionSection("คืนรถ (Return)", returnInspection, setReturnInspection, 'return')}
+              {renderInspectionSection("คืนรถ (Return)", returnInspection, setReturnInspection, 'return', isEditingReturn)}
               
               {/* Payment Section - Separator */}
               <div className="mt-6 pt-4 border-t-2 border-blue-300 dark:border-blue-700">
@@ -953,7 +986,7 @@ export const InspectionModal = ({
                   <div className="border border-border rounded-lg p-3 bg-background/50 space-y-3">
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">หัวข้อรายการ</p>
-                      {isEditing ? (
+                      {isEditingReturn ? (
                         <Input
                           value={returnInspection.financeRecord.label}
                           onChange={(e) => handleFinanceRecordChange('return', 'label', e.target.value)}
@@ -968,7 +1001,7 @@ export const InspectionModal = ({
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <p className="text-xs text-muted-foreground mb-1">ประเภทการชำระ</p>
-                        {isEditing ? (
+                        {isEditingReturn ? (
                           <Select
                             value={returnInspection.financeRecord.type}
                             onValueChange={(value) => handleFinanceRecordChange('return', 'type', value)}
@@ -990,7 +1023,7 @@ export const InspectionModal = ({
                       
                       <div>
                         <p className="text-xs text-muted-foreground mb-1">จำนวนเงิน</p>
-                        {isEditing ? (
+                        {isEditingReturn ? (
                           <div className="flex items-center gap-1">
                             <span className="text-muted-foreground text-sm">฿</span>
                             <Input
@@ -1016,7 +1049,7 @@ export const InspectionModal = ({
                             alt="หลักฐานการชำระเงิน"
                             className="w-full h-full object-cover rounded-lg border border-border"
                           />
-                          {isEditing && (
+                          {isEditingReturn && (
                             <button
                               onClick={() => handleFinanceRecordChange('return', 'proofImage', null)}
                               className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/80"
@@ -1025,7 +1058,7 @@ export const InspectionModal = ({
                             </button>
                           )}
                         </div>
-                      ) : isEditing ? (
+                      ) : isEditingReturn ? (
                         <label className="flex items-center justify-center w-16 h-16 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
                           <input
                             type="file"
@@ -1046,6 +1079,16 @@ export const InspectionModal = ({
                     </div>
                   </div>
                 </div>
+
+                {/* Save Button for Return */}
+                {isEditingReturn && (
+                  <div className="pt-4 mt-4 border-t border-blue-200 dark:border-blue-800">
+                    <Button className="w-full gap-2 bg-blue-600 hover:bg-blue-700" onClick={handleSaveReturn}>
+                      <Save className="w-4 h-4" />
+                      บันทึกข้อมูลคืนรถ
+                    </Button>
+                  </div>
+                )}
               </div>
             </Card>
           </div>
