@@ -672,10 +672,6 @@ export const InspectionModal = ({
               
               {/* Payment Section - Separator */}
               <div className="mt-6 pt-4 border-t-2 border-emerald-300 dark:border-emerald-700">
-                <div className="flex items-center gap-2 mb-4">
-                  <LogIn className="w-4 h-4 text-emerald-600" />
-                  <h5 className="font-medium text-sm text-emerald-700 dark:text-emerald-400">รับรถ (Pick Up)</h5>
-                </div>
                 
                 {/* Payment Summary */}
                 <div className="grid grid-cols-2 gap-3 text-sm mb-4">
@@ -924,10 +920,6 @@ export const InspectionModal = ({
               
               {/* Payment Section - Separator */}
               <div className="mt-6 pt-4 border-t-2 border-blue-300 dark:border-blue-700">
-                <div className="flex items-center gap-2 mb-4">
-                  <LogOut className="w-4 h-4 text-blue-600" />
-                  <h5 className="font-medium text-sm text-blue-700 dark:text-blue-400">คืนรถ (Return)</h5>
-                </div>
                 
                 {/* Damage Summary */}
                 <div className="space-y-3 text-sm mb-4">
