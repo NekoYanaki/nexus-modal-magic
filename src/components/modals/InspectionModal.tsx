@@ -667,54 +667,10 @@ export const InspectionModal = ({
           <div className="grid grid-cols-2 gap-6 mt-4">
             <Card className="p-4">
               {renderInspectionSection("รับรถ (Pick Up)", pickup, setPickup, 'pickup')}
-              <div className="mt-4 pt-4 border-t border-border space-y-3">
-                <Button
-                  className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
-                  onClick={() => setShowPickupConfirm(true)}
-                  disabled={bookingStatus !== "confirmed"}
-                >
-                  <LogIn className="w-4 h-4" />
-                  ยืนยันรับรถ (Pick Up)
-                </Button>
-                
-                {/* Print Receipt after Pickup Confirm */}
-                {pickupConfirmed && (
-                  <Button
-                    variant="outline"
-                    className="w-full gap-2"
-                    onClick={handlePrintDamageDepositReceipt}
-                  >
-                    <FileText className="w-4 h-4" />
-                    พิมพ์เอกสารใบเสร็จ
-                  </Button>
-                )}
-              </div>
             </Card>
 
             <Card className="p-4">
               {renderInspectionSection("คืนรถ (Return)", returnInspection, setReturnInspection, 'return')}
-              <div className="mt-4 pt-4 border-t border-border space-y-3">
-                <Button
-                  className="w-full gap-2 bg-blue-600 hover:bg-blue-700 text-white"
-                  onClick={() => setShowReturnConfirm(true)}
-                  disabled={bookingStatus !== "picked_up"}
-                >
-                  <LogOut className="w-4 h-4" />
-                  ยืนยันคืนรถ (Return)
-                </Button>
-                
-                {/* Print Receipt after Return Confirm */}
-                {returnConfirmed && (
-                  <Button
-                    variant="outline"
-                    className="w-full gap-2"
-                    onClick={handlePrintDamageDepositReceipt}
-                  >
-                    <FileText className="w-4 h-4" />
-                    พิมพ์เอกสารใบเสร็จ
-                  </Button>
-                )}
-              </div>
             </Card>
           </div>
 
