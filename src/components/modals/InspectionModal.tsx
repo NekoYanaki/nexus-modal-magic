@@ -627,106 +627,6 @@ export const InspectionModal = ({
         )}
       </div>
 
-      {/* Finance Record Section */}
-      <div className="pt-3 border-t border-border mt-3">
-        <p className="text-muted-foreground text-sm mb-2">บันทึกการเงิน</p>
-        
-        <div className="border border-border rounded-lg p-3 bg-muted/20 space-y-3">
-          <div>
-            <p className="text-xs text-muted-foreground mb-1">หัวข้อรายการ</p>
-            {isEditing ? (
-              <Input
-                value={data.financeRecord.label}
-                onChange={(e) => handleFinanceRecordChange(type, 'label', e.target.value)}
-                className="h-8 text-sm"
-                placeholder="เช่น ชำระค่าเช่าคงเหลือ, ค่าน้ำมัน"
-              />
-            ) : (
-              <p className="font-medium text-sm">{data.financeRecord.label || "-"}</p>
-            )}
-          </div>
-          
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">ประเภทการชำระ</p>
-              {isEditing ? (
-                <Select
-                  value={data.financeRecord.type}
-                  onValueChange={(value) => handleFinanceRecordChange(type, 'type', value)}
-                >
-                  <SelectTrigger className="h-8 text-sm">
-                    <SelectValue placeholder="เลือกประเภท" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cash">เงินสด</SelectItem>
-                    <SelectItem value="credit_card">บัตรเครดิต</SelectItem>
-                  </SelectContent>
-                </Select>
-              ) : (
-                <p className="font-medium text-sm">
-                  {data.financeRecord.type === 'cash' ? 'เงินสด' : data.financeRecord.type === 'credit_card' ? 'บัตรเครดิต' : '-'}
-                </p>
-              )}
-            </div>
-            
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">จำนวนเงิน</p>
-              {isEditing ? (
-                <div className="flex items-center gap-1">
-                  <span className="text-muted-foreground text-sm">฿</span>
-                  <Input
-                    type="number"
-                    value={data.financeRecord.amount}
-                    onChange={(e) => handleFinanceRecordChange(type, 'amount', Number(e.target.value))}
-                    className="h-8 text-sm"
-                    placeholder="0"
-                  />
-                </div>
-              ) : (
-                <p className="font-medium text-sm text-primary">฿{data.financeRecord.amount.toLocaleString()}</p>
-              )}
-            </div>
-          </div>
-          
-          <div>
-            <p className="text-xs text-muted-foreground mb-1">หลักฐานการชำระเงิน</p>
-            {data.financeRecord.proofImage ? (
-              <div className="relative w-20 h-20">
-                <img
-                  src={data.financeRecord.proofImage}
-                  alt="หลักฐานการชำระเงิน"
-                  className="w-full h-full object-cover rounded-lg border border-border"
-                />
-                {isEditing && (
-                  <button
-                    onClick={() => handleFinanceRecordChange(type, 'proofImage', null)}
-                    className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/80"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                )}
-              </div>
-            ) : isEditing ? (
-              <label className="flex items-center justify-center w-20 h-20 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleFinanceProofUpload(type, file);
-                  }}
-                />
-                <Upload className="w-5 h-5 text-muted-foreground" />
-              </label>
-            ) : (
-              <div className="w-20 h-20 border border-dashed border-border rounded-lg flex items-center justify-center bg-muted/30">
-                <Image className="w-5 h-5 text-muted-foreground/50" />
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
     </div>
   );
 
@@ -764,8 +664,62 @@ export const InspectionModal = ({
             </div>
           </DialogHeader>
 
-          {/* Payment Details Section */}
-          <Card className="p-4 mt-4 bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+          <div className="grid grid-cols-2 gap-6 mt-4">
+            <Card className="p-4">
+              {renderInspectionSection("รับรถ (Pick Up)", pickup, setPickup, 'pickup')}
+              <div className="mt-4 pt-4 border-t border-border space-y-3">
+                <Button
+                  className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                  onClick={() => setShowPickupConfirm(true)}
+                  disabled={bookingStatus !== "confirmed"}
+                >
+                  <LogIn className="w-4 h-4" />
+                  ยืนยันรับรถ (Pick Up)
+                </Button>
+                
+                {/* Print Receipt after Pickup Confirm */}
+                {pickupConfirmed && (
+                  <Button
+                    variant="outline"
+                    className="w-full gap-2"
+                    onClick={handlePrintDamageDepositReceipt}
+                  >
+                    <FileText className="w-4 h-4" />
+                    พิมพ์เอกสารใบเสร็จ
+                  </Button>
+                )}
+              </div>
+            </Card>
+
+            <Card className="p-4">
+              {renderInspectionSection("คืนรถ (Return)", returnInspection, setReturnInspection, 'return')}
+              <div className="mt-4 pt-4 border-t border-border space-y-3">
+                <Button
+                  className="w-full gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={() => setShowReturnConfirm(true)}
+                  disabled={bookingStatus !== "picked_up"}
+                >
+                  <LogOut className="w-4 h-4" />
+                  ยืนยันคืนรถ (Return)
+                </Button>
+                
+                {/* Print Receipt after Return Confirm */}
+                {returnConfirmed && (
+                  <Button
+                    variant="outline"
+                    className="w-full gap-2"
+                    onClick={handlePrintDamageDepositReceipt}
+                  >
+                    <FileText className="w-4 h-4" />
+                    พิมพ์เอกสารใบเสร็จ
+                  </Button>
+                )}
+              </div>
+            </Card>
+          </div>
+
+          {/* Payment Details Section - moved to bottom */}
+          <Card className="p-4 mt-6 bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
             <div className="flex items-center gap-2 mb-3">
               <CreditCard className="w-4 h-4 text-primary" />
               <h5 className="font-medium text-sm">รายละเอียดชำระเงิน</h5>
@@ -816,6 +770,208 @@ export const InspectionModal = ({
                 <div className="bg-background/50 rounded-lg p-3">
                   <p className="text-muted-foreground text-xs mb-1">ยอดคงเหลือ</p>
                   <p className="font-semibold text-lg text-muted-foreground">฿{Math.max(0, payment.damageDeposit - totalDamageAmount).toLocaleString()}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Finance Records Section - moved from inspection sections */}
+            <div className="mt-4 pt-4 border-t border-primary/10">
+              <h6 className="font-medium text-sm mb-3">บันทึกการเงิน</h6>
+              <div className="grid grid-cols-2 gap-4">
+                {/* Pickup Finance Record */}
+                <div className="border border-border rounded-lg p-3 bg-muted/20 space-y-3">
+                  <p className="text-xs font-medium text-emerald-600">รับรถ (Pick Up)</p>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">หัวข้อรายการ</p>
+                    {isEditing ? (
+                      <Input
+                        value={pickup.financeRecord.label}
+                        onChange={(e) => handleFinanceRecordChange('pickup', 'label', e.target.value)}
+                        className="h-8 text-sm"
+                        placeholder="เช่น ชำระค่าเช่าคงเหลือ, ค่าน้ำมัน"
+                      />
+                    ) : (
+                      <p className="font-medium text-sm">{pickup.financeRecord.label || "-"}</p>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">ประเภทการชำระ</p>
+                      {isEditing ? (
+                        <Select
+                          value={pickup.financeRecord.type}
+                          onValueChange={(value) => handleFinanceRecordChange('pickup', 'type', value)}
+                        >
+                          <SelectTrigger className="h-8 text-sm">
+                            <SelectValue placeholder="เลือกประเภท" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="cash">เงินสด</SelectItem>
+                            <SelectItem value="credit_card">บัตรเครดิต</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <p className="font-medium text-sm">
+                          {pickup.financeRecord.type === 'cash' ? 'เงินสด' : pickup.financeRecord.type === 'credit_card' ? 'บัตรเครดิต' : '-'}
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">จำนวนเงิน</p>
+                      {isEditing ? (
+                        <div className="flex items-center gap-1">
+                          <span className="text-muted-foreground text-sm">฿</span>
+                          <Input
+                            type="number"
+                            value={pickup.financeRecord.amount}
+                            onChange={(e) => handleFinanceRecordChange('pickup', 'amount', Number(e.target.value))}
+                            className="h-8 text-sm"
+                            placeholder="0"
+                          />
+                        </div>
+                      ) : (
+                        <p className="font-medium text-sm text-primary">฿{pickup.financeRecord.amount.toLocaleString()}</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">หลักฐานการชำระเงิน</p>
+                    {pickup.financeRecord.proofImage ? (
+                      <div className="relative w-16 h-16">
+                        <img
+                          src={pickup.financeRecord.proofImage}
+                          alt="หลักฐานการชำระเงิน"
+                          className="w-full h-full object-cover rounded-lg border border-border"
+                        />
+                        {isEditing && (
+                          <button
+                            onClick={() => handleFinanceRecordChange('pickup', 'proofImage', null)}
+                            className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/80"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                    ) : isEditing ? (
+                      <label className="flex items-center justify-center w-16 h-16 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleFinanceProofUpload('pickup', file);
+                          }}
+                        />
+                        <Upload className="w-4 h-4 text-muted-foreground" />
+                      </label>
+                    ) : (
+                      <div className="w-16 h-16 border border-dashed border-border rounded-lg flex items-center justify-center bg-muted/30">
+                        <Image className="w-4 h-4 text-muted-foreground/50" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Return Finance Record */}
+                <div className="border border-border rounded-lg p-3 bg-muted/20 space-y-3">
+                  <p className="text-xs font-medium text-blue-600">คืนรถ (Return)</p>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">หัวข้อรายการ</p>
+                    {isEditing ? (
+                      <Input
+                        value={returnInspection.financeRecord.label}
+                        onChange={(e) => handleFinanceRecordChange('return', 'label', e.target.value)}
+                        className="h-8 text-sm"
+                        placeholder="เช่น ชำระค่าเช่าคงเหลือ, ค่าน้ำมัน"
+                      />
+                    ) : (
+                      <p className="font-medium text-sm">{returnInspection.financeRecord.label || "-"}</p>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">ประเภทการชำระ</p>
+                      {isEditing ? (
+                        <Select
+                          value={returnInspection.financeRecord.type}
+                          onValueChange={(value) => handleFinanceRecordChange('return', 'type', value)}
+                        >
+                          <SelectTrigger className="h-8 text-sm">
+                            <SelectValue placeholder="เลือกประเภท" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="cash">เงินสด</SelectItem>
+                            <SelectItem value="credit_card">บัตรเครดิต</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <p className="font-medium text-sm">
+                          {returnInspection.financeRecord.type === 'cash' ? 'เงินสด' : returnInspection.financeRecord.type === 'credit_card' ? 'บัตรเครดิต' : '-'}
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">จำนวนเงิน</p>
+                      {isEditing ? (
+                        <div className="flex items-center gap-1">
+                          <span className="text-muted-foreground text-sm">฿</span>
+                          <Input
+                            type="number"
+                            value={returnInspection.financeRecord.amount}
+                            onChange={(e) => handleFinanceRecordChange('return', 'amount', Number(e.target.value))}
+                            className="h-8 text-sm"
+                            placeholder="0"
+                          />
+                        </div>
+                      ) : (
+                        <p className="font-medium text-sm text-primary">฿{returnInspection.financeRecord.amount.toLocaleString()}</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">หลักฐานการชำระเงิน</p>
+                    {returnInspection.financeRecord.proofImage ? (
+                      <div className="relative w-16 h-16">
+                        <img
+                          src={returnInspection.financeRecord.proofImage}
+                          alt="หลักฐานการชำระเงิน"
+                          className="w-full h-full object-cover rounded-lg border border-border"
+                        />
+                        {isEditing && (
+                          <button
+                            onClick={() => handleFinanceRecordChange('return', 'proofImage', null)}
+                            className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/80"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                    ) : isEditing ? (
+                      <label className="flex items-center justify-center w-16 h-16 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleFinanceProofUpload('return', file);
+                          }}
+                        />
+                        <Upload className="w-4 h-4 text-muted-foreground" />
+                      </label>
+                    ) : (
+                      <div className="w-16 h-16 border border-dashed border-border rounded-lg flex items-center justify-center bg-muted/30">
+                        <Image className="w-4 h-4 text-muted-foreground/50" />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -927,60 +1083,6 @@ export const InspectionModal = ({
             </div>
 
           </Card>
-
-          <div className="grid grid-cols-2 gap-6 mt-4">
-            <Card className="p-4">
-              {renderInspectionSection("รับรถ (Pick Up)", pickup, setPickup, 'pickup')}
-              <div className="mt-4 pt-4 border-t border-border space-y-3">
-                <Button
-                  className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
-                  onClick={() => setShowPickupConfirm(true)}
-                  disabled={bookingStatus !== "confirmed"}
-                >
-                  <LogIn className="w-4 h-4" />
-                  ยืนยันรับรถ (Pick Up)
-                </Button>
-                
-                {/* Print Receipt after Pickup Confirm */}
-                {pickupConfirmed && (
-                  <Button
-                    variant="outline"
-                    className="w-full gap-2"
-                    onClick={handlePrintDamageDepositReceipt}
-                  >
-                    <FileText className="w-4 h-4" />
-                    พิมพ์เอกสารใบเสร็จ
-                  </Button>
-                )}
-              </div>
-            </Card>
-
-            <Card className="p-4">
-              {renderInspectionSection("คืนรถ (Return)", returnInspection, setReturnInspection, 'return')}
-              <div className="mt-4 pt-4 border-t border-border space-y-3">
-                <Button
-                  className="w-full gap-2 bg-blue-600 hover:bg-blue-700 text-white"
-                  onClick={() => setShowReturnConfirm(true)}
-                  disabled={bookingStatus !== "picked_up"}
-                >
-                  <LogOut className="w-4 h-4" />
-                  ยืนยันคืนรถ (Return)
-                </Button>
-                
-                {/* Print Receipt after Return Confirm */}
-                {returnConfirmed && (
-                  <Button
-                    variant="outline"
-                    className="w-full gap-2"
-                    onClick={handlePrintDamageDepositReceipt}
-                  >
-                    <FileText className="w-4 h-4" />
-                    พิมพ์เอกสารใบเสร็จ
-                  </Button>
-                )}
-              </div>
-            </Card>
-          </div>
         </DialogContent>
       </Dialog>
 
