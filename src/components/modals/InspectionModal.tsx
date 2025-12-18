@@ -28,6 +28,26 @@ const DAMAGE_OPTIONS = [
   { value: 'other', label: 'อื่นๆ' },
 ];
 
+// Master list of Add-on & Accessories
+const ADDON_OPTIONS = [
+  { value: 'gps', label: 'GPS นำทาง', price: 200 },
+  { value: 'child_seat', label: 'เบาะนั่งเด็ก', price: 300 },
+  { value: 'wifi_router', label: 'WiFi Router', price: 150 },
+  { value: 'camping_gear', label: 'อุปกรณ์แคมปิ้ง', price: 500 },
+  { value: 'bbq_set', label: 'ชุดปิ้งย่าง', price: 350 },
+  { value: 'bicycle_rack', label: 'แร็คจักรยาน', price: 250 },
+  { value: 'awning', label: 'กันสาด', price: 400 },
+  { value: 'generator', label: 'เครื่องปั่นไฟ', price: 600 },
+  { value: 'outdoor_table', label: 'โต๊ะกลางแจ้ง', price: 200 },
+  { value: 'outdoor_chair', label: 'เก้าอี้พับ (ชุด)', price: 150 },
+];
+
+interface AddonItem {
+  value: string;
+  label: string;
+  price: number;
+}
+
 interface ConditionRecord {
   id: string;
   title: string;
@@ -59,6 +79,7 @@ interface InspectionData {
   conditions: ConditionRecord[];
   notes: string;
   financeRecord: FinanceRecord;
+  addons: AddonItem[];
 }
 
 interface PaymentDetail {
@@ -105,6 +126,7 @@ const defaultPickup: InspectionData = {
   conditions: [],
   notes: "",
   financeRecord: { ...defaultFinanceRecord },
+  addons: [],
 };
 
 const defaultReturn: InspectionData = {
@@ -114,6 +136,7 @@ const defaultReturn: InspectionData = {
   conditions: [],
   notes: "",
   financeRecord: { ...defaultFinanceRecord },
+  addons: [],
 };
 
 export const InspectionModal = ({
@@ -216,13 +239,49 @@ export const InspectionModal = ({
     toast.success("อัปโหลดรูปสำเร็จ");
   };
 
+  // Addon handlers
+  const handleAddAddon = (addonValue: string) => {
+    const masterAddon = ADDON_OPTIONS.find(a => a.value === addonValue);
+    if (!masterAddon) return;
+    
+    // Check if already added
+    if (pickup.addons.some(a => a.value === addonValue)) {
+      toast.error("รายการนี้ถูกเพิ่มแล้ว");
+      return;
+    }
+    
+    setPickup(prev => ({
+      ...prev,
+      addons: [...prev.addons, { ...masterAddon }]
+    }));
+  };
+
+  const handleRemoveAddon = (addonValue: string) => {
+    setPickup(prev => ({
+      ...prev,
+      addons: prev.addons.filter(a => a.value !== addonValue)
+    }));
+  };
+
+  const handleAddonPriceChange = (addonValue: string, newPrice: number) => {
+    setPickup(prev => ({
+      ...prev,
+      addons: prev.addons.map(a => 
+        a.value === addonValue ? { ...a, price: newPrice } : a
+      )
+    }));
+  };
+
+  // Calculate total addon price
+  const totalAddonPrice = pickup.addons.reduce((sum, addon) => sum + addon.price, 0);
+
   // Calculate total collected payments
   const calculateTotalCollected = () => {
     return pickup.financeRecord.amount + returnInspection.financeRecord.amount;
   };
 
   const totalCollected = calculateTotalCollected();
-  const pendingAmount = payment.remainingBalance - totalCollected;
+  const pendingAmount = payment.remainingBalance + totalAddonPrice - totalCollected;
 
   // Calculate total damage amount from all conditions
   const totalDamageAmount = [...pickup.conditions, ...returnInspection.conditions].reduce(
@@ -493,6 +552,76 @@ export const InspectionModal = ({
         </div>
       )}
 
+      {/* Add-on & Accessories - Only for Pickup */}
+      {type === 'pickup' && (
+        <div className="pt-3 border-t border-border mt-3">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-muted-foreground text-sm">Add-on & Accessories ({data.addons.length} รายการ)</p>
+          </div>
+          
+          {/* Dropdown to add addon */}
+          {isEditing && (
+            <div className="mb-3">
+              <Select onValueChange={handleAddAddon}>
+                <SelectTrigger className="h-8 text-sm bg-background">
+                  <SelectValue placeholder="เลือก Add-on & Accessories" />
+                </SelectTrigger>
+                <SelectContent className="bg-background border border-border z-50">
+                  {ADDON_OPTIONS.filter(opt => !data.addons.some(a => a.value === opt.value)).map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label} (฿{option.price.toLocaleString()})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Selected addons list */}
+          {data.addons.length > 0 ? (
+            <div className="space-y-2">
+              {data.addons.map((addon) => (
+                <div key={addon.value} className="flex items-center justify-between gap-2 border border-border rounded-lg p-2 bg-background/50">
+                  <span className="text-sm font-medium">{addon.label}</span>
+                  <div className="flex items-center gap-2">
+                    {isEditing ? (
+                      <>
+                        <div className="flex items-center gap-1">
+                          <span className="text-muted-foreground text-sm">฿</span>
+                          <Input
+                            type="number"
+                            value={addon.price}
+                            onChange={(e) => handleAddonPriceChange(addon.value, Number(e.target.value))}
+                            className="h-7 w-20 text-sm"
+                          />
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                          onClick={() => handleRemoveAddon(addon.value)}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </>
+                    ) : (
+                      <span className="text-sm text-primary font-medium">฿{addon.price.toLocaleString()}</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {/* Total addon price */}
+              <div className="flex items-center justify-between pt-2 border-t border-border mt-2">
+                <span className="text-sm text-muted-foreground">รวม Add-on</span>
+                <span className="text-sm font-semibold text-primary">฿{totalAddonPrice.toLocaleString()}</span>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-4">ไม่มีรายการ Add-on & Accessories</p>
+          )}
+        </div>
+      )}
+
     </div>
   );
 
@@ -545,13 +674,19 @@ export const InspectionModal = ({
                     <p className="text-muted-foreground text-xs mb-1">ยอดรวมทั้งหมด</p>
                     <p className="font-semibold text-lg">฿{payment.totalAmount.toLocaleString()}</p>
                   </div>
+                  {totalAddonPrice > 0 && (
+                    <div className="bg-purple-50 dark:bg-purple-950/30 rounded-lg p-3 border border-purple-200 dark:border-purple-800">
+                      <p className="text-purple-700 dark:text-purple-400 text-xs mb-1">ยอด Add-on</p>
+                      <p className="font-semibold text-lg text-purple-600">฿{totalAddonPrice.toLocaleString()}</p>
+                    </div>
+                  )}
                   <div className="bg-emerald-100 dark:bg-emerald-950/50 rounded-lg p-3 border border-emerald-300 dark:border-emerald-700">
                     <p className="text-emerald-700 dark:text-emerald-400 text-xs mb-1">รับเงินแล้ว</p>
                     <p className="font-semibold text-lg text-emerald-600">฿{totalCollected.toLocaleString()}</p>
                   </div>
-                  <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-3 border border-amber-200 dark:border-amber-800">
-                    <p className="text-muted-foreground text-xs mb-1">ยอดคงเหลือ</p>
-                    <p className="font-semibold text-lg text-amber-600">฿{payment.remainingBalance.toLocaleString()}</p>
+                  <div className={`rounded-lg p-3 border ${totalAddonPrice > 0 ? 'col-span-2' : ''} bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800`}>
+                    <p className="text-muted-foreground text-xs mb-1">ยอดคงเหลือ (รวม Add-on)</p>
+                    <p className="font-semibold text-lg text-amber-600">฿{(payment.remainingBalance + totalAddonPrice).toLocaleString()}</p>
                   </div>
                 </div>
 
