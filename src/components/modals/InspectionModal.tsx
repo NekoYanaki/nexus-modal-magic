@@ -395,28 +395,6 @@ export const InspectionModal = ({
           )}
         </div>
         <div>
-          <p className="text-muted-foreground mb-1">ระดับน้ำมัน</p>
-          {isEditing ? (
-            <Select
-              value={data.fuelLevel}
-              onValueChange={(value) => setData(prev => ({ ...prev, fuelLevel: value }))}
-            >
-              <SelectTrigger className="h-8">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="full">Full</SelectItem>
-                <SelectItem value="3/4">3/4</SelectItem>
-                <SelectItem value="1/2">1/2</SelectItem>
-                <SelectItem value="1/4">1/4</SelectItem>
-                <SelectItem value="empty">Empty</SelectItem>
-              </SelectContent>
-            </Select>
-          ) : (
-            <p className="font-medium">{data.fuelLevel === 'full' ? 'Full' : data.fuelLevel}</p>
-          )}
-        </div>
-        <div>
           <p className="text-muted-foreground mb-1">หมายเหตุ</p>
           {isEditing ? (
             <Textarea
@@ -508,59 +486,6 @@ export const InspectionModal = ({
                     )}
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">ระดับความรุนแรง</p>
-                      {isEditing ? (
-                        <Select
-                          value={condition.severityLevel}
-                          onValueChange={(value) => handleConditionChange(type, condition.id, 'severityLevel', value)}
-                        >
-                          <SelectTrigger className="h-8 text-sm">
-                            <SelectValue placeholder="เลือกระดับ" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="low">น้อย</SelectItem>
-                            <SelectItem value="medium">ปานกลาง</SelectItem>
-                            <SelectItem value="high">มาก</SelectItem>
-                            <SelectItem value="critical">รุนแรงมาก</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <p className="font-medium text-sm">
-                          {condition.severityLevel === 'low' && <span className="text-emerald-600">น้อย</span>}
-                          {condition.severityLevel === 'medium' && <span className="text-amber-600">ปานกลาง</span>}
-                          {condition.severityLevel === 'high' && <span className="text-orange-600">มาก</span>}
-                          {condition.severityLevel === 'critical' && <span className="text-red-600">รุนแรงมาก</span>}
-                          {!condition.severityLevel && "-"}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">ประเภทความเสียหาย</p>
-                      {isEditing ? (
-                        <Select
-                          value={condition.damageType}
-                          onValueChange={(value) => handleConditionChange(type, condition.id, 'damageType', value)}
-                        >
-                          <SelectTrigger className="h-8 text-sm">
-                            <SelectValue placeholder="เลือกประเภท" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="new">ความเสียหายใหม่</SelectItem>
-                            <SelectItem value="existing">มีมาก่อน</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <p className="font-medium text-sm">
-                          {condition.damageType === 'new' && <span className="text-red-600">ความเสียหายใหม่</span>}
-                          {condition.damageType === 'existing' && <span className="text-muted-foreground">มีมาก่อน</span>}
-                          {!condition.damageType && "-"}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">รายละเอียด</p>
                     {isEditing ? (
@@ -572,24 +497,6 @@ export const InspectionModal = ({
                       />
                     ) : (
                       <p className="text-sm">{condition.detail || "-"}</p>
-                    )}
-                  </div>
-                  
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">ราคา</p>
-                    {isEditing ? (
-                      <div className="flex items-center gap-1">
-                        <span className="text-muted-foreground text-sm">฿</span>
-                        <Input
-                          type="number"
-                          value={condition.price}
-                          onChange={(e) => handleConditionChange(type, condition.id, 'price', e.target.value)}
-                          className="h-8 text-sm w-32"
-                          placeholder="0"
-                        />
-                      </div>
-                    ) : (
-                      <p className="font-medium text-sm text-primary">฿{condition.price.toLocaleString()}</p>
                     )}
                   </div>
                   
