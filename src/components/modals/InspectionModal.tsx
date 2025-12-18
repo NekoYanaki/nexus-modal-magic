@@ -6,9 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Pencil, Save, X, Upload, Image, LogIn, LogOut, Plus, Trash2, CreditCard, FileText } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Pencil, Save, X, Upload, Image, LogIn, LogOut, Plus, Trash2, CreditCard, FileText, ChevronsUpDown, Check } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
+import { cn } from "@/lib/utils";
 
 type SeverityLevel = 'low' | 'medium' | 'high' | 'critical' | '';
 type DamageType = 'new' | 'existing' | '';
@@ -161,6 +164,7 @@ export const InspectionModal = ({
   const [showReturnConfirm, setShowReturnConfirm] = useState(false);
   const [pickupConfirmed, setPickupConfirmed] = useState(bookingStatus === "picked_up" || bookingStatus === "returned");
   const [returnConfirmed, setReturnConfirmed] = useState(bookingStatus === "returned");
+  const [addonComboboxOpen, setAddonComboboxOpen] = useState(false);
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -559,21 +563,50 @@ export const InspectionModal = ({
             <p className="text-muted-foreground text-sm">Add-on & Accessories ({data.addons.length} รายการ)</p>
           </div>
           
-          {/* Dropdown to add addon */}
+          {/* Searchable Dropdown to add addon */}
           {isEditing && (
             <div className="mb-3">
-              <Select onValueChange={handleAddAddon}>
-                <SelectTrigger className="h-8 text-sm bg-background">
-                  <SelectValue placeholder="เลือก Add-on & Accessories" />
-                </SelectTrigger>
-                <SelectContent className="bg-background border border-border z-50">
-                  {ADDON_OPTIONS.filter(opt => !data.addons.some(a => a.value === opt.value)).map(option => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label} (฿{option.price.toLocaleString()})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={addonComboboxOpen} onOpenChange={setAddonComboboxOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={addonComboboxOpen}
+                    className="w-full h-8 justify-between text-sm bg-background"
+                  >
+                    <span className="text-muted-foreground">ค้นหา Add-on & Accessories...</span>
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0 bg-background border border-border z-50" align="start">
+                  <Command>
+                    <CommandInput placeholder="ค้นหา Add-on..." className="h-9" />
+                    <CommandList>
+                      <CommandEmpty>ไม่พบรายการ</CommandEmpty>
+                      <CommandGroup>
+                        {ADDON_OPTIONS.filter(opt => !data.addons.some(a => a.value === opt.value)).map(option => (
+                          <CommandItem
+                            key={option.value}
+                            value={option.label}
+                            onSelect={() => {
+                              handleAddAddon(option.value);
+                              setAddonComboboxOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                data.addons.some(a => a.value === option.value) ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {option.label} (฿{option.price.toLocaleString()})
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
           )}
 
