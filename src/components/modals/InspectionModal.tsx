@@ -674,17 +674,11 @@ export const InspectionModal = ({
                     <p className="text-muted-foreground text-xs mb-1">ยอดรวมทั้งหมด</p>
                     <p className="font-semibold text-lg">฿{payment.totalAmount.toLocaleString()}</p>
                   </div>
-                  {totalAddonPrice > 0 && (
-                    <div className="bg-purple-50 dark:bg-purple-950/30 rounded-lg p-3 border border-purple-200 dark:border-purple-800">
-                      <p className="text-purple-700 dark:text-purple-400 text-xs mb-1">ยอด Add-on</p>
-                      <p className="font-semibold text-lg text-purple-600">฿{totalAddonPrice.toLocaleString()}</p>
-                    </div>
-                  )}
                   <div className="bg-emerald-100 dark:bg-emerald-950/50 rounded-lg p-3 border border-emerald-300 dark:border-emerald-700">
                     <p className="text-emerald-700 dark:text-emerald-400 text-xs mb-1">รับเงินแล้ว</p>
                     <p className="font-semibold text-lg text-emerald-600">฿{totalCollected.toLocaleString()}</p>
                   </div>
-                  <div className={`rounded-lg p-3 border ${totalAddonPrice > 0 ? 'col-span-2' : ''} bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800`}>
+                  <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-3 border border-amber-200 dark:border-amber-800">
                     <p className="text-muted-foreground text-xs mb-1">ยอดคงเหลือ (รวม Add-on)</p>
                     <p className="font-semibold text-lg text-amber-600">฿{(payment.remainingBalance + totalAddonPrice).toLocaleString()}</p>
                   </div>
