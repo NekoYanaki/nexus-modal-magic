@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Pencil, Save, X, LogIn, Trash2, FileText, ChevronsUpDown, Check } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Pencil, Save, X, LogIn, Trash2, FileText, ChevronsUpDown, Check, CreditCard, Banknote, Receipt } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import { cn } from "@/lib/utils";
@@ -46,6 +47,14 @@ interface PaymentDetail {
   remainingBalance: number;
 }
 
+interface CardPaymentRecord {
+  cardType: string;
+  lastFourDigits: string;
+  transactionId: string;
+  approvalCode: string;
+  paymentDate: string;
+}
+
 interface PickupInspectionModalProps {
   open: boolean;
   onClose: () => void;
@@ -56,6 +65,7 @@ interface PickupInspectionModalProps {
   onStatusChange: (status: string) => void;
   pickupData?: PickupInspectionData;
   paymentDetail?: PaymentDetail;
+  invoiceAddons?: AddonItem[];
   onSave?: (pickup: PickupInspectionData) => void;
 }
 
@@ -74,6 +84,20 @@ const defaultPickup: PickupInspectionData = {
   addons: [],
 };
 
+// Mock invoice addons (from original booking)
+const defaultInvoiceAddons: AddonItem[] = [
+  { value: 'gps', label: 'GPS นำทาง', price: 200 },
+  { value: 'camping_gear', label: 'อุปกรณ์แคมปิ้ง', price: 500 },
+];
+
+const defaultCardPayment: CardPaymentRecord = {
+  cardType: "VISA",
+  lastFourDigits: "4532",
+  transactionId: "TXN-2024031512345",
+  approvalCode: "AUTH-789456",
+  paymentDate: "15 Mar 2024, 09:15",
+};
+
 export const PickupInspectionModal = ({
   open,
   onClose,
@@ -84,6 +108,7 @@ export const PickupInspectionModal = ({
   onStatusChange,
   pickupData = defaultPickup,
   paymentDetail = defaultPayment,
+  invoiceAddons = defaultInvoiceAddons,
   onSave,
 }: PickupInspectionModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -92,6 +117,10 @@ export const PickupInspectionModal = ({
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmed, setConfirmed] = useState(bookingStatus === "picked_up" || bookingStatus === "returned");
   const [addonComboboxOpen, setAddonComboboxOpen] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<string>("cash");
+  const [cardPayment] = useState<CardPaymentRecord>(defaultCardPayment);
+
+  const invoiceAddonTotal = invoiceAddons.reduce((sum, addon) => sum + addon.price, 0);
 
   // Addon handlers
   const handleAddAddon = (addonValue: string) => {
@@ -225,8 +254,35 @@ export const PickupInspectionModal = ({
                   ) : (
                     <p className="font-medium">{pickup.mileage} km</p>
                   )}
-                </div>
               </div>
+
+              {/* Invoice Add-ons (Read-only) */}
+              <div className="pt-3 border-t border-border mt-3">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-muted-foreground text-sm flex items-center gap-2">
+                    <Receipt className="w-4 h-4" />
+                    Add-on จาก Invoice ({invoiceAddons.length} รายการ)
+                  </p>
+                </div>
+                
+                {invoiceAddons.length > 0 ? (
+                  <div className="space-y-2">
+                    {invoiceAddons.map((addon) => (
+                      <div key={addon.value} className="flex items-center justify-between gap-2 border border-border rounded-lg p-2 bg-muted/30">
+                        <span className="text-sm font-medium text-muted-foreground">{addon.label}</span>
+                        <span className="text-sm text-muted-foreground">฿{addon.price.toLocaleString()}</span>
+                      </div>
+                    ))}
+                    <div className="flex items-center justify-between pt-2 border-t border-border mt-2">
+                      <span className="text-sm text-muted-foreground">รวม Add-on (Invoice)</span>
+                      <span className="text-sm font-semibold text-muted-foreground">฿{invoiceAddonTotal.toLocaleString()}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-2">ไม่มีรายการ Add-on จาก Invoice</p>
+                )}
+              </div>
+            </div>
 
               {/* Add-on & Accessories */}
               <div className="pt-3 border-t border-border mt-3">
@@ -333,6 +389,62 @@ export const PickupInspectionModal = ({
                   <p className="font-semibold text-lg text-amber-600">฿{(payment.remainingBalance + totalAddonPrice).toLocaleString()}</p>
                 </div>
               </div>
+
+              {/* Payment Method Selection */}
+              <div className="mb-4">
+                <p className="text-muted-foreground text-sm mb-2">ประเภทการชำระเงิน</p>
+                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                  <SelectTrigger className="w-full bg-background">
+                    <SelectValue placeholder="เลือกประเภทการชำระเงิน" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border border-border z-50">
+                    <SelectItem value="cash">
+                      <div className="flex items-center gap-2">
+                        <Banknote className="w-4 h-4 text-green-600" />
+                        เงินสด
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="card">
+                      <div className="flex items-center gap-2">
+                        <CreditCard className="w-4 h-4 text-blue-600" />
+                        บัตรเครดิต/เดบิต
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Card Payment Record (shown when card is selected) */}
+              {paymentMethod === "card" && (
+                <div className="mb-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center gap-2 mb-3">
+                    <CreditCard className="w-4 h-4 text-blue-600" />
+                    <p className="font-medium text-sm text-blue-700 dark:text-blue-400">บันทึกการชำระเงินด้วยบัตร</p>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">ประเภทบัตร</span>
+                      <span className="font-medium">{cardPayment.cardType}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">หมายเลขบัตร (4 หลักสุดท้าย)</span>
+                      <span className="font-medium">**** {cardPayment.lastFourDigits}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">รหัสธุรกรรม</span>
+                      <span className="font-medium text-xs">{cardPayment.transactionId}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">รหัสอนุมัติ</span>
+                      <span className="font-medium">{cardPayment.approvalCode}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">วันที่ชำระ</span>
+                      <span className="font-medium">{cardPayment.paymentDate}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Save Button */}
               {isEditing && (
