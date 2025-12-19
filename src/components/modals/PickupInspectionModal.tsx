@@ -173,7 +173,7 @@ export const PickupInspectionModal = ({
   return (
     <>
       <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="max-w-[500px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[700px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <LogIn className="w-5 h-5 text-emerald-600" />
