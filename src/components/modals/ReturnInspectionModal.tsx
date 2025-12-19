@@ -332,6 +332,18 @@ export const ReturnInspectionModal = ({
                   </div>
                   <div className="space-y-3">
                     <div>
+                      <p className="text-muted-foreground text-xs mb-1">ประเภท</p>
+                      <Select defaultValue="pay">
+                        <SelectTrigger className="h-8 text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="refund">คืนเงิน</SelectItem>
+                          <SelectItem value="pay">จ่ายเพิ่ม</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
                       <p className="text-muted-foreground text-xs mb-1">จำนวนเงิน</p>
                       <Input 
                         type="number"
