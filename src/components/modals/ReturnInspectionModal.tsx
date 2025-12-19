@@ -332,6 +332,14 @@ export const ReturnInspectionModal = ({
                   </div>
                   <div className="space-y-3">
                     <div>
+                      <p className="text-muted-foreground text-xs mb-1">จำนวนเงิน</p>
+                      <Input 
+                        type="number"
+                        placeholder="0.00" 
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                    <div>
                       <p className="text-muted-foreground text-xs mb-1">รายละเอียด</p>
                       <Input 
                         placeholder="กรอกรายละเอียดการชำระเงิน..." 
