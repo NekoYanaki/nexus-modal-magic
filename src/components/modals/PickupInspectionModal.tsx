@@ -265,7 +265,7 @@ export const PickupInspectionModal = ({
                   </p>
                 </div>
                 
-                {invoiceAddons.length > 0 ? (
+                {invoiceAddons.length > 0 && (
                   <div className="space-y-2">
                     {invoiceAddons.map((addon) => (
                       <div key={addon.value} className="flex items-center justify-between gap-2 border border-border rounded-lg p-2 bg-muted/30">
@@ -273,13 +273,7 @@ export const PickupInspectionModal = ({
                         <span className="text-sm text-muted-foreground">฿{addon.price.toLocaleString()}</span>
                       </div>
                     ))}
-                    <div className="flex items-center justify-between pt-2 border-t border-border mt-2">
-                      <span className="text-sm text-muted-foreground">รวม Add-on (Invoice)</span>
-                      <span className="text-sm font-semibold text-muted-foreground">฿{invoiceAddonTotal.toLocaleString()}</span>
-                    </div>
                   </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground text-center py-2">ไม่มีรายการ Add-on จาก Invoice</p>
                 )}
               </div>
             </div>
@@ -287,7 +281,7 @@ export const PickupInspectionModal = ({
               {/* Add-on & Accessories */}
               <div className="pt-3 border-t border-border mt-3">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-muted-foreground text-sm">Add-on & Accessories ({pickup.addons.length} รายการ)</p>
+                  <p className="text-muted-foreground text-sm">เพิ่ม Add-on & Accessories ({pickup.addons.length} รายการ)</p>
                 </div>
                 
                 {/* Searchable Dropdown */}
@@ -338,7 +332,7 @@ export const PickupInspectionModal = ({
                 )}
 
                 {/* Selected addons list */}
-                {pickup.addons.length > 0 ? (
+                {pickup.addons.length > 0 && (
                   <div className="space-y-2">
                     {pickup.addons.map((addon) => (
                       <div key={addon.value} className="flex items-center justify-between gap-2 border border-border rounded-lg p-2 bg-background/50">
@@ -375,8 +369,6 @@ export const PickupInspectionModal = ({
                       <span className="text-sm font-semibold text-primary">฿{totalAddonPrice.toLocaleString()}</span>
                     </div>
                   </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground text-center py-4">ไม่มีรายการ Add-on & Accessories</p>
                 )}
               </div>
             </div>
@@ -421,26 +413,21 @@ export const PickupInspectionModal = ({
                     <CreditCard className="w-4 h-4 text-blue-600" />
                     <p className="font-medium text-sm text-blue-700 dark:text-blue-400">บันทึกการชำระเงินด้วยบัตร</p>
                   </div>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">ประเภทบัตร</span>
-                      <span className="font-medium">{cardPayment.cardType}</span>
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-muted-foreground text-xs mb-1">รายละเอียด</p>
+                      <Input 
+                        placeholder="กรอกรายละเอียดการชำระเงิน..." 
+                        className="h-8 text-sm"
+                      />
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">หมายเลขบัตร (4 หลักสุดท้าย)</span>
-                      <span className="font-medium">**** {cardPayment.lastFourDigits}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">รหัสธุรกรรม</span>
-                      <span className="font-medium text-xs">{cardPayment.transactionId}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">รหัสอนุมัติ</span>
-                      <span className="font-medium">{cardPayment.approvalCode}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">วันที่ชำระ</span>
-                      <span className="font-medium">{cardPayment.paymentDate}</span>
+                    <div>
+                      <p className="text-muted-foreground text-xs mb-1">แนบหลักฐาน</p>
+                      <Input 
+                        type="file"
+                        accept="image/*,.pdf"
+                        className="h-8 text-sm"
+                      />
                     </div>
                   </div>
                 </div>
