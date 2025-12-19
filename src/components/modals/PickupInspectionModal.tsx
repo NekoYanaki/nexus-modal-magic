@@ -382,69 +382,6 @@ export const PickupInspectionModal = ({
                 </div>
               </div>
 
-              {/* Payment Method Selection */}
-              <div className="mb-4">
-                <p className="text-muted-foreground text-sm mb-2">ประเภทการชำระเงิน</p>
-                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger className="w-full bg-background">
-                    <SelectValue placeholder="เลือกประเภทการชำระเงิน" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background border border-border z-50">
-                    <SelectItem value="cash">
-                      <div className="flex items-center gap-2">
-                        <Banknote className="w-4 h-4 text-green-600" />
-                        เงินสด
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="card">
-                      <div className="flex items-center gap-2">
-                        <CreditCard className="w-4 h-4 text-blue-600" />
-                        บัตรเครดิต/เดบิต
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Card Payment Record (shown when card is selected) */}
-              {paymentMethod === "card" && (
-                <div className="mb-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
-                  <div className="flex items-center gap-2 mb-3">
-                    <CreditCard className="w-4 h-4 text-blue-600" />
-                    <p className="font-medium text-sm text-blue-700 dark:text-blue-400">บันทึกการชำระเงินด้วยบัตร</p>
-                  </div>
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-muted-foreground text-xs mb-1">ประเภท</p>
-                      <Select defaultValue="pay">
-                        <SelectTrigger className="h-8 text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="refund">คืนเงิน</SelectItem>
-                          <SelectItem value="pay">จ่ายเพิ่ม</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground text-xs mb-1">จำนวนเงิน</p>
-                      <Input 
-                        type="number"
-                        placeholder="0.00" 
-                        className="h-8 text-sm"
-                      />
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground text-xs mb-1">แนบหลักฐาน</p>
-                      <Input 
-                        type="file"
-                        accept="image/*,.pdf"
-                        className="h-8 text-sm"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
 
               {/* Save Button */}
               {isEditing && (
