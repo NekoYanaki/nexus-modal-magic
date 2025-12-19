@@ -5,8 +5,9 @@ import { PartnerDetailModal } from "@/components/modals/PartnerDetailModal";
 import { CampsiteDetailModal } from "@/components/modals/CampsiteDetailModal";
 import { CustomerDetailModal } from "@/components/modals/CustomerDetailModal";
 import { PaymentDetailModal } from "@/components/modals/PaymentDetailModal";
-import { InspectionModal } from "@/components/modals/InspectionModal";
-import { Calendar, Users, Tent, UserCircle, CreditCard, ClipboardCheck } from "lucide-react";
+import { PickupInspectionModal } from "@/components/modals/PickupInspectionModal";
+import { ReturnInspectionModal } from "@/components/modals/ReturnInspectionModal";
+import { Calendar, Users, Tent, UserCircle, CreditCard, LogIn, LogOut } from "lucide-react";
 
 const Index = () => {
   const [bookingOpen, setBookingOpen] = useState(false);
@@ -14,9 +15,10 @@ const Index = () => {
   const [campsiteOpen, setCampsiteOpen] = useState(false);
   const [customerOpen, setCustomerOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
-  const [inspectionOpen, setInspectionOpen] = useState(false);
-  const [inspectionStatus, setInspectionStatus] = useState("confirmed");
-
+  const [pickupOpen, setPickupOpen] = useState(false);
+  const [returnOpen, setReturnOpen] = useState(false);
+  const [pickupStatus, setPickupStatus] = useState("confirmed");
+  const [returnStatus, setReturnStatus] = useState("picked_up");
   const mockPaymentData = {
     id: "PAY005",
     bookingRef: "BK0005",
@@ -91,23 +93,42 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Inspection Card */}
+          {/* Pickup Inspection Card */}
           <div className="group relative bg-card border border-border rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-emerald-600/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="relative">
-              <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mb-4">
-                <ClipboardCheck className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-4">
+                <LogIn className="w-6 h-6 text-emerald-600" />
               </div>
-              <h3 className="text-2xl font-semibold mb-2">Vehicle Inspection</h3>
+              <h3 className="text-2xl font-semibold mb-2">รับรถ (Pick Up)</h3>
               <p className="text-muted-foreground mb-6">
-                ตรวจสภาพรถก่อน/หลังเช่า บันทึกความเสียหาย และจัดการการเงิน
+                ตรวจสภาพรถก่อนส่งมอบ บันทึก Add-on และยืนยันการรับรถ
               </p>
               <Button 
-                onClick={() => setInspectionOpen(true)}
-                className="w-full"
-                variant="default"
+                onClick={() => setPickupOpen(true)}
+                className="w-full bg-emerald-600 hover:bg-emerald-700"
               >
-                View Inspection Modal
+                View Pickup Modal
+              </Button>
+            </div>
+          </div>
+
+          {/* Return Inspection Card */}
+          <div className="group relative bg-card border border-border rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-blue-600/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative">
+              <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mb-4">
+                <LogOut className="w-6 h-6 text-blue-600" />
+              </div>
+              <h3 className="text-2xl font-semibold mb-2">คืนรถ (Return)</h3>
+              <p className="text-muted-foreground mb-6">
+                ตรวจสภาพรถหลังคืน บันทึกความเสียหาย และยืนยันการคืนรถ
+              </p>
+              <Button 
+                onClick={() => setReturnOpen(true)}
+                className="w-full bg-blue-600 hover:bg-blue-700"
+              >
+                View Return Modal
               </Button>
             </div>
           </div>
@@ -234,14 +255,23 @@ const Index = () => {
       <CampsiteDetailModal open={campsiteOpen} onClose={() => setCampsiteOpen(false)} />
       <CustomerDetailModal open={customerOpen} onClose={() => setCustomerOpen(false)} />
       <PaymentDetailModal open={paymentOpen} onOpenChange={setPaymentOpen} payment={mockPaymentData} />
-      <InspectionModal 
-        open={inspectionOpen} 
-        onClose={() => setInspectionOpen(false)}
+      <PickupInspectionModal 
+        open={pickupOpen} 
+        onClose={() => setPickupOpen(false)}
         bookingCode="BK002"
         customerName="สมชาย ใจดี"
         vehicleName="Toyota Fortuner"
-        bookingStatus={inspectionStatus}
-        onStatusChange={setInspectionStatus}
+        bookingStatus={pickupStatus}
+        onStatusChange={setPickupStatus}
+      />
+      <ReturnInspectionModal 
+        open={returnOpen} 
+        onClose={() => setReturnOpen(false)}
+        bookingCode="BK002"
+        customerName="สมชาย ใจดี"
+        vehicleName="Toyota Fortuner"
+        bookingStatus={returnStatus}
+        onStatusChange={setReturnStatus}
       />
     </div>
   );
