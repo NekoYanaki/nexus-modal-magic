@@ -1,0 +1,397 @@
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Pencil, Save, X, LogIn, Trash2, FileText, ChevronsUpDown, Check } from "lucide-react";
+import { toast } from "sonner";
+import jsPDF from "jspdf";
+import { cn } from "@/lib/utils";
+
+// Master list of Add-on & Accessories
+const ADDON_OPTIONS = [
+  { value: 'gps', label: 'GPS นำทาง', price: 200 },
+  { value: 'child_seat', label: 'เบาะนั่งเด็ก', price: 300 },
+  { value: 'wifi_router', label: 'WiFi Router', price: 150 },
+  { value: 'camping_gear', label: 'อุปกรณ์แคมปิ้ง', price: 500 },
+  { value: 'bbq_set', label: 'ชุดปิ้งย่าง', price: 350 },
+  { value: 'bicycle_rack', label: 'แร็คจักรยาน', price: 250 },
+  { value: 'awning', label: 'กันสาด', price: 400 },
+  { value: 'generator', label: 'เครื่องปั่นไฟ', price: 600 },
+  { value: 'outdoor_table', label: 'โต๊ะกลางแจ้ง', price: 200 },
+  { value: 'outdoor_chair', label: 'เก้าอี้พับ (ชุด)', price: 150 },
+];
+
+interface AddonItem {
+  value: string;
+  label: string;
+  price: number;
+}
+
+interface PickupInspectionData {
+  date: string;
+  mileage: string;
+  fuelLevel: string;
+  notes: string;
+  addons: AddonItem[];
+}
+
+interface PaymentDetail {
+  deposit: number;
+  damageDeposit: number;
+  totalAmount: number;
+  remainingBalance: number;
+}
+
+interface PickupInspectionModalProps {
+  open: boolean;
+  onClose: () => void;
+  bookingCode: string;
+  customerName: string;
+  vehicleName: string;
+  bookingStatus: string;
+  onStatusChange: (status: string) => void;
+  pickupData?: PickupInspectionData;
+  paymentDetail?: PaymentDetail;
+  onSave?: (pickup: PickupInspectionData) => void;
+}
+
+const defaultPayment: PaymentDetail = {
+  deposit: 5000,
+  damageDeposit: 3000,
+  totalAmount: 12000,
+  remainingBalance: 7000,
+};
+
+const defaultPickup: PickupInspectionData = {
+  date: "15 Mar 2024, 09:00",
+  mileage: "45,230",
+  fuelLevel: "full",
+  notes: "",
+  addons: [],
+};
+
+export const PickupInspectionModal = ({
+  open,
+  onClose,
+  bookingCode,
+  customerName,
+  vehicleName,
+  bookingStatus,
+  onStatusChange,
+  pickupData = defaultPickup,
+  paymentDetail = defaultPayment,
+  onSave,
+}: PickupInspectionModalProps) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [pickup, setPickup] = useState<PickupInspectionData>(pickupData);
+  const [payment] = useState<PaymentDetail>(paymentDetail);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [confirmed, setConfirmed] = useState(bookingStatus === "picked_up" || bookingStatus === "returned");
+  const [addonComboboxOpen, setAddonComboboxOpen] = useState(false);
+
+  // Addon handlers
+  const handleAddAddon = (addonValue: string) => {
+    const masterAddon = ADDON_OPTIONS.find(a => a.value === addonValue);
+    if (!masterAddon) return;
+    
+    if (pickup.addons.some(a => a.value === addonValue)) {
+      toast.error("รายการนี้ถูกเพิ่มแล้ว");
+      return;
+    }
+    
+    setPickup(prev => ({
+      ...prev,
+      addons: [...prev.addons, { ...masterAddon }]
+    }));
+  };
+
+  const handleRemoveAddon = (addonValue: string) => {
+    setPickup(prev => ({
+      ...prev,
+      addons: prev.addons.filter(a => a.value !== addonValue)
+    }));
+  };
+
+  const handleAddonPriceChange = (addonValue: string, newPrice: number) => {
+    setPickup(prev => ({
+      ...prev,
+      addons: prev.addons.map(a => 
+        a.value === addonValue ? { ...a, price: newPrice } : a
+      )
+    }));
+  };
+
+  const totalAddonPrice = pickup.addons.reduce((sum, addon) => sum + addon.price, 0);
+
+  const handleSave = () => {
+    setIsEditing(false);
+    onSave?.(pickup);
+    toast.success("บันทึกข้อมูลรับรถสำเร็จ");
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setPickup(pickupData);
+  };
+
+  const handlePrintReceipt = () => {
+    const doc = new jsPDF();
+    
+    doc.setFontSize(18);
+    doc.text("ใบเสร็จยอดมัดจำความเสียหาย", 105, 20, { align: "center" });
+    
+    doc.setFontSize(12);
+    doc.text(`รหัสการจอง: ${bookingCode}`, 20, 40);
+    doc.text(`ลูกค้า: ${customerName}`, 20, 50);
+    doc.text(`รถ: ${vehicleName}`, 20, 60);
+    
+    doc.line(20, 70, 190, 70);
+    
+    doc.text(`วันที่รับรถ: ${pickup.date}`, 20, 85);
+    doc.text(`เลขไมล์: ${pickup.mileage} km`, 20, 95);
+    
+    doc.line(20, 110, 190, 110);
+    
+    doc.setFontSize(10);
+    doc.text("เอกสารนี้ออกโดยระบบอัตโนมัติ", 105, 130, { align: "center" });
+
+    doc.save(`pickup-receipt-${bookingCode}.pdf`);
+    toast.success("ดาวน์โหลดใบเสร็จสำเร็จ");
+  };
+
+  const handleConfirm = () => {
+    onStatusChange("picked_up");
+    setShowConfirm(false);
+    setConfirmed(true);
+    toast.success("อัปเดตสถานะเป็น Picked Up สำเร็จ");
+  };
+
+  return (
+    <>
+      <Dialog open={open} onOpenChange={onClose}>
+        <DialogContent className="max-w-[500px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <LogIn className="w-5 h-5 text-emerald-600" />
+              รับรถ (Pick Up)
+            </DialogTitle>
+          </DialogHeader>
+
+          <Card className="p-4 bg-gradient-to-br from-emerald-50/50 to-emerald-100/30 dark:from-emerald-950/20 dark:to-emerald-900/10 border-emerald-200 dark:border-emerald-800">
+            {/* Edit Button */}
+            <div className="flex justify-end mb-2">
+              {isEditing ? (
+                <Button variant="outline" size="sm" className="h-7 text-xs" onClick={handleCancel}>
+                  <X className="w-3 h-3 mr-1" />
+                  ยกเลิก
+                </Button>
+              ) : (
+                <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setIsEditing(true)}>
+                  <Pencil className="w-3 h-3 mr-1" />
+                  แก้ไข
+                </Button>
+              )}
+            </div>
+            
+            {/* Inspection Section */}
+            <div className="space-y-3">
+              <h5 className="font-medium text-sm border-b border-border pb-2">รับรถ (Pick Up)</h5>
+              <div className="text-sm space-y-2">
+                <div>
+                  <p className="text-muted-foreground mb-1">วันที่รับรถ</p>
+                  {isEditing ? (
+                    <Input
+                      value={pickup.date}
+                      onChange={(e) => setPickup(prev => ({ ...prev, date: e.target.value }))}
+                      className="h-8"
+                    />
+                  ) : (
+                    <p className="font-medium">{pickup.date}</p>
+                  )}
+                </div>
+                <div>
+                  <p className="text-muted-foreground mb-1">เลขไมล์</p>
+                  {isEditing ? (
+                    <Input
+                      value={pickup.mileage}
+                      onChange={(e) => setPickup(prev => ({ ...prev, mileage: e.target.value }))}
+                      className="h-8"
+                      placeholder="km"
+                    />
+                  ) : (
+                    <p className="font-medium">{pickup.mileage} km</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Add-on & Accessories */}
+              <div className="pt-3 border-t border-border mt-3">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-muted-foreground text-sm">Add-on & Accessories ({pickup.addons.length} รายการ)</p>
+                </div>
+                
+                {/* Searchable Dropdown */}
+                {isEditing && (
+                  <div className="mb-3">
+                    <Popover open={addonComboboxOpen} onOpenChange={setAddonComboboxOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={addonComboboxOpen}
+                          className="w-full h-8 justify-between text-sm bg-background"
+                        >
+                          <span className="text-muted-foreground">ค้นหา Add-on & Accessories...</span>
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0 bg-background border border-border z-50" align="start">
+                        <Command>
+                          <CommandInput placeholder="ค้นหา Add-on..." className="h-9" />
+                          <CommandList>
+                            <CommandEmpty>ไม่พบรายการ</CommandEmpty>
+                            <CommandGroup>
+                              {ADDON_OPTIONS.filter(opt => !pickup.addons.some(a => a.value === opt.value)).map(option => (
+                                <CommandItem
+                                  key={option.value}
+                                  value={option.label}
+                                  onSelect={() => {
+                                    handleAddAddon(option.value);
+                                    setAddonComboboxOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      pickup.addons.some(a => a.value === option.value) ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {option.label} (฿{option.price.toLocaleString()})
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                )}
+
+                {/* Selected addons list */}
+                {pickup.addons.length > 0 ? (
+                  <div className="space-y-2">
+                    {pickup.addons.map((addon) => (
+                      <div key={addon.value} className="flex items-center justify-between gap-2 border border-border rounded-lg p-2 bg-background/50">
+                        <span className="text-sm font-medium">{addon.label}</span>
+                        <div className="flex items-center gap-2">
+                          {isEditing ? (
+                            <>
+                              <div className="flex items-center gap-1">
+                                <span className="text-muted-foreground text-sm">฿</span>
+                                <Input
+                                  type="number"
+                                  value={addon.price}
+                                  onChange={(e) => handleAddonPriceChange(addon.value, Number(e.target.value))}
+                                  className="h-7 w-20 text-sm"
+                                />
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                                onClick={() => handleRemoveAddon(addon.value)}
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </>
+                          ) : (
+                            <span className="text-sm text-primary font-medium">฿{addon.price.toLocaleString()}</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    <div className="flex items-center justify-between pt-2 border-t border-border mt-2">
+                      <span className="text-sm text-muted-foreground">รวม Add-on</span>
+                      <span className="text-sm font-semibold text-primary">฿{totalAddonPrice.toLocaleString()}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">ไม่มีรายการ Add-on & Accessories</p>
+                )}
+              </div>
+            </div>
+            
+            {/* Payment Summary */}
+            <div className="mt-6 pt-4 border-t-2 border-emerald-300 dark:border-emerald-700">
+              <div className="text-sm mb-4">
+                <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-3 border border-amber-200 dark:border-amber-800">
+                  <p className="text-muted-foreground text-xs mb-1">ยอดคงเหลือ (รวม Add-on)</p>
+                  <p className="font-semibold text-lg text-amber-600">฿{(payment.remainingBalance + totalAddonPrice).toLocaleString()}</p>
+                </div>
+              </div>
+
+              {/* Save Button */}
+              {isEditing && (
+                <div className="pt-4 mt-4 border-t border-emerald-200 dark:border-emerald-800">
+                  <Button className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700" onClick={handleSave}>
+                    <Save className="w-4 h-4" />
+                    บันทึก
+                  </Button>
+                </div>
+              )}
+            </div>
+          </Card>
+
+          {/* Action Buttons */}
+          <div className="space-y-3 mt-4">
+            <Button
+              className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+              onClick={() => setShowConfirm(true)}
+              disabled={bookingStatus !== "confirmed"}
+            >
+              <LogIn className="w-4 h-4" />
+              ยืนยันรับรถ (Pick Up)
+            </Button>
+            
+            {confirmed && (
+              <Button
+                variant="outline"
+                className="w-full gap-2"
+                onClick={handlePrintReceipt}
+              >
+                <FileText className="w-4 h-4" />
+                พิมพ์เอกสารใบเสร็จ
+              </Button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ยืนยันการรับรถ</AlertDialogTitle>
+            <AlertDialogDescription>
+              คุณต้องการเปลี่ยนสถานะการจอง <strong>{bookingCode}</strong> เป็น "Picked Up" ใช่หรือไม่?
+              <br /><br />
+              <span className="text-muted-foreground">ลูกค้า: {customerName}</span>
+              <br />
+              <span className="text-muted-foreground">รถ: {vehicleName}</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirm} className="bg-emerald-600 hover:bg-emerald-700">
+              ยืนยันรับรถ
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+};
