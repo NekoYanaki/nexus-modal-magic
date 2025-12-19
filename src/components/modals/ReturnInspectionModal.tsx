@@ -5,7 +5,8 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Pencil, Save, X, Upload, Image, LogOut, Plus, Trash2, FileText } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Pencil, Save, X, Upload, Image, LogOut, Plus, Trash2, FileText, CreditCard, Banknote } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 
@@ -58,6 +59,7 @@ export const ReturnInspectionModal = ({
   const [returnInspection, setReturnInspection] = useState<ReturnInspectionData>(returnData);
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmed, setConfirmed] = useState(bookingStatus === "returned");
+  const [paymentMethod, setPaymentMethod] = useState<string>("cash");
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -296,15 +298,66 @@ export const ReturnInspectionModal = ({
               </div>
             </div>
             
-            {/* Save Button */}
-            {isEditing && (
-              <div className="mt-6 pt-4 border-t-2 border-blue-300 dark:border-blue-700">
+            {/* Payment Method Section */}
+            <div className="mt-6 pt-4 border-t-2 border-blue-300 dark:border-blue-700">
+              <div className="mb-4">
+                <p className="text-muted-foreground text-sm mb-2">ประเภทการชำระเงิน</p>
+                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                  <SelectTrigger className="w-full bg-background">
+                    <SelectValue placeholder="เลือกประเภทการชำระเงิน" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border border-border z-50">
+                    <SelectItem value="cash">
+                      <div className="flex items-center gap-2">
+                        <Banknote className="w-4 h-4 text-green-600" />
+                        เงินสด
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="card">
+                      <div className="flex items-center gap-2">
+                        <CreditCard className="w-4 h-4 text-blue-600" />
+                        บัตรเครดิต/เดบิต
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Card Payment Record (shown when card is selected) */}
+              {paymentMethod === "card" && (
+                <div className="mb-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center gap-2 mb-3">
+                    <CreditCard className="w-4 h-4 text-blue-600" />
+                    <p className="font-medium text-sm text-blue-700 dark:text-blue-400">บันทึกการชำระเงินด้วยบัตร</p>
+                  </div>
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-muted-foreground text-xs mb-1">รายละเอียด</p>
+                      <Input 
+                        placeholder="กรอกรายละเอียดการชำระเงิน..." 
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground text-xs mb-1">แนบหลักฐาน</p>
+                      <Input 
+                        type="file"
+                        accept="image/*,.pdf"
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Save Button */}
+              {isEditing && (
                 <Button className="w-full gap-2 bg-blue-600 hover:bg-blue-700" onClick={handleSave}>
                   <Save className="w-4 h-4" />
                   บันทึก
                 </Button>
-              </div>
-            )}
+              )}
+            </div>
           </Card>
 
           {/* Action Buttons */}
