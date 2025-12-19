@@ -698,100 +698,13 @@ export const InspectionModal = ({
               <div className="mt-6 pt-4 border-t-2 border-emerald-300 dark:border-emerald-700">
                 
                 {/* Payment Summary */}
-                <div className="grid grid-cols-2 gap-3 text-sm mb-4">
-                  <div className="bg-background/70 rounded-lg p-3">
-                    <p className="text-muted-foreground text-xs mb-1">ยอดมัดจำ</p>
-                    <p className="font-semibold text-lg text-primary">฿{payment.deposit.toLocaleString()}</p>
-                  </div>
-                  <div className="bg-background/70 rounded-lg p-3">
-                    <p className="text-muted-foreground text-xs mb-1">ยอดรวมทั้งหมด</p>
-                    <p className="font-semibold text-lg">฿{payment.totalAmount.toLocaleString()}</p>
-                  </div>
-                  <div className="bg-emerald-100 dark:bg-emerald-950/50 rounded-lg p-3 border border-emerald-300 dark:border-emerald-700">
-                    <p className="text-emerald-700 dark:text-emerald-400 text-xs mb-1">รับเงินแล้ว</p>
-                    <p className="font-semibold text-lg text-emerald-600">฿{totalCollected.toLocaleString()}</p>
-                  </div>
+                <div className="text-sm mb-4">
                   <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-3 border border-amber-200 dark:border-amber-800">
                     <p className="text-muted-foreground text-xs mb-1">ยอดคงเหลือ (รวม Add-on)</p>
                     <p className="font-semibold text-lg text-amber-600">฿{(payment.remainingBalance + totalAddonPrice).toLocaleString()}</p>
                   </div>
                 </div>
 
-                {/* Finance Record - Pickup */}
-                <div className="pt-4 border-t border-emerald-200 dark:border-emerald-800">
-                  <h6 className="font-medium text-sm mb-3">บันทึกการเงิน</h6>
-                  <div className="border border-border rounded-lg p-3 bg-background/50 space-y-3">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">หัวข้อรายการ</p>
-                      {isEditingPickup ? (
-                        <Input
-                          value={pickup.financeRecord.label}
-                          onChange={(e) => handleFinanceRecordChange('pickup', 'label', e.target.value)}
-                          className="h-8 text-sm"
-                          placeholder="เช่น ชำระค่าเช่าคงเหลือ, ค่าน้ำมัน"
-                        />
-                      ) : (
-                        <p className="font-medium text-sm">{pickup.financeRecord.label || "-"}</p>
-                      )}
-                    </div>
-                    
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">จำนวนเงิน</p>
-                      {isEditingPickup ? (
-                        <div className="flex items-center gap-1">
-                          <span className="text-muted-foreground text-sm">฿</span>
-                          <Input
-                            type="number"
-                            value={pickup.financeRecord.amount}
-                            onChange={(e) => handleFinanceRecordChange('pickup', 'amount', Number(e.target.value))}
-                            className="h-8 text-sm"
-                            placeholder="0"
-                          />
-                        </div>
-                      ) : (
-                        <p className="font-medium text-sm text-primary">฿{pickup.financeRecord.amount.toLocaleString()}</p>
-                      )}
-                    </div>
-                    
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">หลักฐานการชำระเงิน</p>
-                      {pickup.financeRecord.proofImage ? (
-                        <div className="relative w-16 h-16">
-                          <img
-                            src={pickup.financeRecord.proofImage}
-                            alt="หลักฐานการชำระเงิน"
-                            className="w-full h-full object-cover rounded-lg border border-border"
-                          />
-                          {isEditingPickup && (
-                            <button
-                              onClick={() => handleFinanceRecordChange('pickup', 'proofImage', null)}
-                              className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/80"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          )}
-                        </div>
-                      ) : isEditingPickup ? (
-                        <label className="flex items-center justify-center w-16 h-16 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handleFinanceProofUpload('pickup', file);
-                            }}
-                          />
-                          <Upload className="w-4 h-4 text-muted-foreground" />
-                        </label>
-                      ) : (
-                        <div className="w-16 h-16 border border-dashed border-border rounded-lg flex items-center justify-center bg-muted/30">
-                          <Image className="w-4 h-4 text-muted-foreground/50" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
 
                 {/* Save Button for Pickup */}
                 {isEditingPickup && (
@@ -829,81 +742,6 @@ export const InspectionModal = ({
               <div className="mt-6 pt-4 border-t-2 border-blue-300 dark:border-blue-700">
                 
 
-                {/* Finance Record - Return */}
-                <div className="pt-4 border-t border-blue-200 dark:border-blue-800">
-                  <h6 className="font-medium text-sm mb-3">บันทึกการเงิน</h6>
-                  <div className="border border-border rounded-lg p-3 bg-background/50 space-y-3">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">หัวข้อรายการ</p>
-                      {isEditingReturn ? (
-                        <Input
-                          value={returnInspection.financeRecord.label}
-                          onChange={(e) => handleFinanceRecordChange('return', 'label', e.target.value)}
-                          className="h-8 text-sm"
-                          placeholder="เช่น ชำระค่าเช่าคงเหลือ, ค่าน้ำมัน"
-                        />
-                      ) : (
-                        <p className="font-medium text-sm">{returnInspection.financeRecord.label || "-"}</p>
-                      )}
-                    </div>
-                    
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">จำนวนเงิน</p>
-                      {isEditingReturn ? (
-                        <div className="flex items-center gap-1">
-                          <span className="text-muted-foreground text-sm">฿</span>
-                          <Input
-                            type="number"
-                            value={returnInspection.financeRecord.amount}
-                            onChange={(e) => handleFinanceRecordChange('return', 'amount', Number(e.target.value))}
-                            className="h-8 text-sm"
-                            placeholder="0"
-                          />
-                        </div>
-                      ) : (
-                        <p className="font-medium text-sm text-primary">฿{returnInspection.financeRecord.amount.toLocaleString()}</p>
-                      )}
-                    </div>
-                    
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">หลักฐานการชำระเงิน</p>
-                      {returnInspection.financeRecord.proofImage ? (
-                        <div className="relative w-16 h-16">
-                          <img
-                            src={returnInspection.financeRecord.proofImage}
-                            alt="หลักฐานการชำระเงิน"
-                            className="w-full h-full object-cover rounded-lg border border-border"
-                          />
-                          {isEditingReturn && (
-                            <button
-                              onClick={() => handleFinanceRecordChange('return', 'proofImage', null)}
-                              className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/80"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          )}
-                        </div>
-                      ) : isEditingReturn ? (
-                        <label className="flex items-center justify-center w-16 h-16 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handleFinanceProofUpload('return', file);
-                            }}
-                          />
-                          <Upload className="w-4 h-4 text-muted-foreground" />
-                        </label>
-                      ) : (
-                        <div className="w-16 h-16 border border-dashed border-border rounded-lg flex items-center justify-center bg-muted/30">
-                          <Image className="w-4 h-4 text-muted-foreground/50" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
 
                 {/* Save Button for Return */}
                 {isEditingReturn && (
