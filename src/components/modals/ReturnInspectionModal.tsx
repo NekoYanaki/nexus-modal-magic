@@ -22,6 +22,7 @@ interface ReturnInspectionData {
   fuelLevel: string;
   conditions: ConditionRecord[];
   notes: string;
+  totalDamageCost: string;
 }
 
 interface ReturnInspectionModalProps {
@@ -42,6 +43,7 @@ const defaultReturn: ReturnInspectionData = {
   fuelLevel: "3/4",
   conditions: [],
   notes: "",
+  totalDamageCost: "",
 };
 
 export const ReturnInspectionModal = ({
@@ -291,6 +293,24 @@ export const ReturnInspectionModal = ({
                         </div>
                       </div>
                     ))}
+                    
+                    {/* Total Damage Cost */}
+                    <div className="mt-4 p-3 rounded-lg bg-destructive/10 border border-destructive/30">
+                      <p className="text-sm font-medium text-destructive mb-2">ยอดความเสียหายทั้งหมด</p>
+                      {isEditing ? (
+                        <Input
+                          type="number"
+                          value={returnInspection.totalDamageCost}
+                          onChange={(e) => setReturnInspection(prev => ({ ...prev, totalDamageCost: e.target.value }))}
+                          className="h-8"
+                          placeholder="0.00"
+                        />
+                      ) : (
+                        <p className="font-medium text-destructive">
+                          {returnInspection.totalDamageCost ? `฿${Number(returnInspection.totalDamageCost).toLocaleString()}` : "-"}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground text-center py-4">ไม่มีรายการสภาพรถ</p>
