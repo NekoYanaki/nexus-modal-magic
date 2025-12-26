@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Pencil, Save, X, LogIn, Trash2, FileText, ChevronsUpDown, Check, CreditCard, Banknote, Receipt } from "lucide-react";
+import { Pencil, Save, X, LogIn, Trash2, FileText, ChevronsUpDown, Check, CreditCard, Banknote, Receipt, Shield, ShieldCheck, Camera, Upload } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import { cn } from "@/lib/utils";
@@ -32,12 +32,23 @@ interface AddonItem {
   price: number;
 }
 
+interface InsuranceOption {
+  value: string;
+  label: string;
+  price: number;
+}
+
 interface PickupInspectionData {
   date: string;
   mileage: string;
   fuelLevel: string;
   notes: string;
   addons: AddonItem[];
+}
+
+interface DocumentUploads {
+  internationalLicense: File | null;
+  passport: File | null;
 }
 
 interface PaymentDetail {
@@ -55,6 +66,14 @@ interface CardPaymentRecord {
   paymentDate: string;
 }
 
+// Insurance options
+const INSURANCE_OPTIONS: InsuranceOption[] = [
+  { value: 'basic', label: 'ประกันพื้นฐาน (Basic)', price: 500 },
+  { value: 'standard', label: 'ประกันมาตรฐาน (Standard)', price: 1000 },
+  { value: 'premium', label: 'ประกันพรีเมียม (Premium)', price: 2000 },
+  { value: 'full', label: 'ประกันเต็มรูปแบบ (Full Coverage)', price: 3500 },
+];
+
 interface PickupInspectionModalProps {
   open: boolean;
   onClose: () => void;
@@ -66,6 +85,7 @@ interface PickupInspectionModalProps {
   pickupData?: PickupInspectionData;
   paymentDetail?: PaymentDetail;
   invoiceAddons?: AddonItem[];
+  bookedInsurance?: InsuranceOption | null; // Insurance from booking
   onSave?: (pickup: PickupInspectionData) => void;
 }
 
@@ -109,6 +129,7 @@ export const PickupInspectionModal = ({
   pickupData = defaultPickup,
   paymentDetail = defaultPayment,
   invoiceAddons = defaultInvoiceAddons,
+  bookedInsurance = null,
   onSave,
 }: PickupInspectionModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -119,6 +140,44 @@ export const PickupInspectionModal = ({
   const [addonComboboxOpen, setAddonComboboxOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<string>("cash");
   const [cardPayment] = useState<CardPaymentRecord>(defaultCardPayment);
+  
+  // Insurance state
+  const [selectedInsurance, setSelectedInsurance] = useState<InsuranceOption | null>(bookedInsurance);
+  const [insuranceComboboxOpen, setInsuranceComboboxOpen] = useState(false);
+  
+  // Document uploads state
+  const [documents, setDocuments] = useState<DocumentUploads>({
+    internationalLicense: null,
+    passport: null,
+  });
+
+  const handleDocumentUpload = (type: 'internationalLicense' | 'passport', file: File | null) => {
+    setDocuments(prev => ({ ...prev, [type]: file }));
+    if (file) {
+      toast.success(`อัปโหลด${type === 'internationalLicense' ? 'ใบขับขี่สากล' : 'Passport'}สำเร็จ`);
+    }
+  };
+
+  const handleRemoveDocument = (type: 'internationalLicense' | 'passport') => {
+    setDocuments(prev => ({ ...prev, [type]: null }));
+  };
+
+  const handleAddInsurance = (insuranceValue: string) => {
+    const insurance = INSURANCE_OPTIONS.find(i => i.value === insuranceValue);
+    if (insurance) {
+      setSelectedInsurance(insurance);
+      setInsuranceComboboxOpen(false);
+      toast.success(`เพิ่มประกัน: ${insurance.label}`);
+    }
+  };
+
+  const handleRemoveInsurance = () => {
+    setSelectedInsurance(null);
+    toast.success("ยกเลิกประกันสำเร็จ");
+  };
+
+  // Calculate insurance price (only if added at pickup, not from booking)
+  const insurancePrice = bookedInsurance ? 0 : (selectedInsurance?.price || 0);
 
   const invoiceAddonTotal = invoiceAddons.reduce((sum, addon) => sum + addon.price, 0);
 
@@ -373,12 +432,220 @@ export const PickupInspectionModal = ({
               </div>
             </div>
             
+            {/* Insurance Section */}
+            <div className="mt-4 pt-4 border-t border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <Shield className="w-4 h-4 text-blue-600" />
+                <p className="font-medium text-sm">ประกันภัย (Insurance)</p>
+              </div>
+              
+              {bookedInsurance ? (
+                // Show booked insurance (read-only)
+                <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800">
+                  <div className="flex items-center gap-2 mb-1">
+                    <ShieldCheck className="w-4 h-4 text-green-600" />
+                    <span className="text-sm font-medium text-green-700 dark:text-green-400">ซื้อประกันจากการจองแล้ว</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">{bookedInsurance.label}</span>
+                    <span className="text-sm font-medium text-green-600">฿{bookedInsurance.price.toLocaleString()}</span>
+                  </div>
+                </div>
+              ) : selectedInsurance ? (
+                // Show selected insurance with option to remove
+                <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-sm font-medium">{selectedInsurance.label}</span>
+                      <p className="text-xs text-muted-foreground">เพิ่มประกันตอนรับรถ</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-blue-600">฿{selectedInsurance.price.toLocaleString()}</span>
+                      {isEditing && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                          onClick={handleRemoveInsurance}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                // Show option to add insurance
+                <div className="space-y-2">
+                  <p className="text-sm text-amber-600 dark:text-amber-400">ยังไม่ได้ซื้อประกัน</p>
+                  {isEditing && (
+                    <Popover open={insuranceComboboxOpen} onOpenChange={setInsuranceComboboxOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={insuranceComboboxOpen}
+                          className="w-full h-8 justify-between text-sm bg-background"
+                        >
+                          <span className="text-muted-foreground">เลือกประกันภัย...</span>
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0 bg-background border border-border z-50" align="start">
+                        <Command>
+                          <CommandInput placeholder="ค้นหาประกัน..." className="h-9" />
+                          <CommandList>
+                            <CommandEmpty>ไม่พบรายการ</CommandEmpty>
+                            <CommandGroup>
+                              {INSURANCE_OPTIONS.map(option => (
+                                <CommandItem
+                                  key={option.value}
+                                  value={option.label}
+                                  onSelect={() => handleAddInsurance(option.value)}
+                                >
+                                  <Shield className="mr-2 h-4 w-4 text-blue-500" />
+                                  {option.label} (฿{option.price.toLocaleString()})
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Document Upload Section */}
+            <div className="mt-4 pt-4 border-t border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <FileText className="w-4 h-4 text-purple-600" />
+                <p className="font-medium text-sm">เอกสารประกอบ</p>
+              </div>
+              
+              <div className="space-y-3">
+                {/* International License Upload */}
+                <div className="p-3 rounded-lg border border-border bg-muted/30">
+                  <p className="text-sm font-medium mb-2">ใบขับขี่สากล (International Driver's License)</p>
+                  {documents.internationalLicense ? (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-green-600 flex items-center gap-1">
+                        <Check className="w-4 h-4" />
+                        {documents.internationalLicense.name}
+                      </span>
+                      {isEditing && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 text-destructive hover:text-destructive"
+                          onClick={() => handleRemoveDocument('internationalLicense')}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <label className="flex-1">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleDocumentUpload('internationalLicense', e.target.files?.[0] || null)}
+                        />
+                        <Button variant="outline" size="sm" className="w-full h-8 text-xs" asChild>
+                          <span>
+                            <Upload className="w-3 h-3 mr-1" />
+                            อัปโหลดรูป
+                          </span>
+                        </Button>
+                      </label>
+                      <label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          className="hidden"
+                          onChange={(e) => handleDocumentUpload('internationalLicense', e.target.files?.[0] || null)}
+                        />
+                        <Button variant="outline" size="sm" className="h-8 text-xs" asChild>
+                          <span>
+                            <Camera className="w-3 h-3 mr-1" />
+                            ถ่ายรูป
+                          </span>
+                        </Button>
+                      </label>
+                    </div>
+                  )}
+                </div>
+
+                {/* Passport Upload */}
+                <div className="p-3 rounded-lg border border-border bg-muted/30">
+                  <p className="text-sm font-medium mb-2">หนังสือเดินทาง (Passport)</p>
+                  {documents.passport ? (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-green-600 flex items-center gap-1">
+                        <Check className="w-4 h-4" />
+                        {documents.passport.name}
+                      </span>
+                      {isEditing && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 text-destructive hover:text-destructive"
+                          onClick={() => handleRemoveDocument('passport')}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <label className="flex-1">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleDocumentUpload('passport', e.target.files?.[0] || null)}
+                        />
+                        <Button variant="outline" size="sm" className="w-full h-8 text-xs" asChild>
+                          <span>
+                            <Upload className="w-3 h-3 mr-1" />
+                            อัปโหลดรูป
+                          </span>
+                        </Button>
+                      </label>
+                      <label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          className="hidden"
+                          onChange={(e) => handleDocumentUpload('passport', e.target.files?.[0] || null)}
+                        />
+                        <Button variant="outline" size="sm" className="h-8 text-xs" asChild>
+                          <span>
+                            <Camera className="w-3 h-3 mr-1" />
+                            ถ่ายรูป
+                          </span>
+                        </Button>
+                      </label>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
             {/* Payment Summary */}
             <div className="mt-6 pt-4 border-t-2 border-emerald-300 dark:border-emerald-700">
               <div className="text-sm mb-4">
                 <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-3 border border-amber-200 dark:border-amber-800">
-                  <p className="text-muted-foreground text-xs mb-1">ยอดคงเหลือ (รวม Add-on)</p>
-                  <p className="font-semibold text-lg text-amber-600">฿{(payment.remainingBalance + totalAddonPrice).toLocaleString()}</p>
+                  <p className="text-muted-foreground text-xs mb-1">ยอดคงเหลือ (รวม Add-on + ประกัน)</p>
+                  <p className="font-semibold text-lg text-amber-600">฿{(payment.remainingBalance + totalAddonPrice + insurancePrice).toLocaleString()}</p>
+                  {insurancePrice > 0 && (
+                    <p className="text-xs text-muted-foreground mt-1">รวมประกัน ฿{insurancePrice.toLocaleString()}</p>
+                  )}
                 </div>
               </div>
               {/* Payment Method Selection */}
