@@ -7,7 +7,8 @@ import { CustomerDetailModal } from "@/components/modals/CustomerDetailModal";
 import { PaymentDetailModal } from "@/components/modals/PaymentDetailModal";
 import { PickupInspectionModal } from "@/components/modals/PickupInspectionModal";
 import { ReturnInspectionModal } from "@/components/modals/ReturnInspectionModal";
-import { Calendar, Users, Tent, UserCircle, CreditCard, LogIn, LogOut } from "lucide-react";
+import { Calendar, Users, Tent, UserCircle, CreditCard, LogIn, LogOut, Wrench } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   const [bookingOpen, setBookingOpen] = useState(false);
@@ -214,6 +215,27 @@ const Index = () => {
               >
                 View Partner Modal
               </Button>
+            </div>
+          </div>
+
+          {/* Maintenance Card */}
+          <div className="group relative bg-card border border-border rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+            <div className="absolute inset-0 bg-gradient-to-br from-warning/5 to-warning/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative">
+              <div className="w-12 h-12 bg-warning/10 rounded-xl flex items-center justify-center mb-4">
+                <Wrench className="w-6 h-6 text-warning" />
+              </div>
+              <h3 className="text-2xl font-semibold mb-2">Maintenance</h3>
+              <p className="text-muted-foreground mb-6">
+                จัดการรถ ดูรายละเอียดและซ่อมบำรุงรถในระบบ
+              </p>
+              <Link to="/maintenance">
+                <Button 
+                  className="w-full bg-warning hover:bg-warning/90 text-warning-foreground"
+                >
+                  View Maintenance Page
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
