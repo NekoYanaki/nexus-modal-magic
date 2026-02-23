@@ -218,6 +218,26 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
 
           {/* Right Sidebar (1/3) */}
           <div className="space-y-4">
+            {/* Cost Summary */}
+            <Card className="p-5 border border-border">
+              <h4 className="font-semibold mb-3">Cost Summary</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Paid</span>
+                  <span className="font-semibold text-success">฿{mockData.totalPaid.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Remaining</span>
+                  <span className="font-semibold text-warning">฿{mockData.totalDue.toLocaleString()}</span>
+                </div>
+                <div className="h-px bg-border my-2" />
+                <div className="flex justify-between">
+                  <span className="font-semibold">Total</span>
+                  <span className="font-semibold text-lg">฿{mockData.totalAmount.toLocaleString()}</span>
+                </div>
+              </div>
+            </Card>
+
             {/* Add-ons & Accessories */}
             <Card className="p-5 border border-border">
               <h4 className="font-semibold flex items-center gap-2 mb-4">
@@ -235,26 +255,6 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">รวม Add-on</span>
                   <span className="font-semibold text-primary">฿{mockData.addonsTotal.toLocaleString()}</span>
-                </div>
-              </div>
-            </Card>
-
-            {/* Cost Summary */}
-            <Card className="p-5 border border-border">
-              <h4 className="font-semibold mb-3">Cost Summary</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Paid</span>
-                  <span className="font-semibold text-success">฿{mockData.totalPaid.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Remaining</span>
-                  <span className="font-semibold text-warning">฿{mockData.totalDue.toLocaleString()}</span>
-                </div>
-                <div className="h-px bg-border my-2" />
-                <div className="flex justify-between">
-                  <span className="font-semibold">Total</span>
-                  <span className="font-semibold text-lg">฿{mockData.totalAmount.toLocaleString()}</span>
                 </div>
               </div>
             </Card>
