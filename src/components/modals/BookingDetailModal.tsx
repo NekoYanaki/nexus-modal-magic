@@ -1,10 +1,11 @@
-import { Car, Tent, MapPin } from "lucide-react";
+import { Car, Tent, MapPin, RefreshCw } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { BookingDocumentModal } from "./BookingDocumentModal";
+import { VehicleSelectionDialog, type SelectableVehicle } from "./VehicleSelectionDialog";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -17,6 +18,8 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
   const [showDocument, setShowDocument] = useState(false);
   const [bookingStatus, setBookingStatus] = useState("confirmed");
   const [showRejectConfirm, setShowRejectConfirm] = useState(false);
+  const [showVehicleSelection, setShowVehicleSelection] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState<SelectableVehicle | null>(null);
   
   // Mock data
   const mockData = {
@@ -150,18 +153,33 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
 
             {/* Vehicle Card */}
             <Card className="p-4">
-              <h4 className="font-semibold mb-3 flex items-center gap-2">
-                <Car className="w-4 h-4" />
-                Vehicle
-              </h4>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-semibold flex items-center gap-2">
+                  <Car className="w-4 h-4" />
+                  Vehicle
+                </h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs gap-1"
+                  onClick={() => setShowVehicleSelection(true)}
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  เปลี่ยนรถ
+                </Button>
+              </div>
               <div className="grid grid-cols-2 gap-y-3 text-sm">
                 <div>
                   <p className="text-muted-foreground mb-1">Model</p>
-                  <p className="font-medium">{mockData.vehicleModel}</p>
+                  <p className="font-medium">{selectedVehicle ? `${selectedVehicle.name} ${selectedVehicle.year}` : mockData.vehicleModel}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground mb-1">License Plate</p>
-                  <p className="font-medium">{mockData.licensePlate}</p>
+                  <p className="font-medium">{selectedVehicle ? selectedVehicle.licensePlate : mockData.licensePlate}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground mb-1">ประเภท</p>
+                  <p className="font-medium">{selectedVehicle ? selectedVehicle.type : "Motorhome A Class"}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground mb-1">Insurance</p>
@@ -288,6 +306,17 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
         open={showDocument}
         onClose={() => setShowDocument(false)}
         bookingData={mockData}
+      />
+
+      {/* Vehicle Selection Dialog */}
+      <VehicleSelectionDialog
+        open={showVehicleSelection}
+        onClose={() => setShowVehicleSelection(false)}
+        currentVehicleId={selectedVehicle?.id}
+        onSelect={(vehicle) => {
+          setSelectedVehicle(vehicle);
+          toast.success(`เปลี่ยนรถเป็น ${vehicle.name} สำเร็จ`);
+        }}
       />
 
       {/* Reject Confirmation Dialog */}
