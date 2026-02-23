@@ -55,15 +55,19 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
       { name: "กันสาด", price: 400 },
       { name: "เก้าอี้พับ (ชุด)", price: 150 },
     ],
-    amenities: ["ห้องน้ำ", "ไฟฟ้า", "น้ำประปา"],
     campDate: "23–25 Jan 2026",
-    campZone: {
-      name: "บ้านพัก",
-      price: 2000,
-      priceType: "เหมาจ่าย",
-      vehicleType: "Caravan / Campsite",
-      capacity: "6 หลัง",
-    },
+    campZones: [
+      {
+        name: "บ้านพัก",
+        price: 2000,
+        priceType: "เหมาจ่าย",
+      },
+      {
+        name: "ลานกางเต็นท์ A",
+        price: 500,
+        priceType: "ต่อคืน",
+      },
+    ],
   };
 
   const handleRejectConfirm = () => {
@@ -217,33 +221,21 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
                   </div>
                 </div>
 
-                {/* Zone ที่จอง */}
+                {/* โซนที่จอง */}
                 <Separator className="my-4" />
                 <p className="text-muted-foreground text-xs mb-2 font-semibold">โซนที่จอง</p>
-                <Card className="p-3 bg-secondary/30 border border-border">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="font-medium text-sm">{mockData.campZone.name}</p>
-                    <Badge variant="outline" className="text-xs bg-primary/5 text-primary border-primary/20">
-                      ฿{mockData.campZone.price.toLocaleString()} ({mockData.campZone.priceType})
-                    </Badge>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    <Badge variant="secondary" className="text-xs font-normal">{mockData.campZone.vehicleType}</Badge>
-                    <Badge variant="secondary" className="text-xs font-normal">{mockData.campZone.capacity}</Badge>
-                  </div>
-                </Card>
-
-                {mockData.amenities && mockData.amenities.length > 0 && (
-                  <>
-                    <Separator className="my-4" />
-                    <p className="text-muted-foreground text-xs mb-2">Amenities</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {mockData.amenities.map((a, i) => (
-                        <Badge key={i} variant="secondary" className="text-xs font-normal">{a}</Badge>
-                      ))}
-                    </div>
-                  </>
-                )}
+                <div className="space-y-2">
+                  {mockData.campZones.map((zone, i) => (
+                    <Card key={i} className="p-3 bg-secondary/30 border border-border">
+                      <div className="flex items-center justify-between">
+                        <p className="font-medium text-sm">{zone.name}</p>
+                        <Badge variant="outline" className="text-xs bg-primary/5 text-primary border-primary/20">
+                          ฿{zone.price.toLocaleString()} ({zone.priceType})
+                        </Badge>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
               </Card>
             )}
           </div>
