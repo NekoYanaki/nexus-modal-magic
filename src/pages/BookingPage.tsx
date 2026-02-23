@@ -10,6 +10,7 @@ const MOCK_VEHICLES = [
   {
     id: "1",
     name: "Toyota Hilux Revo",
+    type: "Pickup Camper",
     image: "https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?w=400&h=300&fit=crop",
     location: "",
     features: ["Shower", "Toilet", "Freezer", "Kitchen equipment", "Fridge", "Hot water", "GPS", "AC in cab", "AC in living area", "Bluetooth", "TV", "Floor heating", "Aux-port", "Solar panel", "Adapter to electrical connection", "Mosquito net"],
@@ -19,6 +20,7 @@ const MOCK_VEHICLES = [
   {
     id: "2",
     name: "All-New TRITON",
+    type: "Pickup Camper",
     image: "https://images.unsplash.com/photo-1543465077-db45d34b88a5?w=400&h=300&fit=crop",
     location: "",
     features: ["Cooking plate", "Freezer", "Shower", "Toilet", "Fridge", "Kitchen equipment"],
@@ -28,6 +30,7 @@ const MOCK_VEHICLES = [
   {
     id: "3",
     name: "Toyota Champ",
+    type: "Campervan",
     image: "https://images.unsplash.com/photo-1533591380348-14193f1de18f?w=400&h=300&fit=crop",
     location: "",
     features: ["Cooking plate", "Freezer", "Shower", "Toilet", "Fridge", "Kitchen equipment", "Oven"],
@@ -37,6 +40,7 @@ const MOCK_VEHICLES = [
   {
     id: "4",
     name: "MERCEDES-BENZ",
+    type: "Motorhome",
     image: "https://images.unsplash.com/photo-1551524559-8af4e6624178?w=400&h=300&fit=crop",
     location: "",
     features: ["Cooking plate", "Freezer", "Shower", "Toilet", "Kitchen equipment", "Fridge", "Oven", "Microwave oven", "Hot water", "GPS", "Parking sensors", "Back up camera", "AC in cab", "AC in living area"],
@@ -55,10 +59,9 @@ export default function BookingPage() {
 
   // Filter vehicles based on selected features
   const filteredVehicles = MOCK_VEHICLES.filter((vehicle) => {
-    if (selectedFeatures.length === 0) return true;
-    return selectedFeatures.every((feature) =>
-      vehicle.features.includes(feature)
-    );
+    const matchesType = selectedVehicleTypes.length === 0 || selectedVehicleTypes.includes(vehicle.type);
+    const matchesFeatures = selectedFeatures.length === 0 || selectedFeatures.every((feature) => vehicle.features.includes(feature));
+    return matchesType && matchesFeatures;
   });
 
   return (
