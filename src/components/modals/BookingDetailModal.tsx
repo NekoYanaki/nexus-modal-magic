@@ -236,38 +236,29 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
             <Card className="p-4">
               <h4 className="font-semibold mb-3 flex items-center gap-2">
                 <span className="text-primary">+</span>
-                Add-ons & Options
+                Add-ons & Accessories
               </h4>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between items-center">
-                  <span>GPS Navigation</span>
-                  <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
-                    Included
-                  </Badge>
+                <div className="flex justify-between items-center p-2 border border-border rounded-lg">
+                  <span>เบาะนั่งเด็ก</span>
+                  <span className="font-medium">฿300</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span>Child Safety Seat</span>
-                  <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
-                    Included
-                  </Badge>
+                <div className="flex justify-between items-center p-2 border border-border rounded-lg">
+                  <span>ชุดปิ้งย่าง</span>
+                  <span className="font-medium">฿350</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span>Extra Driver</span>
-                  <Badge variant="outline" className="text-xs">
-                    Not Included
-                  </Badge>
+                <div className="flex justify-between items-center p-2 border border-border rounded-lg">
+                  <span>กันสาด</span>
+                  <span className="font-medium">฿400</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span>Insurance Upgrade</span>
-                  <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
-                    Included
-                  </Badge>
+                <div className="flex justify-between items-center p-2 border border-border rounded-lg">
+                  <span>เก้าอี้พับ (ชุด)</span>
+                  <span className="font-medium">฿150</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span>Camping Equipment</span>
-                  <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
-                    Included
-                  </Badge>
+                <div className="h-px bg-border my-2" />
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">รวม Add-on</span>
+                  <span className="font-semibold text-primary">฿1,200</span>
                 </div>
               </div>
             </Card>

@@ -680,19 +680,23 @@ export const PickupInspectionModal = ({
               </div>
             </div>
 
-            {/* Payment Summary */}
+            {/* Payment & Financial Summary */}
             <div className="mt-6 pt-4 border-t-2 border-emerald-300 dark:border-emerald-700">
-              <div className="text-sm mb-4">
-                <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-3 border border-amber-200 dark:border-amber-800">
-                  <p className="text-muted-foreground text-xs mb-1">ยอดคงเหลือ (รวม Add-on + ประกัน)</p>
-                  <p className="font-semibold text-lg text-amber-600">฿{(payment.remainingBalance + totalAddonPrice + insurancePrice).toLocaleString()}</p>
-                  {insurancePrice > 0 && (
-                    <p className="text-xs text-muted-foreground mt-1">รวมประกัน ฿{insurancePrice.toLocaleString()}</p>
-                  )}
-                </div>
+              <div className="flex items-center gap-2 mb-3">
+                <Receipt className="w-4 h-4 text-emerald-600" />
+                <p className="font-medium text-sm">สรุปการเงิน</p>
               </div>
+              
+              <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-3 border border-amber-200 dark:border-amber-800 mb-4">
+                <p className="text-muted-foreground text-xs mb-1">ยอดคงเหลือ (รวม Add-on + ประกัน)</p>
+                <p className="font-semibold text-lg text-amber-600">฿{(payment.remainingBalance + totalAddonPrice + insurancePrice).toLocaleString()}</p>
+                {insurancePrice > 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">รวมประกัน ฿{insurancePrice.toLocaleString()}</p>
+                )}
+              </div>
+
               {/* Payment Method Selection */}
-              <div className="mb-4">
+              <div className="mb-3">
                 <p className="text-muted-foreground text-sm mb-2">ประเภทการชำระเงิน</p>
                 <Select value={paymentMethod} onValueChange={setPaymentMethod}>
                   <SelectTrigger className="w-full bg-background">
@@ -715,7 +719,7 @@ export const PickupInspectionModal = ({
                 </Select>
               </div>
 
-              {/* Card Payment Record (shown when card is selected) */}
+              {/* Card Payment Record */}
               {paymentMethod === "card" && (
                 <div className="mb-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
                   <div className="flex items-center gap-2 mb-3">
@@ -743,10 +747,9 @@ export const PickupInspectionModal = ({
                 </div>
               )}
 
-
               {/* Save Button */}
               {isEditing && (
-                <div className="pt-4 mt-4 border-t border-emerald-200 dark:border-emerald-800">
+                <div className="pt-3 mt-3 border-t border-emerald-200 dark:border-emerald-800">
                   <Button className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700" onClick={handleSave}>
                     <Save className="w-4 h-4" />
                     บันทึก

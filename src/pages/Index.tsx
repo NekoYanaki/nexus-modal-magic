@@ -25,6 +25,13 @@ const BOOKED_VEHICLE: SelectableVehicle = {
   doors: 3,
 };
 
+// Mock booked add-ons (from customer's booking)
+const BOOKED_ADDONS = [
+  { value: 'child_seat', label: 'เบาะนั่งเด็ก', price: 300 },
+  { value: 'bbq_set', label: 'ชุดปิ้งย่าง', price: 350 },
+  { value: 'awning', label: 'กันสาด', price: 400 },
+  { value: 'outdoor_chair', label: 'เก้าอี้พับ (ชุด)', price: 150 },
+];
 const Index = () => {
   const [bookingOpen, setBookingOpen] = useState(false);
   const [partnerOpen, setPartnerOpen] = useState(false);
@@ -301,6 +308,7 @@ const Index = () => {
         bookingStatus={pickupStatus}
         onStatusChange={setPickupStatus}
         bookedVehicle={BOOKED_VEHICLE}
+        invoiceAddons={BOOKED_ADDONS}
       />
       <ReturnInspectionModal 
         open={returnOpen} 
