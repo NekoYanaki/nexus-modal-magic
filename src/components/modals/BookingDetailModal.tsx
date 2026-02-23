@@ -57,19 +57,14 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
         phone: "099999999",
         date: "23–24 Jan 2026",
         fee: 2500,
-        zones: [
-          { name: "บ้านพัก", price: 2000, priceType: "เหมาจ่าย" },
-          { name: "ลานกางเต็นท์ A", price: 500, priceType: "ต่อคืน" },
-        ],
+        zone: { name: "บ้านพัก", price: 2000, priceType: "เหมาจ่าย" },
       },
       {
         name: "ดอยม่อนแจ่ม แคมป์",
         phone: "081234567",
         date: "24–25 Jan 2026",
         fee: 800,
-        zones: [
-          { name: "โซน Riverside", price: 800, priceType: "ต่อคืน" },
-        ],
+        zone: { name: "โซน Riverside", price: 800, priceType: "ต่อคืน" },
       },
     ],
   };
@@ -200,44 +195,45 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
             </Card>
 
             {/* Camps — only if booked */}
-            {hasCamp && mockData.camps.map((camp, ci) => (
-              <Card key={ci} className="p-5 border border-border">
+            {hasCamp && (
+              <Card className="p-5 border border-border">
                 <h4 className="font-semibold flex items-center gap-2 mb-4">
                   <Tent className="w-4 h-4 text-primary" />
-                  {camp.name}
+                  Campsite
                 </h4>
-                <div className="grid grid-cols-2 gap-y-4 text-sm">
-                  <div>
-                    <p className="text-muted-foreground text-xs mb-0.5">Camp Date</p>
-                    <p className="font-medium">{camp.date}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-muted-foreground text-xs mb-0.5">Camp Fee</p>
-                    <p className="font-medium">฿{camp.fee.toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground text-xs mb-0.5">Camp Tel.</p>
-                    <p className="font-medium">{camp.phone}</p>
-                  </div>
-                </div>
-
-                {/* โซนที่จอง */}
-                <Separator className="my-4" />
-                <p className="text-muted-foreground text-xs mb-2 font-semibold">โซนที่จอง</p>
-                <div className="space-y-2">
-                  {camp.zones.map((zone, zi) => (
-                    <Card key={zi} className="p-3 bg-secondary/30 border border-border">
-                      <div className="flex items-center justify-between">
-                        <p className="font-medium text-sm">{zone.name}</p>
-                        <Badge variant="outline" className="text-xs bg-primary/5 text-primary border-primary/20">
-                          ฿{zone.price.toLocaleString()} ({zone.priceType})
-                        </Badge>
+                <div className="space-y-3">
+                  {mockData.camps.map((camp, ci) => (
+                    <div key={ci}>
+                      {ci > 0 && <Separator className="my-3" />}
+                      <div className="grid grid-cols-2 gap-y-3 text-sm">
+                        <div>
+                          <p className="text-muted-foreground text-xs mb-0.5">Camp</p>
+                          <p className="font-medium">{camp.name}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-muted-foreground text-xs mb-0.5">Camp Date</p>
+                          <p className="font-medium">{camp.date}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground text-xs mb-0.5">Zone</p>
+                          <p className="font-medium">{camp.zone.name}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-muted-foreground text-xs mb-0.5">Fee</p>
+                          <Badge variant="outline" className="text-xs bg-primary/5 text-primary border-primary/20">
+                            ฿{camp.zone.price.toLocaleString()} ({camp.zone.priceType})
+                          </Badge>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground text-xs mb-0.5">Camp Tel.</p>
+                          <p className="font-medium">{camp.phone}</p>
+                        </div>
                       </div>
-                    </Card>
+                    </div>
                   ))}
                 </div>
               </Card>
-            ))}
+            )}
           </div>
 
           {/* Right Sidebar (1/3) */}
