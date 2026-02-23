@@ -6,8 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Pencil, Save, X, Upload, Image, LogOut, Plus, Trash2, FileText, CreditCard, Banknote, RefreshCw } from "lucide-react";
-import { VehicleSelectionDialog, type SelectableVehicle } from "./VehicleSelectionDialog";
+import { Pencil, Save, X, Upload, Image, LogOut, Plus, Trash2, FileText, CreditCard, Banknote, Car } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 
@@ -60,8 +59,6 @@ export const ReturnInspectionModal = ({
 }: ReturnInspectionModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [returnInspection, setReturnInspection] = useState<ReturnInspectionData>(returnData);
-  const [showVehicleSelection, setShowVehicleSelection] = useState(false);
-  const [assignedVehicle, setAssignedVehicle] = useState<SelectableVehicle | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmed, setConfirmed] = useState(bookingStatus === "returned");
   const [paymentMethod, setPaymentMethod] = useState<string>("cash");
@@ -160,17 +157,22 @@ export const ReturnInspectionModal = ({
             </DialogTitle>
           </DialogHeader>
 
-          {/* Vehicle Assignment */}
-          <div className="flex items-center justify-between px-1">
-            <div className="text-sm">
-              <span className="text-muted-foreground">รถที่จัดให้: </span>
-              <span className="font-semibold">{assignedVehicle ? `${assignedVehicle.name} (${assignedVehicle.type})` : vehicleName}</span>
+          {/* Vehicle Info (Read-only) */}
+          <Card className="p-4 border-blue-200 dark:border-blue-800 bg-blue-50/30 dark:bg-blue-950/10">
+            <h5 className="font-medium text-sm flex items-center gap-2 mb-3">
+              <Car className="w-4 h-4 text-blue-600" />
+              รถที่ปล่อยให้ลูกค้า
+            </h5>
+            <div className="flex gap-4">
+              <div className="w-24 h-16 rounded-lg bg-muted flex items-center justify-center overflow-hidden flex-shrink-0 border border-border">
+                <Car className="w-8 h-8 text-muted-foreground/40" />
+              </div>
+              <div className="flex-1 text-sm">
+                <p className="font-semibold text-base">{vehicleName}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">รถที่ถูกจัดให้ตอนรับรถ</p>
+              </div>
             </div>
-            <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => setShowVehicleSelection(true)}>
-              <RefreshCw className="w-3 h-3" />
-              เปลี่ยนรถ
-            </Button>
-          </div>
+          </Card>
 
           <Card className="p-4 bg-gradient-to-br from-blue-50/50 to-blue-100/30 dark:from-blue-950/20 dark:to-blue-900/10 border-blue-200 dark:border-blue-800">
             {/* Edit Button */}
@@ -455,16 +457,6 @@ export const ReturnInspectionModal = ({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Vehicle Selection Dialog */}
-      <VehicleSelectionDialog
-        open={showVehicleSelection}
-        onClose={() => setShowVehicleSelection(false)}
-        currentVehicleId={assignedVehicle?.id}
-        onSelect={(vehicle) => {
-          setAssignedVehicle(vehicle);
-          toast.success(`เปลี่ยนรถเป็น ${vehicle.name} สำเร็จ`);
-        }}
-      />
     </>
   );
 };

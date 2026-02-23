@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Pencil, Save, X, LogIn, Trash2, FileText, ChevronsUpDown, Check, CreditCard, Banknote, Receipt, Shield, ShieldCheck, Camera, Upload, RefreshCw } from "lucide-react";
+import { Pencil, Save, X, LogIn, Trash2, FileText, ChevronsUpDown, Check, CreditCard, Banknote, Receipt, Shield, ShieldCheck, Camera, Upload, RefreshCw, Car } from "lucide-react";
 import { VehicleSelectionDialog, type SelectableVehicle } from "./VehicleSelectionDialog";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
@@ -272,17 +272,42 @@ export const PickupInspectionModal = ({
             </DialogTitle>
           </DialogHeader>
 
-          {/* Vehicle Assignment */}
-          <div className="flex items-center justify-between px-1">
-            <div className="text-sm">
-              <span className="text-muted-foreground">รถที่จัดให้: </span>
-              <span className="font-semibold">{assignedVehicle ? `${assignedVehicle.name} (${assignedVehicle.type})` : vehicleName}</span>
+          {/* Vehicle Assignment Card */}
+          <Card className="p-4 border-emerald-200 dark:border-emerald-800 bg-emerald-50/30 dark:bg-emerald-950/10">
+            <div className="flex items-center justify-between mb-3">
+              <h5 className="font-medium text-sm flex items-center gap-2">
+                <Car className="w-4 h-4 text-emerald-600" />
+                รถที่จัดให้
+              </h5>
+              <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => setShowVehicleSelection(true)}>
+                <RefreshCw className="w-3 h-3" />
+                เปลี่ยนรถ
+              </Button>
             </div>
-            <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => setShowVehicleSelection(true)}>
-              <RefreshCw className="w-3 h-3" />
-              เปลี่ยนรถ
-            </Button>
-          </div>
+            <div className="flex gap-4">
+              <div className="w-24 h-16 rounded-lg bg-muted flex items-center justify-center overflow-hidden flex-shrink-0 border border-border">
+                {assignedVehicle?.image ? (
+                  <img src={assignedVehicle.image} alt={assignedVehicle.name} className="w-full h-full object-cover" />
+                ) : (
+                  <Car className="w-8 h-8 text-muted-foreground/40" />
+                )}
+              </div>
+              <div className="flex-1 text-sm space-y-1">
+                <p className="font-semibold text-base">{assignedVehicle ? assignedVehicle.name : vehicleName}</p>
+                <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-muted-foreground text-xs">
+                  {assignedVehicle && (
+                    <>
+                      <span>ประเภท: {assignedVehicle.type}</span>
+                      <span>ปี: {assignedVehicle.year}</span>
+                      <span>ทะเบียน: {assignedVehicle.licensePlate}</span>
+                      <span>{assignedVehicle.techInfo}</span>
+                      <span>{assignedVehicle.seats} ที่นั่ง / {assignedVehicle.doors} ประตู</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </Card>
 
           <Card className="p-4 bg-gradient-to-br from-emerald-50/50 to-emerald-100/30 dark:from-emerald-950/20 dark:to-emerald-900/10 border-emerald-200 dark:border-emerald-800">
             {/* Edit Button */}
