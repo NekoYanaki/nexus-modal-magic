@@ -239,27 +239,6 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
               </div>
             </Card>
 
-            {/* Payment */}
-            <Card className="p-5 border border-border">
-              <h4 className="font-semibold mb-3">Payment</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Deposit</span>
-                  <span className="font-medium">฿{mockData.deposit.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Vehicle Rental</span>
-                  <span className="font-medium">฿{mockData.vehicleRental.toLocaleString()}</span>
-                </div>
-                {hasCamp && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Camp Fee</span>
-                    <span className="font-medium">฿{mockData.campFee.toLocaleString()}</span>
-                  </div>
-                )}
-              </div>
-            </Card>
-
             {/* Cost Summary */}
             <Card className="p-5 border border-border">
               <h4 className="font-semibold mb-3">Cost Summary</h4>
