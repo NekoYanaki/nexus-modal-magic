@@ -285,26 +285,27 @@ export const PickupInspectionModal = ({
               </Button>
             </div>
             <div className="flex gap-4">
-              <div className="w-24 h-16 rounded-lg bg-muted flex items-center justify-center overflow-hidden flex-shrink-0 border border-border">
+              <div className="w-28 h-20 rounded-lg bg-muted flex items-center justify-center overflow-hidden flex-shrink-0 border border-border">
                 {assignedVehicle?.image ? (
                   <img src={assignedVehicle.image} alt={assignedVehicle.name} className="w-full h-full object-cover" />
                 ) : (
                   <Car className="w-8 h-8 text-muted-foreground/40" />
                 )}
               </div>
-              <div className="flex-1 text-sm space-y-1">
+              <div className="flex-1 text-sm space-y-1.5">
                 <p className="font-semibold text-base">{assignedVehicle ? assignedVehicle.name : vehicleName}</p>
-                <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-muted-foreground text-xs">
-                  {assignedVehicle && (
-                    <>
-                      <span>ประเภท: {assignedVehicle.type}</span>
-                      <span>ปี: {assignedVehicle.year}</span>
-                      <span>ทะเบียน: {assignedVehicle.licensePlate}</span>
-                      <span>{assignedVehicle.techInfo}</span>
-                      <span>{assignedVehicle.seats} ที่นั่ง / {assignedVehicle.doors} ประตู</span>
-                    </>
-                  )}
-                </div>
+                {assignedVehicle ? (
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs">
+                    <div><span className="text-muted-foreground">ประเภท:</span> <span className="font-medium">{assignedVehicle.type}</span></div>
+                    <div><span className="text-muted-foreground">ปีรุ่น:</span> <span className="font-medium">{assignedVehicle.year}</span></div>
+                    <div><span className="text-muted-foreground">ทะเบียน:</span> <span className="font-medium">{assignedVehicle.licensePlate}</span></div>
+                    <div><span className="text-muted-foreground">ที่นั่ง/ประตู:</span> <span className="font-medium">{assignedVehicle.seats} ที่นั่ง / {assignedVehicle.doors} ประตู</span></div>
+                    <div className="col-span-2"><span className="text-muted-foreground">ข้อมูลเทคนิค:</span> <span className="font-medium">{assignedVehicle.techInfo}</span></div>
+                    <div><span className="text-muted-foreground">ราคา/วัน:</span> <span className="font-medium text-emerald-600">฿{assignedVehicle.pricePerDay.toLocaleString()}</span></div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">ยังไม่ได้เลือกรถ</p>
+                )}
               </div>
             </div>
           </Card>
