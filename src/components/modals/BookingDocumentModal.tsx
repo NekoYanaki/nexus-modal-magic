@@ -26,7 +26,7 @@ interface BookingDocumentModalProps {
       phone: string;
       date: string;
       fee: number;
-      zones: { name: string; price: number; priceType: string }[];
+      zone: { name: string; price: number; priceType: string };
     }[];
   };
 }
@@ -124,36 +124,37 @@ export const BookingDocumentModal = ({ open, onClose, bookingData }: BookingDocu
           </div>
 
           {/* Camp Information */}
-          {bookingData.camps && bookingData.camps.length > 0 && bookingData.camps.map((camp, i) => (
-            <div key={i} className="mb-8">
-              <h2 className="text-xl font-bold mb-4 border-b pb-2">ข้อมูลค่าย / Camp: {camp.name}</h2>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">วันที่เข้าพัก / Camp Date</p>
-                  <p className="font-medium">{camp.date}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">เบอร์ค่าย / Camp Tel.</p>
-                  <p className="font-medium">{camp.phone}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">ค่าค่าย / Camp Fee</p>
-                  <p className="font-medium">฿{camp.fee.toLocaleString()}</p>
-                </div>
-              </div>
-              {camp.zones.length > 0 && (
-                <div className="mt-3">
-                  <p className="text-sm text-muted-foreground mb-2">โซนที่จอง / Booked Zones</p>
-                  {camp.zones.map((zone, zi) => (
-                    <div key={zi} className="flex justify-between py-1.5 border-b last:border-0">
-                      <span className="font-medium">{zone.name}</span>
-                      <span>฿{zone.price.toLocaleString()} ({zone.priceType})</span>
+          {bookingData.camps && bookingData.camps.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-xl font-bold mb-4 border-b pb-2">ข้อมูลแคมป์ / Campsite Information</h2>
+              {bookingData.camps.map((camp, i) => (
+                <div key={i} className={i > 0 ? "mt-4 pt-4 border-t" : ""}>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">แคมป์ / Camp</p>
+                      <p className="font-medium">{camp.name}</p>
                     </div>
-                  ))}
+                    <div>
+                      <p className="text-sm text-muted-foreground">วันที่ / Date</p>
+                      <p className="font-medium">{camp.date}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">โซน / Zone</p>
+                      <p className="font-medium">{camp.zone.name}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">ค่าใช้จ่าย / Fee</p>
+                      <p className="font-medium">฿{camp.zone.price.toLocaleString()} ({camp.zone.priceType})</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">เบอร์ค่าย / Camp Tel.</p>
+                      <p className="font-medium">{camp.phone}</p>
+                    </div>
+                  </div>
                 </div>
-              )}
+              ))}
             </div>
-          ))}
+          )}
 
           {/* Payment Summary */}
           <div className="mb-8">
