@@ -164,12 +164,19 @@ export const ReturnInspectionModal = ({
               รถที่ปล่อยให้ลูกค้า
             </h5>
             <div className="flex gap-4">
-              <div className="w-24 h-16 rounded-lg bg-muted flex items-center justify-center overflow-hidden flex-shrink-0 border border-border">
+              <div className="w-28 h-20 rounded-lg bg-muted flex items-center justify-center overflow-hidden flex-shrink-0 border border-border">
                 <Car className="w-8 h-8 text-muted-foreground/40" />
               </div>
-              <div className="flex-1 text-sm">
+              <div className="flex-1 text-sm space-y-1.5">
                 <p className="font-semibold text-base">{vehicleName}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">รถที่ถูกจัดให้ตอนรับรถ</p>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs">
+                  <div><span className="text-muted-foreground">ประเภท:</span> <span className="font-medium">Motorhome A Class</span></div>
+                  <div><span className="text-muted-foreground">ปีรุ่น:</span> <span className="font-medium">2024</span></div>
+                  <div><span className="text-muted-foreground">ทะเบียน:</span> <span className="font-medium">กม 1234</span></div>
+                  <div><span className="text-muted-foreground">ที่นั่ง/ประตู:</span> <span className="font-medium">4 ที่นั่ง / 4 ประตู</span></div>
+                  <div className="col-span-2"><span className="text-muted-foreground">ข้อมูลเทคนิค:</span> <span className="font-medium">ดีเซล | 4WD</span></div>
+                  <div><span className="text-muted-foreground">ราคา/วัน:</span> <span className="font-medium text-blue-600">฿5,000</span></div>
+                </div>
               </div>
             </div>
           </Card>
