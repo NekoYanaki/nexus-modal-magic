@@ -9,6 +9,21 @@ import { PickupInspectionModal } from "@/components/modals/PickupInspectionModal
 import { ReturnInspectionModal } from "@/components/modals/ReturnInspectionModal";
 import { Calendar, Users, Tent, UserCircle, CreditCard, LogIn, LogOut, Wrench } from "lucide-react";
 import { Link } from "react-router-dom";
+import type { SelectableVehicle } from "@/components/modals/VehicleSelectionDialog";
+
+// Mock booked vehicle (from booking detail)
+const BOOKED_VEHICLE: SelectableVehicle = {
+  id: "v2",
+  name: "Toyota Hilux Revo",
+  year: "2023",
+  licensePlate: "กม 1234",
+  type: "Motorhome A Class",
+  techInfo: "ดีเซล | 4WD",
+  pricePerDay: 5000,
+  status: "available",
+  seats: 4,
+  doors: 3,
+};
 
 const Index = () => {
   const [bookingOpen, setBookingOpen] = useState(false);
@@ -282,18 +297,20 @@ const Index = () => {
         onClose={() => setPickupOpen(false)}
         bookingCode="BK002"
         customerName="สมชาย ใจดี"
-        vehicleName="Toyota Fortuner"
+        vehicleName="Toyota Hilux Revo"
         bookingStatus={pickupStatus}
         onStatusChange={setPickupStatus}
+        bookedVehicle={BOOKED_VEHICLE}
       />
       <ReturnInspectionModal 
         open={returnOpen} 
         onClose={() => setReturnOpen(false)}
         bookingCode="BK002"
         customerName="สมชาย ใจดี"
-        vehicleName="Toyota Fortuner"
+        vehicleName="Toyota Hilux Revo"
         bookingStatus={returnStatus}
         onStatusChange={setReturnStatus}
+        bookedVehicle={BOOKED_VEHICLE}
       />
     </div>
   );
