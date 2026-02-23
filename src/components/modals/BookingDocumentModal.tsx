@@ -17,14 +17,17 @@ interface BookingDocumentModalProps {
     vehicleModel: string;
     licensePlate: string;
     insurance: string;
-    campName: string;
-    campTotal: number;
-    campPhone: string;
     deposit: number;
     vehicleRental: number;
-    campFee: number;
     totalPaid: number;
     totalDue: number;
+    camps?: {
+      name: string;
+      phone: string;
+      date: string;
+      fee: number;
+      zones: { name: string; price: number; priceType: string }[];
+    }[];
   };
 }
 
@@ -121,23 +124,36 @@ export const BookingDocumentModal = ({ open, onClose, bookingData }: BookingDocu
           </div>
 
           {/* Camp Information */}
-          <div className="mb-8">
-            <h2 className="text-xl font-bold mb-4 border-b pb-2">ข้อมูลค่าย / Camp Information</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">ชื่อค่าย / Camp Name</p>
-                <p className="font-medium">{bookingData.campName}</p>
+          {bookingData.camps && bookingData.camps.length > 0 && bookingData.camps.map((camp, i) => (
+            <div key={i} className="mb-8">
+              <h2 className="text-xl font-bold mb-4 border-b pb-2">ข้อมูลค่าย / Camp: {camp.name}</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">วันที่เข้าพัก / Camp Date</p>
+                  <p className="font-medium">{camp.date}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">เบอร์ค่าย / Camp Tel.</p>
+                  <p className="font-medium">{camp.phone}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">ค่าค่าย / Camp Fee</p>
+                  <p className="font-medium">฿{camp.fee.toLocaleString()}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">เบอร์ค่าย / Camp Tel.</p>
-                <p className="font-medium">{bookingData.campPhone}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">ค่าค่าย / Camp Fee</p>
-                <p className="font-medium">฿{bookingData.campTotal.toLocaleString()}</p>
-              </div>
+              {camp.zones.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-sm text-muted-foreground mb-2">โซนที่จอง / Booked Zones</p>
+                  {camp.zones.map((zone, zi) => (
+                    <div key={zi} className="flex justify-between py-1.5 border-b last:border-0">
+                      <span className="font-medium">{zone.name}</span>
+                      <span>฿{zone.price.toLocaleString()} ({zone.priceType})</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
+          ))}
 
           {/* Payment Summary */}
           <div className="mb-8">
@@ -150,10 +166,6 @@ export const BookingDocumentModal = ({ open, onClose, bookingData }: BookingDocu
               <div className="flex justify-between py-2 border-b">
                 <span className="text-muted-foreground">ค่าเช่ารถ / Vehicle Rental</span>
                 <span className="font-medium">฿{bookingData.vehicleRental.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b">
-                <span className="text-muted-foreground">ค่าค่าย / Camp Fee</span>
-                <span className="font-medium">฿{bookingData.campFee.toLocaleString()}</span>
               </div>
               <div className="flex justify-between py-3 bg-green-50 px-4 rounded">
                 <span className="font-semibold">ชำระแล้ว / Total Paid</span>

@@ -39,33 +39,37 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
     vehicleType: "Motorhome A Class",
     insurance: "Insurance Class 1",
     rentalFee: 5000,
-    campName: "ป่าสนแคมปิ้ง",
-    campTotal: 150,
-    campFee: 150,
-    campPhone: "099999999",
     deposit: 4000,
     vehicleRental: 5000,
     addonsTotal: 0,
     totalPaid: 4000,
-    totalDue: 1150,
-    totalAmount: 5150,
+    totalDue: 3650,
+    totalAmount: 7650,
     addons: [
       { name: "เบาะนั่งเด็ก", price: 300 },
       { name: "ชุดปิ้งย่าง", price: 350 },
       { name: "กันสาด", price: 400 },
       { name: "เก้าอี้พับ (ชุด)", price: 150 },
     ],
-    campDate: "23–25 Jan 2026",
-    campZones: [
+    camps: [
       {
-        name: "บ้านพัก",
-        price: 2000,
-        priceType: "เหมาจ่าย",
+        name: "ป่าสนแคมปิ้ง",
+        phone: "099999999",
+        date: "23–24 Jan 2026",
+        fee: 2500,
+        zones: [
+          { name: "บ้านพัก", price: 2000, priceType: "เหมาจ่าย" },
+          { name: "ลานกางเต็นท์ A", price: 500, priceType: "ต่อคืน" },
+        ],
       },
       {
-        name: "ลานกางเต็นท์ A",
-        price: 500,
-        priceType: "ต่อคืน",
+        name: "ดอยม่อนแจ่ม แคมป์",
+        phone: "081234567",
+        date: "24–25 Jan 2026",
+        fee: 800,
+        zones: [
+          { name: "โซน Riverside", price: 800, priceType: "ต่อคืน" },
+        ],
       },
     ],
   };
@@ -195,29 +199,25 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
               </div>
             </Card>
 
-            {/* Camp — only if booked */}
-            {hasCamp && (
-              <Card className="p-5 border border-border">
+            {/* Camps — only if booked */}
+            {hasCamp && mockData.camps.map((camp, ci) => (
+              <Card key={ci} className="p-5 border border-border">
                 <h4 className="font-semibold flex items-center gap-2 mb-4">
                   <Tent className="w-4 h-4 text-primary" />
-                  Camp
+                  {camp.name}
                 </h4>
                 <div className="grid grid-cols-2 gap-y-4 text-sm">
                   <div>
-                    <p className="text-muted-foreground text-xs mb-0.5">Camp Name</p>
-                    <p className="font-medium">{mockData.campName}</p>
+                    <p className="text-muted-foreground text-xs mb-0.5">Camp Date</p>
+                    <p className="font-medium">{camp.date}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-muted-foreground text-xs mb-0.5">Camp Fee</p>
-                    <p className="font-medium">฿{mockData.campFee.toLocaleString()}</p>
+                    <p className="font-medium">฿{camp.fee.toLocaleString()}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-xs mb-0.5">Camp Date</p>
-                    <p className="font-medium">{mockData.campDate}</p>
-                  </div>
-                  <div className="text-right">
                     <p className="text-muted-foreground text-xs mb-0.5">Camp Tel.</p>
-                    <p className="font-medium">{mockData.campPhone}</p>
+                    <p className="font-medium">{camp.phone}</p>
                   </div>
                 </div>
 
@@ -225,8 +225,8 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
                 <Separator className="my-4" />
                 <p className="text-muted-foreground text-xs mb-2 font-semibold">โซนที่จอง</p>
                 <div className="space-y-2">
-                  {mockData.campZones.map((zone, i) => (
-                    <Card key={i} className="p-3 bg-secondary/30 border border-border">
+                  {camp.zones.map((zone, zi) => (
+                    <Card key={zi} className="p-3 bg-secondary/30 border border-border">
                       <div className="flex items-center justify-between">
                         <p className="font-medium text-sm">{zone.name}</p>
                         <Badge variant="outline" className="text-xs bg-primary/5 text-primary border-primary/20">
@@ -237,7 +237,7 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
                   ))}
                 </div>
               </Card>
-            )}
+            ))}
           </div>
 
           {/* Right Sidebar (1/3) */}
