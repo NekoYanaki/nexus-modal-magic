@@ -22,6 +22,9 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
   const [showVehicleSelection, setShowVehicleSelection] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<SelectableVehicle | null>(null);
 
+  // Toggle this to simulate vehicle-only vs vehicle+camp booking
+  const hasCamp = true;
+
   const mockData = {
     code: "BK002",
     vehicleName: "Toyota Fortuner",
@@ -206,65 +209,68 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
 
           {/* 2️⃣ Vehicle & Camp */}
           <section>
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Vehicle & Camp</h3>
-            <div className="grid grid-cols-2 gap-4">
-              {/* Vehicle */}
-              <Card className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-semibold flex items-center gap-2 text-sm">
-                    <Car className="w-4 h-4 text-primary" /> Vehicle
-                  </h4>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 text-xs gap-1 text-muted-foreground"
-                    onClick={() => setShowVehicleSelection(true)}
-                  >
-                    <RefreshCw className="w-3 h-3" />
-                    Change
-                  </Button>
-                </div>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Model</span>
-                    <span className="font-medium text-right">{selectedVehicle ? `${selectedVehicle.name} ${selectedVehicle.year}` : mockData.vehicleModel}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Plate</span>
-                    <span className="font-medium">{selectedVehicle ? selectedVehicle.licensePlate : mockData.licensePlate}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Type</span>
-                    <span className="font-medium">{selectedVehicle ? selectedVehicle.type : mockData.vehicleType}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Insurance</span>
-                    <span className="font-medium flex items-center gap-1"><Shield className="w-3 h-3 text-success" />{mockData.insurance}</span>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Camp */}
-              <Card className="p-4">
-                <h4 className="font-semibold flex items-center gap-2 text-sm mb-3">
-                  <Tent className="w-4 h-4 text-primary" /> Camp
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+              {hasCamp ? "Vehicle & Camp" : "Vehicle"}
+            </h3>
+            <Card className="p-4">
+              {/* Vehicle Section */}
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-semibold flex items-center gap-2 text-sm">
+                  <Car className="w-4 h-4 text-primary" /> Vehicle
                 </h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Name</span>
-                    <span className="font-medium text-right">{mockData.campName}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Total</span>
-                    <span className="font-medium">฿{mockData.campTotal.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Tel.</span>
-                    <span className="font-medium">{mockData.campPhone}</span>
-                  </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs gap-1 text-muted-foreground"
+                  onClick={() => setShowVehicleSelection(true)}
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  Change
+                </Button>
+              </div>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Model</span>
+                  <span className="font-medium text-right">{selectedVehicle ? `${selectedVehicle.name} ${selectedVehicle.year}` : mockData.vehicleModel}</span>
                 </div>
-              </Card>
-            </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Plate</span>
+                  <span className="font-medium">{selectedVehicle ? selectedVehicle.licensePlate : mockData.licensePlate}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Type</span>
+                  <span className="font-medium">{selectedVehicle ? selectedVehicle.type : mockData.vehicleType}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Insurance</span>
+                  <span className="font-medium flex items-center gap-1"><Shield className="w-3 h-3 text-success" />{mockData.insurance}</span>
+                </div>
+              </div>
+
+              {/* Camp Section — only if booked */}
+              {hasCamp && (
+                <>
+                  <Separator className="my-4" />
+                  <h4 className="font-semibold flex items-center gap-2 text-sm mb-3">
+                    <Tent className="w-4 h-4 text-primary" /> Camp
+                  </h4>
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Name</span>
+                      <span className="font-medium text-right">{mockData.campName}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Total</span>
+                      <span className="font-medium">฿{mockData.campTotal.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Tel.</span>
+                      <span className="font-medium">{mockData.campPhone}</span>
+                    </div>
+                  </div>
+                </>
+              )}
+            </Card>
           </section>
 
           {/* 3️⃣ Financial Summary — emphasized */}
