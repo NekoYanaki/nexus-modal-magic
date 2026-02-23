@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Pencil, Save, X, LogIn, Trash2, FileText, ChevronsUpDown, Check, CreditCard, Banknote, Receipt, Shield, ShieldCheck, Camera, Upload } from "lucide-react";
+import { Pencil, Save, X, LogIn, Trash2, FileText, ChevronsUpDown, Check, CreditCard, Banknote, Receipt, Shield, ShieldCheck, Camera, Upload, RefreshCw } from "lucide-react";
+import { VehicleSelectionDialog, type SelectableVehicle } from "./VehicleSelectionDialog";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import { cn } from "@/lib/utils";
@@ -134,6 +135,8 @@ export const PickupInspectionModal = ({
 }: PickupInspectionModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [pickup, setPickup] = useState<PickupInspectionData>(pickupData);
+  const [showVehicleSelection, setShowVehicleSelection] = useState(false);
+  const [assignedVehicle, setAssignedVehicle] = useState<SelectableVehicle | null>(null);
   const [payment] = useState<PaymentDetail>(paymentDetail);
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmed, setConfirmed] = useState(bookingStatus === "picked_up" || bookingStatus === "returned");
@@ -263,11 +266,23 @@ export const PickupInspectionModal = ({
       <Dialog open={open} onOpenChange={onClose}>
         <DialogContent className="max-w-[700px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+           <DialogTitle className="flex items-center gap-2">
               <LogIn className="w-5 h-5 text-emerald-600" />
               รับรถ (Pick Up)
             </DialogTitle>
           </DialogHeader>
+
+          {/* Vehicle Assignment */}
+          <div className="flex items-center justify-between px-1">
+            <div className="text-sm">
+              <span className="text-muted-foreground">รถที่จัดให้: </span>
+              <span className="font-semibold">{assignedVehicle ? `${assignedVehicle.name} (${assignedVehicle.type})` : vehicleName}</span>
+            </div>
+            <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => setShowVehicleSelection(true)}>
+              <RefreshCw className="w-3 h-3" />
+              เปลี่ยนรถ
+            </Button>
+          </div>
 
           <Card className="p-4 bg-gradient-to-br from-emerald-50/50 to-emerald-100/30 dark:from-emerald-950/20 dark:to-emerald-900/10 border-emerald-200 dark:border-emerald-800">
             {/* Edit Button */}
@@ -759,6 +774,17 @@ export const PickupInspectionModal = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Vehicle Selection Dialog */}
+      <VehicleSelectionDialog
+        open={showVehicleSelection}
+        onClose={() => setShowVehicleSelection(false)}
+        currentVehicleId={assignedVehicle?.id}
+        onSelect={(vehicle) => {
+          setAssignedVehicle(vehicle);
+          toast.success(`เปลี่ยนรถเป็น ${vehicle.name} สำเร็จ`);
+        }}
+      />
     </>
   );
 };
