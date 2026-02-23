@@ -1,9 +1,10 @@
-import { Car, Tent, MapPin, RefreshCw } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
+import { Car, Tent, MapPin, RefreshCw, User, Phone, Mail, Calendar, Clock, Shield, Download, X, CheckCircle2, XCircle, Pencil } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { BookingDocumentModal } from "./BookingDocumentModal";
 import { VehicleSelectionDialog, type SelectableVehicle } from "./VehicleSelectionDialog";
 import { useState } from "react";
@@ -20,8 +21,7 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
   const [showRejectConfirm, setShowRejectConfirm] = useState(false);
   const [showVehicleSelection, setShowVehicleSelection] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<SelectableVehicle | null>(null);
-  
-  // Mock data
+
   const mockData = {
     code: "BK002",
     vehicleName: "Toyota Fortuner",
@@ -30,10 +30,12 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
     customerName: "สมชาย ใจดี",
     customerPhone: "081-234-5678",
     customerEmail: "somchai@example.com",
-    pickupDate: "15 Mar 2024",
+    pickupDate: "15 Mar 2024, 09:00",
+    returnDate: "19 Mar 2024, 17:00",
     totalDays: 4,
     vehicleModel: "Toyota Fortuner 2.8 4WD",
     licensePlate: "กข-1234 กรุงเทพมหานคร",
+    vehicleType: "Motorhome A Class",
     insurance: "Insurance Class 1",
     campName: "ค่ายภูทับเบิก แพคเกจ VIP",
     campTotal: 3200,
@@ -41,17 +43,19 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
     deposit: 4000,
     vehicleRental: 12000,
     campFee: 3200,
+    addonsTotal: 1200,
     totalPaid: 4000,
     totalDue: 15200,
+    totalAmount: 19200,
+    addons: [
+      { name: "เบาะนั่งเด็ก", qty: 1, price: 300 },
+      { name: "ชุดปิ้งย่าง", qty: 1, price: 350 },
+      { name: "กันสาด", qty: 1, price: 400 },
+      { name: "เก้าอี้พับ (ชุด)", qty: 1, price: 150 },
+    ],
   };
 
-  const handlePrint = () => {
-    setShowDocument(true);
-  };
-
-  const handleStatusChange = (status: string) => {
-    setBookingStatus(status);
-  };
+  const remaining = mockData.totalAmount - mockData.totalPaid;
 
   const handleRejectConfirm = () => {
     setBookingStatus("rejected");
@@ -60,246 +64,295 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
   };
 
   const getStatusBadge = () => {
-    switch (bookingStatus) {
-      case "confirmed":
-        return <Badge className="bg-success/10 text-success border-success/20">Confirmed</Badge>;
-      case "picked_up":
-        return <Badge className="bg-primary/10 text-primary border-primary/20">Picked Up</Badge>;
-      case "returned":
-        return <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20">Returned</Badge>;
-      case "rejected":
-        return <Badge className="bg-destructive/10 text-destructive border-destructive/20">Rejected</Badge>;
-      default:
-        return <Badge className="bg-muted/10 text-muted-foreground border-muted/20">{bookingStatus}</Badge>;
-    }
+    const map: Record<string, { bg: string; text: string; label: string }> = {
+      confirmed: { bg: "bg-success/10", text: "text-success", label: "Confirmed" },
+      picked_up: { bg: "bg-primary/10", text: "text-primary", label: "Picked Up" },
+      returned: { bg: "bg-info/10", text: "text-info", label: "Returned" },
+      rejected: { bg: "bg-destructive/10", text: "text-destructive", label: "Rejected" },
+    };
+    const s = map[bookingStatus] || { bg: "bg-muted", text: "text-muted-foreground", label: bookingStatus };
+    return <Badge className={`${s.bg} ${s.text} border-transparent text-sm px-3 py-1`}>{s.label}</Badge>;
+  };
+
+  const getPaymentBadge = () => {
+    if (remaining === 0) return <Badge className="bg-success/10 text-success border-transparent">Fully Paid</Badge>;
+    if (mockData.totalPaid > 0) return <Badge className="bg-warning/10 text-warning border-transparent">Partial</Badge>;
+    return <Badge className="bg-destructive/10 text-destructive border-transparent">Unpaid</Badge>;
+  };
+
+  const getRemainingColor = () => {
+    if (remaining === 0) return "text-success";
+    if (mockData.totalPaid > 0) return "text-warning";
+    return "text-destructive";
   };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-[960px] max-h-[90vh] overflow-y-auto p-0">
-        {/* Header */}
-        <DialogHeader className="p-6 pb-4 border-b border-border">
-          <div className="flex items-start justify-between">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <Car className="w-6 h-6 text-primary" />
-                <h2 className="text-2xl font-semibold">{mockData.code}</h2>
-                {getStatusBadge()}
-                <span className="text-sm text-muted-foreground">{mockData.dateRange}</span>
-              </div>
-              <p className="text-base font-medium">{mockData.vehicleName}</p>
-              <p className="text-sm text-muted-foreground">
-                {mockData.customerName} • {mockData.customerPhone}
-              </p>
+      <DialogContent className="max-w-[860px] max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+        {/* ── Sticky Header ── */}
+        <div className="sticky top-0 z-10 bg-card border-b border-border px-6 py-4 space-y-3">
+          {/* Row 1: ID + Status + Dates */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <h2 className="text-xl font-bold tracking-tight">{mockData.code}</h2>
+              {getStatusBadge()}
+              <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5" />
+                {mockData.dateRange}
+              </span>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="gap-2" onClick={handlePrint}>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                </svg>
-                Bookingconfirmation.pdf
+            <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Row 2: Financial Badges + Actions */}
+          <div className="flex items-center justify-between gap-4">
+            {/* Financial pills */}
+            <div className="flex items-center gap-2 text-sm">
+              <div className="flex items-center gap-1.5 bg-secondary rounded-lg px-3 py-1.5">
+                <span className="text-muted-foreground">Total</span>
+                <span className="font-bold">฿{mockData.totalAmount.toLocaleString()}</span>
+              </div>
+              <div className="flex items-center gap-1.5 bg-success/10 rounded-lg px-3 py-1.5">
+                <span className="text-success/70">Paid</span>
+                <span className="font-bold text-success">฿{mockData.totalPaid.toLocaleString()}</span>
+              </div>
+              <div className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 ${remaining === 0 ? 'bg-success/10' : mockData.totalPaid > 0 ? 'bg-warning/10' : 'bg-destructive/10'}`}>
+                <span className={`${getRemainingColor()} opacity-70`}>Remaining</span>
+                <span className={`font-bold ${getRemainingColor()}`}>฿{remaining.toLocaleString()}</span>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground" onClick={() => setShowDocument(true)}>
+                <Download className="w-3.5 h-3.5" />
+                PDF
               </Button>
-              <Button 
-                size="sm" 
-                variant="destructive"
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <Pencil className="w-3.5 h-3.5" />
+                Edit
+              </Button>
+              <Button
+                size="sm"
+                className="gap-1.5 bg-success hover:bg-success/90 text-success-foreground"
+                disabled={bookingStatus === "rejected" || bookingStatus === "returned"}
+              >
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Approve
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10"
                 onClick={() => setShowRejectConfirm(true)}
                 disabled={bookingStatus === "rejected" || bookingStatus === "returned"}
               >
+                <XCircle className="w-3.5 h-3.5" />
                 Reject
               </Button>
             </div>
           </div>
-        </DialogHeader>
+        </div>
 
-        <div className="grid grid-cols-3 gap-6 p-6">
-          {/* Left Column - Main Content (2/3) */}
-          <div className="col-span-2 space-y-4">
-            {/* Information Header */}
-            <h3 className="text-lg font-semibold mb-4">Information</h3>
+        {/* ── Scrollable Body ── */}
+        <div className="overflow-y-auto flex-1 px-6 py-5 space-y-5">
 
-            {/* Booking Information Card */}
+          {/* 1️⃣ Booking Overview */}
+          <section>
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Booking Overview</h3>
             <Card className="p-4">
-              <h4 className="font-semibold mb-3 flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                Booking Information
-              </h4>
-              <div className="grid grid-cols-2 gap-y-3 text-sm">
-                <div>
-                  <p className="text-muted-foreground mb-1">Booking ID</p>
-                  <p className="font-medium">{mockData.code}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground mb-1">Status</p>
-                  <Badge className="bg-primary/10 text-primary border-primary/20">
-                    Confirmed
-                  </Badge>
-                </div>
-                <div>
-                  <p className="text-muted-foreground mb-1">Customer Info</p>
+              <div className="grid grid-cols-3 gap-4 text-sm">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <User className="w-3.5 h-3.5" /> Customer
+                  </div>
                   <p className="font-medium">{mockData.customerName}</p>
-                  <p className="text-xs text-muted-foreground">{mockData.customerPhone}</p>
-                  <p className="text-xs text-muted-foreground">{mockData.customerEmail}</p>
                 </div>
-                <div>
-                  <p className="text-muted-foreground mb-1">Pick Up Date</p>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Phone className="w-3.5 h-3.5" /> Phone
+                  </div>
+                  <p className="font-medium">{mockData.customerPhone}</p>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Mail className="w-3.5 h-3.5" /> Email
+                  </div>
+                  <p className="font-medium">{mockData.customerEmail}</p>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Calendar className="w-3.5 h-3.5" /> Pickup
+                  </div>
                   <p className="font-medium">{mockData.pickupDate}</p>
                 </div>
-                <div>
-                  <p className="text-muted-foreground mb-1">Total Days</p>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Calendar className="w-3.5 h-3.5" /> Return
+                  </div>
+                  <p className="font-medium">{mockData.returnDate}</p>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Clock className="w-3.5 h-3.5" /> Duration
+                  </div>
                   <p className="font-medium">{mockData.totalDays} days</p>
                 </div>
               </div>
             </Card>
+          </section>
 
-            {/* Vehicle Card */}
-            <Card className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="font-semibold flex items-center gap-2">
-                  <Car className="w-4 h-4" />
-                  Vehicle
+          {/* 2️⃣ Vehicle & Camp */}
+          <section>
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Vehicle & Camp</h3>
+            <div className="grid grid-cols-2 gap-4">
+              {/* Vehicle */}
+              <Card className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-semibold flex items-center gap-2 text-sm">
+                    <Car className="w-4 h-4 text-primary" /> Vehicle
+                  </h4>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs gap-1 text-muted-foreground"
+                    onClick={() => setShowVehicleSelection(true)}
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    Change
+                  </Button>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Model</span>
+                    <span className="font-medium text-right">{selectedVehicle ? `${selectedVehicle.name} ${selectedVehicle.year}` : mockData.vehicleModel}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Plate</span>
+                    <span className="font-medium">{selectedVehicle ? selectedVehicle.licensePlate : mockData.licensePlate}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Type</span>
+                    <span className="font-medium">{selectedVehicle ? selectedVehicle.type : mockData.vehicleType}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Insurance</span>
+                    <span className="font-medium flex items-center gap-1"><Shield className="w-3 h-3 text-success" />{mockData.insurance}</span>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Camp */}
+              <Card className="p-4">
+                <h4 className="font-semibold flex items-center gap-2 text-sm mb-3">
+                  <Tent className="w-4 h-4 text-primary" /> Camp
                 </h4>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-xs gap-1"
-                  onClick={() => setShowVehicleSelection(true)}
-                >
-                  <RefreshCw className="w-3 h-3" />
-                  เปลี่ยนรถ
-                </Button>
-              </div>
-              <div className="grid grid-cols-2 gap-y-3 text-sm">
-                <div>
-                  <p className="text-muted-foreground mb-1">Model</p>
-                  <p className="font-medium">{selectedVehicle ? `${selectedVehicle.name} ${selectedVehicle.year}` : mockData.vehicleModel}</p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Name</span>
+                    <span className="font-medium text-right">{mockData.campName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Total</span>
+                    <span className="font-medium">฿{mockData.campTotal.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Tel.</span>
+                    <span className="font-medium">{mockData.campPhone}</span>
+                  </div>
                 </div>
+              </Card>
+            </div>
+          </section>
+
+          {/* 3️⃣ Financial Summary — emphasized */}
+          <section>
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Financial Summary</h3>
+            <Card className="p-5 border-2 border-primary/20 bg-primary/[0.02]">
+              <div className="grid grid-cols-2 gap-6">
+                {/* Cost Breakdown */}
                 <div>
-                  <p className="text-muted-foreground mb-1">License Plate</p>
-                  <p className="font-medium">{selectedVehicle ? selectedVehicle.licensePlate : mockData.licensePlate}</p>
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Cost Breakdown</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Vehicle Rental</span>
+                      <span className="font-medium">฿{mockData.vehicleRental.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Camp Fee</span>
+                      <span className="font-medium">฿{mockData.campFee.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Add-ons</span>
+                      <span className="font-medium">฿{mockData.addonsTotal.toLocaleString()}</span>
+                    </div>
+                    <Separator className="my-1" />
+                    <div className="flex justify-between items-baseline">
+                      <span className="font-semibold">Total</span>
+                      <span className="text-xl font-bold">฿{mockData.totalAmount.toLocaleString()}</span>
+                    </div>
+                  </div>
                 </div>
+
+                {/* Payment Status */}
                 <div>
-                  <p className="text-muted-foreground mb-1">ประเภท</p>
-                  <p className="font-medium">{selectedVehicle ? selectedVehicle.type : "Motorhome A Class"}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground mb-1">Insurance</p>
-                  <p className="font-medium">{mockData.insurance}</p>
+                  <div className="flex items-center gap-2 mb-3">
+                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Payment Status</h4>
+                    {getPaymentBadge()}
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Paid</span>
+                      <span className="font-semibold text-success">฿{mockData.totalPaid.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Remaining</span>
+                      <span className={`font-semibold ${getRemainingColor()}`}>฿{remaining.toLocaleString()}</span>
+                    </div>
+                    <Separator className="my-1" />
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-muted-foreground">Deposit</span>
+                      <span className="font-medium">฿{mockData.deposit.toLocaleString()}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </Card>
+          </section>
 
-            {/* Camp Card */}
+          {/* 4️⃣ Add-ons & Accessories */}
+          <section>
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Add-ons & Accessories</h3>
             <Card className="p-4">
-              <h4 className="font-semibold mb-3 flex items-center gap-2">
-                <Tent className="w-4 h-4" />
-                Camp
-              </h4>
-              <div className="grid grid-cols-2 gap-y-3 text-sm">
-                <div>
-                  <p className="text-muted-foreground mb-1">Camp Name</p>
-                  <p className="font-medium">{mockData.campName}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground mb-1">Total</p>
-                  <p className="font-medium">฿{mockData.campTotal.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground mb-1">Camp Tel.</p>
-                  <p className="font-medium">{mockData.campPhone}</p>
-                </div>
-              </div>
-            </Card>
-
-            {/* Payment Card */}
-            <Card className="p-4">
-              <h4 className="font-semibold mb-3">Payment</h4>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Deposit</span>
-                  <span className="font-medium">฿{mockData.deposit.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Vehicle Rental</span>
-                  <span className="font-medium">฿{mockData.vehicleRental.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Camp Fee</span>
-                  <span className="font-medium">฿{mockData.campFee.toLocaleString()}</span>
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          {/* Right Sidebar (1/3) */}
-          <div className="space-y-4">
-            {/* Add-ons & Options Card */}
-            <Card className="p-4">
-              <h4 className="font-semibold mb-3 flex items-center gap-2">
-                <span className="text-primary">+</span>
-                Add-ons & Accessories
-              </h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between items-center p-2 border border-border rounded-lg">
-                  <span>เบาะนั่งเด็ก</span>
-                  <span className="font-medium">฿300</span>
-                </div>
-                <div className="flex justify-between items-center p-2 border border-border rounded-lg">
-                  <span>ชุดปิ้งย่าง</span>
-                  <span className="font-medium">฿350</span>
-                </div>
-                <div className="flex justify-between items-center p-2 border border-border rounded-lg">
-                  <span>กันสาด</span>
-                  <span className="font-medium">฿400</span>
-                </div>
-                <div className="flex justify-between items-center p-2 border border-border rounded-lg">
-                  <span>เก้าอี้พับ (ชุด)</span>
-                  <span className="font-medium">฿150</span>
-                </div>
-                <div className="h-px bg-border my-2" />
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">รวม Add-on</span>
-                  <span className="font-semibold text-primary">฿1,200</span>
+                {mockData.addons.map((addon, i) => (
+                  <div key={i} className="flex items-center justify-between py-1">
+                    <div className="flex items-center gap-2">
+                      <span className="bg-secondary text-muted-foreground rounded px-1.5 py-0.5 text-xs font-mono">×{addon.qty}</span>
+                      <span>{addon.name}</span>
+                    </div>
+                    <span className="font-medium">฿{addon.price.toLocaleString()}</span>
+                  </div>
+                ))}
+                <Separator />
+                <div className="flex justify-between pt-1">
+                  <span className="font-semibold">Total Add-ons</span>
+                  <span className="font-semibold text-primary">฿{mockData.addonsTotal.toLocaleString()}</span>
                 </div>
               </div>
             </Card>
-
-            {/* Cost Summary Card */}
-            <Card className="p-4">
-              <h4 className="font-semibold mb-3">Cost Summary</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Paid</span>
-                  <span className="font-semibold text-success">
-                    ฿{mockData.totalPaid.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Remaining</span>
-                  <span className="font-semibold text-warning">
-                    ฿{mockData.totalDue.toLocaleString()}
-                  </span>
-                </div>
-                <div className="h-px bg-border my-2" />
-                <div className="flex justify-between">
-                  <span className="font-semibold">Total</span>
-                  <span className="font-semibold text-lg">
-                    ฿{(mockData.totalPaid + mockData.totalDue).toLocaleString()}
-                  </span>
-                </div>
-              </div>
-            </Card>
-          </div>
+          </section>
         </div>
       </DialogContent>
 
-      {/* Booking Document Modal */}
-      <BookingDocumentModal 
+      <BookingDocumentModal
         open={showDocument}
         onClose={() => setShowDocument(false)}
         bookingData={mockData}
       />
 
-      {/* Vehicle Selection Dialog */}
       <VehicleSelectionDialog
         open={showVehicleSelection}
         onClose={() => setShowVehicleSelection(false)}
@@ -310,7 +363,6 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
         }}
       />
 
-      {/* Reject Confirmation Dialog */}
       <AlertDialog open={showRejectConfirm} onOpenChange={setShowRejectConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
