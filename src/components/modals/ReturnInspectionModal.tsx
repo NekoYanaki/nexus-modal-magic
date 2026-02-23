@@ -25,6 +25,19 @@ interface ReturnInspectionData {
   totalDamageCost: string;
 }
 
+interface BookedVehicleInfo {
+  id: string;
+  name: string;
+  year: string;
+  licensePlate: string;
+  type: string;
+  techInfo: string;
+  pricePerDay: number;
+  seats: number;
+  doors: number;
+  image?: string;
+}
+
 interface ReturnInspectionModalProps {
   open: boolean;
   onClose: () => void;
@@ -34,6 +47,7 @@ interface ReturnInspectionModalProps {
   bookingStatus: string;
   onStatusChange: (status: string) => void;
   returnData?: ReturnInspectionData;
+  bookedVehicle?: BookedVehicleInfo | null;
   onSave?: (returnData: ReturnInspectionData) => void;
 }
 
@@ -55,6 +69,7 @@ export const ReturnInspectionModal = ({
   bookingStatus,
   onStatusChange,
   returnData = defaultReturn,
+  bookedVehicle = null,
   onSave,
 }: ReturnInspectionModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -165,18 +180,26 @@ export const ReturnInspectionModal = ({
             </h5>
             <div className="flex gap-4">
               <div className="w-28 h-20 rounded-lg bg-muted flex items-center justify-center overflow-hidden flex-shrink-0 border border-border">
-                <Car className="w-8 h-8 text-muted-foreground/40" />
+                {bookedVehicle?.image ? (
+                  <img src={bookedVehicle.image} alt={bookedVehicle.name} className="w-full h-full object-cover" />
+                ) : (
+                  <Car className="w-8 h-8 text-muted-foreground/40" />
+                )}
               </div>
               <div className="flex-1 text-sm space-y-1.5">
-                <p className="font-semibold text-base">{vehicleName}</p>
-                <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs">
-                  <div><span className="text-muted-foreground">ประเภท:</span> <span className="font-medium">Motorhome A Class</span></div>
-                  <div><span className="text-muted-foreground">ปีรุ่น:</span> <span className="font-medium">2024</span></div>
-                  <div><span className="text-muted-foreground">ทะเบียน:</span> <span className="font-medium">กม 1234</span></div>
-                  <div><span className="text-muted-foreground">ที่นั่ง/ประตู:</span> <span className="font-medium">4 ที่นั่ง / 4 ประตู</span></div>
-                  <div className="col-span-2"><span className="text-muted-foreground">ข้อมูลเทคนิค:</span> <span className="font-medium">ดีเซล | 4WD</span></div>
-                  <div><span className="text-muted-foreground">ราคา/วัน:</span> <span className="font-medium text-blue-600">฿5,000</span></div>
-                </div>
+                <p className="font-semibold text-base">{bookedVehicle ? bookedVehicle.name : vehicleName}</p>
+                {bookedVehicle ? (
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs">
+                    <div><span className="text-muted-foreground">ประเภท:</span> <span className="font-medium">{bookedVehicle.type}</span></div>
+                    <div><span className="text-muted-foreground">ปีรุ่น:</span> <span className="font-medium">{bookedVehicle.year}</span></div>
+                    <div><span className="text-muted-foreground">ทะเบียน:</span> <span className="font-medium">{bookedVehicle.licensePlate}</span></div>
+                    <div><span className="text-muted-foreground">ที่นั่ง/ประตู:</span> <span className="font-medium">{bookedVehicle.seats} ที่นั่ง / {bookedVehicle.doors} ประตู</span></div>
+                    <div className="col-span-2"><span className="text-muted-foreground">ข้อมูลเทคนิค:</span> <span className="font-medium">{bookedVehicle.techInfo}</span></div>
+                    <div><span className="text-muted-foreground">ราคา/วัน:</span> <span className="font-medium text-blue-600">฿{bookedVehicle.pricePerDay.toLocaleString()}</span></div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">ยังไม่มีข้อมูลรถจากการจอง</p>
+                )}
               </div>
             </div>
           </Card>

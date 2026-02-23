@@ -87,6 +87,7 @@ interface PickupInspectionModalProps {
   paymentDetail?: PaymentDetail;
   invoiceAddons?: AddonItem[];
   bookedInsurance?: InsuranceOption | null; // Insurance from booking
+  bookedVehicle?: SelectableVehicle | null; // Vehicle from booking
   onSave?: (pickup: PickupInspectionData) => void;
 }
 
@@ -131,12 +132,13 @@ export const PickupInspectionModal = ({
   paymentDetail = defaultPayment,
   invoiceAddons = defaultInvoiceAddons,
   bookedInsurance = null,
+  bookedVehicle = null,
   onSave,
 }: PickupInspectionModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [pickup, setPickup] = useState<PickupInspectionData>(pickupData);
   const [showVehicleSelection, setShowVehicleSelection] = useState(false);
-  const [assignedVehicle, setAssignedVehicle] = useState<SelectableVehicle | null>(null);
+  const [assignedVehicle, setAssignedVehicle] = useState<SelectableVehicle | null>(bookedVehicle);
   const [payment] = useState<PaymentDetail>(paymentDetail);
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmed, setConfirmed] = useState(bookingStatus === "picked_up" || bookingStatus === "returned");
