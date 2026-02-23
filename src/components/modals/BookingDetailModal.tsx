@@ -50,25 +50,10 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
     totalDue: 1150,
     totalAmount: 5150,
     addons: [
-      { name: "AC in living area", included: true },
-      { name: "Bluetooth", included: true },
-      { name: "TV", included: true },
-      { name: "Floor heating", included: true },
-      { name: "Aux-port", included: true },
-      { name: "Mosquito net", included: true },
-      { name: "Adapter to electrical connection", included: true },
-      { name: "Solar panel", included: true },
-      { name: "Freezer", included: true },
-      { name: "Cooking plate", included: true },
-      { name: "Fridge", included: true },
-      { name: "Kitchen equipment", included: true },
-      { name: "Oven", included: true },
-      { name: "Microwave oven", included: true },
-      { name: "Toilet", included: true },
-      { name: "Shower", included: true },
-      { name: "Hot water", included: true },
-      { name: "AC in cab", included: true },
-      { name: "GPS", included: true },
+      { name: "เบาะนั่งเด็ก", price: 300 },
+      { name: "ชุดปิ้งย่าง", price: 350 },
+      { name: "กันสาด", price: 400 },
+      { name: "เก้าอี้พับ (ชุด)", price: 150 },
     ],
     amenities: ["ห้องน้ำ", "ไฟฟ้า", "น้ำประปา"],
   };
@@ -231,22 +216,67 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
             )}
           </div>
 
-          {/* Right Sidebar (1/3) — Add-ons & Options */}
-          <div>
+          {/* Right Sidebar (1/3) */}
+          <div className="space-y-4">
+            {/* Add-ons & Accessories */}
             <Card className="p-5 border border-border">
               <h4 className="font-semibold flex items-center gap-2 mb-4">
                 <span className="text-primary font-bold">+</span>
-                Add-ons & Options
+                Add-ons & Accessories
               </h4>
-              <div className="space-y-2.5">
+              <div className="space-y-2 text-sm">
                 {mockData.addons.map((addon, i) => (
-                  <div key={i} className="flex items-center justify-between text-sm">
+                  <div key={i} className="flex items-center justify-between p-2 border border-border rounded-lg">
                     <span>{addon.name}</span>
-                    <Badge variant="outline" className="text-xs font-normal bg-primary/5 text-primary border-primary/20 shrink-0 ml-2">
-                      Included
-                    </Badge>
+                    <span className="font-medium">฿{addon.price.toLocaleString()}</span>
                   </div>
                 ))}
+                <div className="h-px bg-border my-2" />
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">รวม Add-on</span>
+                  <span className="font-semibold text-primary">฿{mockData.addonsTotal.toLocaleString()}</span>
+                </div>
+              </div>
+            </Card>
+
+            {/* Payment */}
+            <Card className="p-5 border border-border">
+              <h4 className="font-semibold mb-3">Payment</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Deposit</span>
+                  <span className="font-medium">฿{mockData.deposit.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Vehicle Rental</span>
+                  <span className="font-medium">฿{mockData.vehicleRental.toLocaleString()}</span>
+                </div>
+                {hasCamp && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Camp Fee</span>
+                    <span className="font-medium">฿{mockData.campFee.toLocaleString()}</span>
+                  </div>
+                )}
+              </div>
+            </Card>
+
+            {/* Cost Summary */}
+            <Card className="p-5 border border-border">
+              <h4 className="font-semibold mb-3">Cost Summary</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Paid</span>
+                  <span className="font-semibold text-success">฿{mockData.totalPaid.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Remaining</span>
+                  <span className="font-semibold text-warning">฿{mockData.totalDue.toLocaleString()}</span>
+                </div>
+                <div className="h-px bg-border my-2" />
+                <div className="flex justify-between">
+                  <span className="font-semibold">Total</span>
+                  <span className="font-semibold text-lg">฿{mockData.totalAmount.toLocaleString()}</span>
+                </div>
               </div>
             </Card>
           </div>
