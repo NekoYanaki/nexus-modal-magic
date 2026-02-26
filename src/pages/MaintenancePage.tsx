@@ -19,17 +19,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
   Car,
   Search,
-  Plus,
+  Wrench,
   CheckCircle,
   Calendar,
   Settings,
@@ -46,12 +38,13 @@ import {
   Star,
   FileText,
   Database,
-  Wrench,
+  Clock,
+  AlertTriangle,
 } from "lucide-react";
 import { VehicleMaintenanceModal } from "@/components/modals/VehicleMaintenanceModal";
 import { Link } from "react-router-dom";
 
-interface VehicleData {
+interface MaintenanceVehicle {
   id: string;
   name: string;
   year: string;
@@ -60,25 +53,36 @@ interface VehicleData {
   techInfo: string;
   pricePerDay: number;
   status: "available" | "booked" | "maintenance";
-  image?: string;
   seats: number;
   doors: number;
   currentMileage: number;
+  maintenanceStatus: "pending" | "in_progress" | "completed" | "waiting_parts";
+  maintenanceType: string;
+  mechanic: string;
+  startDate: string;
+  estimatedEnd: string;
+  issue: string;
 }
 
-const mockVehicles: VehicleData[] = [
+const mockMaintenanceVehicles: MaintenanceVehicle[] = [
   {
     id: "1",
     name: "Toyota Champ",
     year: "2024",
-    licensePlate: "-",
+    licensePlate: "กท 5678",
     type: "Motorhome A Class",
     techInfo: "ดีเซล | อัตโนมัติ",
     pricePerDay: 5000,
-    status: "available",
+    status: "maintenance",
     seats: 4,
     doors: 4,
     currentMileage: 125430,
+    maintenanceStatus: "in_progress",
+    maintenanceType: "ซ่อมเครื่องยนต์",
+    mechanic: "ช่างสมชาย",
+    startDate: "20 ก.พ. 2026",
+    estimatedEnd: "28 ก.พ. 2026",
+    issue: "เครื่องยนต์สั่นผิดปกติ ต้องเปลี่ยนหัวเทียน",
   },
   {
     id: "2",
@@ -88,82 +92,123 @@ const mockVehicles: VehicleData[] = [
     type: "Motorhome A Class",
     techInfo: "ดีเซล | 4WD",
     pricePerDay: 5000,
-    status: "available",
+    status: "maintenance",
     seats: 4,
     doors: 3,
     currentMileage: 89500,
+    maintenanceStatus: "pending",
+    maintenanceType: "บำรุงรักษาตามระยะ",
+    mechanic: "ยังไม่ระบุ",
+    startDate: "26 ก.พ. 2026",
+    estimatedEnd: "27 ก.พ. 2026",
+    issue: "ครบกำหนดเปลี่ยนน้ำมันเครื่อง 90,000 กม.",
   },
   {
     id: "3",
     name: "All-New TRITON",
     year: "2023",
-    licensePlate: "-",
+    licensePlate: "ขก 9012",
     type: "Caravan",
     techInfo: "ดีเซล | 4WD",
     pricePerDay: 5000,
-    status: "available",
+    status: "maintenance",
     seats: 4,
     doors: 4,
     currentMileage: 45200,
+    maintenanceStatus: "waiting_parts",
+    maintenanceType: "ซ่อมช่วงล่าง",
+    mechanic: "ช่างวิชัย",
+    startDate: "18 ก.พ. 2026",
+    estimatedEnd: "1 มี.ค. 2026",
+    issue: "ลูกหมากปีกนกหลวม รออะไหล่",
   },
   {
     id: "4",
     name: "MERCEDES-BENZ",
     year: "2024",
-    licensePlate: "-",
+    licensePlate: "ฉฉ 4567",
     type: "Caravan",
     techInfo: "เบนซิน | อัตโนมัติ",
     pricePerDay: 12000,
-    status: "available",
+    status: "maintenance",
     seats: 4,
     doors: 4,
     currentMileage: 15800,
+    maintenanceStatus: "completed",
+    maintenanceType: "เปลี่ยนยาง",
+    mechanic: "ช่างสมชาย",
+    startDate: "15 ก.พ. 2026",
+    estimatedEnd: "16 ก.พ. 2026",
+    issue: "เปลี่ยนยางทั้ง 4 เส้น ตามระยะ",
+  },
+  {
+    id: "5",
+    name: "Ford Ranger",
+    year: "2023",
+    licensePlate: "นน 7890",
+    type: "Motorhome A Class",
+    techInfo: "ดีเซล | 4WD",
+    pricePerDay: 4500,
+    status: "maintenance",
+    seats: 4,
+    doors: 4,
+    currentMileage: 67800,
+    maintenanceStatus: "in_progress",
+    maintenanceType: "ซ่อมระบบไฟฟ้า",
+    mechanic: "ช่างวิชัย",
+    startDate: "22 ก.พ. 2026",
+    estimatedEnd: "2 มี.ค. 2026",
+    issue: "ระบบไฟส่องสว่างหน้าไม่ทำงาน",
   },
 ];
 
 const MaintenancePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [maintenanceStatusFilter, setMaintenanceStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
-  const [selectedVehicle, setSelectedVehicle] = useState<VehicleData | null>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<MaintenanceVehicle | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [itemsPerPage, setItemsPerPage] = useState(20);
 
-  const filteredVehicles = mockVehicles.filter((vehicle) => {
+  const filteredVehicles = mockMaintenanceVehicles.filter((vehicle) => {
     const matchesSearch =
       vehicle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      vehicle.licensePlate.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === "all" || vehicle.status === statusFilter;
-    const matchesType = typeFilter === "all" || vehicle.type === typeFilter;
+      vehicle.licensePlate.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      vehicle.issue.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = maintenanceStatusFilter === "all" || vehicle.maintenanceStatus === maintenanceStatusFilter;
+    const matchesType = typeFilter === "all" || vehicle.maintenanceType === typeFilter;
     return matchesSearch && matchesStatus && matchesType;
   });
 
-  const handleViewDetails = (vehicle: VehicleData) => {
+  const handleViewDetails = (vehicle: MaintenanceVehicle) => {
     setSelectedVehicle(vehicle);
     setModalOpen(true);
   };
 
-  const getStatusBadge = (status: VehicleData["status"]) => {
+  const getMaintenanceStatusBadge = (status: MaintenanceVehicle["maintenanceStatus"]) => {
     switch (status) {
-      case "available":
-        return <Badge className="bg-success text-success-foreground">ว่าง</Badge>;
-      case "booked":
-        return <Badge className="bg-primary text-primary-foreground">ถูกจอง</Badge>;
-      case "maintenance":
-        return <Badge className="bg-warning text-warning-foreground">ซ่อมบำรุง</Badge>;
+      case "pending":
+        return <Badge className="bg-warning/10 text-warning border-warning/20">รอดำเนินการ</Badge>;
+      case "in_progress":
+        return <Badge className="bg-primary/10 text-primary border-primary/20">กำลังซ่อม</Badge>;
+      case "completed":
+        return <Badge className="bg-success/10 text-success border-success/20">เสร็จสิ้น</Badge>;
+      case "waiting_parts":
+        return <Badge className="bg-destructive/10 text-destructive border-destructive/20">รออะไหล่</Badge>;
     }
   };
 
   // Stats
-  const totalVehicles = mockVehicles.length;
-  const availableVehicles = mockVehicles.filter((v) => v.status === "available").length;
-  const bookedVehicles = mockVehicles.filter((v) => v.status === "booked").length;
-  const maintenanceVehicles = mockVehicles.filter((v) => v.status === "maintenance").length;
+  const totalMaintenance = mockMaintenanceVehicles.length;
+  const pendingCount = mockMaintenanceVehicles.filter((v) => v.maintenanceStatus === "pending").length;
+  const inProgressCount = mockMaintenanceVehicles.filter((v) => v.maintenanceStatus === "in_progress").length;
+  const waitingPartsCount = mockMaintenanceVehicles.filter((v) => v.maintenanceStatus === "waiting_parts").length;
+  const completedCount = mockMaintenanceVehicles.filter((v) => v.maintenanceStatus === "completed").length;
 
   const sidebarItems = [
     { icon: Home, label: "Dashboard", href: "/" },
     { icon: MessageSquare, label: "แชทลูกค้า", href: "/" },
-    { icon: Car, label: "รถทั้งหมด", href: "/maintenance", active: true },
+    { icon: Car, label: "รถทั้งหมด", href: "/" },
     { icon: CalendarDays, label: "ปฏิทินราคารถ", href: "/" },
     { icon: Tent, label: "แคมป์ไซต์", href: "/" },
     { icon: Calendar, label: "การจอง", href: "/" },
@@ -174,7 +219,8 @@ const MaintenancePage = () => {
     { icon: Star, label: "รีวิว", href: "/" },
     { icon: FileText, label: "รายงาน", href: "/" },
     { icon: Database, label: "จัดการข้อมูล", href: "/" },
-    { icon: Wrench, label: "Stock / Add-on", href: "/stock" },
+    { icon: Wrench, label: "ซ่อมบำรุง", href: "/maintenance", active: true },
+    { icon: Settings, label: "Stock / Add-on", href: "/stock" },
     { icon: Settings, label: "ตั้งค่า", href: "/" },
   ];
 
@@ -216,21 +262,15 @@ const MaintenancePage = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold">จัดการรถ</h1>
-            <p className="text-muted-foreground">จัดการข้อมูลรถทั้งหมดในระบบ</p>
+            <h1 className="text-2xl font-bold">ซ่อมบำรุง</h1>
+            <p className="text-muted-foreground">ติดตามสถานะการซ่อมบำรุงรถทั้งหมดในระบบ</p>
           </div>
-          <div className="flex items-center gap-4">
-            <Button className="bg-primary hover:bg-primary/90">
-              <Plus className="w-4 h-4 mr-2" />
-              เพิ่มรถใหม่
-            </Button>
-            <div className="flex items-center gap-2">
-              <Bell className="w-5 h-5 text-muted-foreground" />
-              <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
-                <Users className="w-4 h-4" />
-              </div>
-              <span className="text-sm">admin</span>
+          <div className="flex items-center gap-2">
+            <Bell className="w-5 h-5 text-muted-foreground" />
+            <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
+              <Users className="w-4 h-4" />
             </div>
+            <span className="text-sm">admin</span>
           </div>
         </div>
 
@@ -238,75 +278,79 @@ const MaintenancePage = () => {
         <div className="grid grid-cols-5 gap-4 mb-6">
           <Card className="p-4 flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">รถทั้งหมด</p>
-              <p className="text-2xl font-bold">{totalVehicles}</p>
+              <p className="text-sm text-muted-foreground">ทั้งหมด</p>
+              <p className="text-2xl font-bold">{totalMaintenance}</p>
             </div>
-            <Car className="w-8 h-8 text-muted-foreground/30" />
+            <Wrench className="w-8 h-8 text-muted-foreground/30" />
           </Card>
           <Card className="p-4 flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">รถว่าง</p>
-              <p className="text-2xl font-bold text-success">{availableVehicles}</p>
+              <p className="text-sm text-muted-foreground">รอดำเนินการ</p>
+              <p className="text-2xl font-bold text-warning">{pendingCount}</p>
+            </div>
+            <Clock className="w-8 h-8 text-warning/30" />
+          </Card>
+          <Card className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">กำลังซ่อม</p>
+              <p className="text-2xl font-bold text-primary">{inProgressCount}</p>
+            </div>
+            <Settings className="w-8 h-8 text-primary/30" />
+          </Card>
+          <Card className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">รออะไหล่</p>
+              <p className="text-2xl font-bold text-destructive">{waitingPartsCount}</p>
+            </div>
+            <AlertTriangle className="w-8 h-8 text-destructive/30" />
+          </Card>
+          <Card className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">เสร็จสิ้น</p>
+              <p className="text-2xl font-bold text-success">{completedCount}</p>
             </div>
             <CheckCircle className="w-8 h-8 text-success/30" />
           </Card>
-          <Card className="p-4 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">รถถูกจอง</p>
-              <p className="text-2xl font-bold text-primary">{bookedVehicles}</p>
-            </div>
-            <Calendar className="w-8 h-8 text-primary/30" />
-          </Card>
-          <Card className="p-4 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">ซ่อมบำรุง</p>
-              <p className="text-2xl font-bold text-warning">{maintenanceVehicles}</p>
-            </div>
-            <Settings className="w-8 h-8 text-warning/30" />
-          </Card>
-          <Card className="p-4 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">แจ้งเตือน</p>
-              <p className="text-2xl font-bold text-destructive">0</p>
-            </div>
-            <Bell className="w-8 h-8 text-destructive/30" />
-          </Card>
         </div>
 
-        {/* Vehicle List */}
+        {/* Vehicle Maintenance List */}
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">รายการรถ</h2>
+          <h2 className="text-xl font-semibold mb-4">รายการซ่อมบำรุง</h2>
 
           {/* Filters */}
           <div className="flex items-center gap-4 mb-6">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="ค้นหาด้วยชื่อรถหรือทะเบียน..."
+                placeholder="ค้นหาด้วยชื่อรถ, ทะเบียน หรือปัญหา..."
                 className="pl-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={maintenanceStatusFilter} onValueChange={setMaintenanceStatusFilter}>
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="ทุกสถานะ" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">ทุกสถานะ</SelectItem>
-                <SelectItem value="available">ว่าง</SelectItem>
-                <SelectItem value="booked">ถูกจอง</SelectItem>
-                <SelectItem value="maintenance">ซ่อมบำรุง</SelectItem>
+                <SelectItem value="pending">รอดำเนินการ</SelectItem>
+                <SelectItem value="in_progress">กำลังซ่อม</SelectItem>
+                <SelectItem value="waiting_parts">รออะไหล่</SelectItem>
+                <SelectItem value="completed">เสร็จสิ้น</SelectItem>
               </SelectContent>
             </Select>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="ทุกประเภท" />
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="ทุกประเภทงาน" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">ทุกประเภท</SelectItem>
-                <SelectItem value="Motorhome A Class">Motorhome A Class</SelectItem>
-                <SelectItem value="Caravan">Caravan</SelectItem>
+                <SelectItem value="all">ทุกประเภทงาน</SelectItem>
+                <SelectItem value="ซ่อมเครื่องยนต์">ซ่อมเครื่องยนต์</SelectItem>
+                <SelectItem value="บำรุงรักษาตามระยะ">บำรุงรักษาตามระยะ</SelectItem>
+                <SelectItem value="ซ่อมช่วงล่าง">ซ่อมช่วงล่าง</SelectItem>
+                <SelectItem value="เปลี่ยนยาง">เปลี่ยนยาง</SelectItem>
+                <SelectItem value="ซ่อมระบบไฟฟ้า">ซ่อมระบบไฟฟ้า</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -315,11 +359,12 @@ const MaintenancePage = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>รูปรถ</TableHead>
-                <TableHead>ข้อมูลรถ</TableHead>
-                <TableHead>ประเภท</TableHead>
-                <TableHead>ข้อมูลเทคนิค</TableHead>
-                <TableHead>ราคา/วัน</TableHead>
+                <TableHead>รถ</TableHead>
+                <TableHead>ประเภทงาน</TableHead>
+                <TableHead>ปัญหา / รายละเอียด</TableHead>
+                <TableHead>ช่าง</TableHead>
+                <TableHead>วันที่เริ่ม</TableHead>
+                <TableHead>กำหนดเสร็จ</TableHead>
                 <TableHead>สถานะ</TableHead>
                 <TableHead>จัดการ</TableHead>
               </TableRow>
@@ -328,27 +373,26 @@ const MaintenancePage = () => {
               {filteredVehicles.map((vehicle) => (
                 <TableRow key={vehicle.id}>
                   <TableCell>
-                    <div className="w-24 h-16 bg-secondary rounded-lg flex items-center justify-center">
-                      <Car className="w-8 h-8 text-muted-foreground/50" />
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-secondary rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Car className="w-6 h-6 text-muted-foreground/50" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm">{vehicle.name}</p>
+                        <p className="text-xs text-muted-foreground">{vehicle.licensePlate}</p>
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div>
-                      <p className="font-semibold">{vehicle.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {vehicle.year} | {vehicle.licensePlate}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {vehicle.seats} ที่นั่ง | {vehicle.doors} ประตู
-                      </p>
-                    </div>
+                    <span className="text-sm">{vehicle.maintenanceType}</span>
                   </TableCell>
-                  <TableCell>{vehicle.type}</TableCell>
-                  <TableCell>{vehicle.techInfo}</TableCell>
-                  <TableCell className="text-success font-semibold">
-                    ฿{vehicle.pricePerDay.toLocaleString()}
+                  <TableCell>
+                    <p className="text-sm text-muted-foreground max-w-[200px] truncate">{vehicle.issue}</p>
                   </TableCell>
-                  <TableCell>{getStatusBadge(vehicle.status)}</TableCell>
+                  <TableCell className="text-sm">{vehicle.mechanic}</TableCell>
+                  <TableCell className="text-sm">{vehicle.startDate}</TableCell>
+                  <TableCell className="text-sm">{vehicle.estimatedEnd}</TableCell>
+                  <TableCell>{getMaintenanceStatusBadge(vehicle.maintenanceStatus)}</TableCell>
                   <TableCell>
                     <Button
                       variant="outline"
