@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -20,6 +20,8 @@ import {
   Minus,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 
 interface Addon {
   id: string;
@@ -63,6 +65,9 @@ const StockPage = () => {
   const [adjustAddon, setAdjustAddon] = useState<Addon | null>(null);
   const [adjustAction, setAdjustAction] = useState<AdjustAction>("add");
   const [adjustQty, setAdjustQty] = useState(1);
+  const [adjustNote, setAdjustNote] = useState("");
+  const [adjustSaving, setAdjustSaving] = useState(false);
+  const { toast } = useToast();
 
   const filteredAddons = addons.filter((a) => {
     const matchesSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.id.toLowerCase().includes(searchQuery.toLowerCase());
@@ -116,38 +121,64 @@ const StockPage = () => {
     setAdjustAddon(addon);
     setAdjustAction("add");
     setAdjustQty(1);
+    setAdjustNote("");
     setAdjustOpen(true);
   };
 
-  const handleAdjustSave = () => {
-    if (!adjustAddon) return;
+  const adjustMaxQty = useMemo(() => {
+    if (!adjustAddon) return 99;
+    switch (adjustAction) {
+      case "reduce": return adjustAddon.available;
+      case "damaged": return adjustAddon.available;
+      case "return": return adjustAddon.damaged;
+      default: return 99;
+    }
+  }, [adjustAddon, adjustAction]);
+
+  const adjustValidationMsg = useMemo(() => {
+    if (!adjustAddon) return "";
+    if (adjustQty > adjustMaxQty) {
+      switch (adjustAction) {
+        case "reduce": return `ไม่สามารถลดเกินจำนวนพร้อมใช้ (${adjustAddon.available})`;
+        case "damaged": return `ไม่สามารถแจ้งชำรุดเกินจำนวนพร้อมใช้ (${adjustAddon.available})`;
+        case "return": return `ไม่สามารถคืนเกินจำนวนชำรุด (${adjustAddon.damaged})`;
+      }
+    }
+    return "";
+  }, [adjustAddon, adjustAction, adjustQty, adjustMaxQty]);
+
+  const adjustPreview = useMemo(() => {
+    if (!adjustAddon) return null;
+    const p = { available: adjustAddon.available, damaged: adjustAddon.damaged, total: adjustAddon.total };
+    const qty = Math.min(adjustQty, adjustMaxQty);
+    switch (adjustAction) {
+      case "add": p.total += qty; p.available += qty; break;
+      case "reduce": p.total -= qty; p.available -= qty; break;
+      case "damaged": p.available -= qty; p.damaged += qty; break;
+      case "return": p.damaged -= qty; p.available += qty; break;
+    }
+    return p;
+  }, [adjustAddon, adjustAction, adjustQty, adjustMaxQty]);
+
+  const handleAdjustSave = async () => {
+    if (!adjustAddon || adjustValidationMsg) return;
+    setAdjustSaving(true);
+    await new Promise((r) => setTimeout(r, 500));
     setAddons((prev) => prev.map((a) => {
       if (a.id !== adjustAddon.id) return a;
       const updated = { ...a };
+      const qty = Math.min(adjustQty, adjustMaxQty);
       switch (adjustAction) {
-        case "add":
-          updated.total += adjustQty;
-          updated.available += adjustQty;
-          break;
-        case "reduce":
-          const reduceAmt = Math.min(adjustQty, updated.available);
-          updated.total -= reduceAmt;
-          updated.available -= reduceAmt;
-          break;
-        case "damaged":
-          const dmgAmt = Math.min(adjustQty, updated.available);
-          updated.available -= dmgAmt;
-          updated.damaged += dmgAmt;
-          break;
-        case "return":
-          const retAmt = Math.min(adjustQty, updated.damaged);
-          updated.damaged -= retAmt;
-          updated.available += retAmt;
-          break;
+        case "add": updated.total += qty; updated.available += qty; break;
+        case "reduce": updated.total -= qty; updated.available -= qty; break;
+        case "damaged": updated.available -= qty; updated.damaged += qty; break;
+        case "return": updated.damaged -= qty; updated.available += qty; break;
       }
       return updated;
     }));
+    setAdjustSaving(false);
     setAdjustOpen(false);
+    toast({ title: "สำเร็จ", description: "ปรับสต็อกเรียบร้อยแล้ว" });
   };
 
   const sidebarItems = [
@@ -375,14 +406,32 @@ const StockPage = () => {
 
       {/* Adjust Stock Dialog */}
       <Dialog open={adjustOpen} onOpenChange={setAdjustOpen}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>ปรับสต็อก — {adjustAddon?.name}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-5 py-2">
+            {/* Current Stock Summary */}
+            {adjustAddon && (
+              <div className="grid grid-cols-4 gap-3 rounded-lg bg-muted/50 p-3">
+                {[
+                  { label: "ทั้งหมด", value: adjustAddon.total, cls: "text-foreground" },
+                  { label: "พร้อมใช้", value: adjustAddon.available, cls: "text-success" },
+                  { label: "จองแล้ว", value: adjustAddon.reserved, cls: "text-warning" },
+                  { label: "ชำรุด", value: adjustAddon.damaged, cls: "text-destructive" },
+                ].map((s) => (
+                  <div key={s.label} className="text-center">
+                    <p className={`text-lg font-bold ${s.cls}`}>{s.value}</p>
+                    <p className="text-xs text-muted-foreground">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Adjustment Type */}
             <div className="space-y-2">
               <Label>ประเภทการปรับ</Label>
-              <Select value={adjustAction} onValueChange={(v) => setAdjustAction(v as AdjustAction)}>
+              <Select value={adjustAction} onValueChange={(v) => { setAdjustAction(v as AdjustAction); setAdjustQty(1); }}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -394,6 +443,8 @@ const StockPage = () => {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Quantity */}
             <div className="space-y-2">
               <Label>จำนวน</Label>
               <div className="flex items-center gap-3">
@@ -403,6 +454,7 @@ const StockPage = () => {
                 <Input
                   type="number"
                   min={1}
+                  max={adjustMaxQty}
                   value={adjustQty}
                   onChange={(e) => setAdjustQty(Math.max(1, Number(e.target.value)))}
                   className="text-center w-20"
@@ -411,11 +463,52 @@ const StockPage = () => {
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
+              {adjustValidationMsg && (
+                <p className="text-xs text-destructive">{adjustValidationMsg}</p>
+              )}
             </div>
+
+            {/* Note */}
+            <div className="space-y-2">
+              <Label>หมายเหตุ <span className="text-muted-foreground font-normal">(optional)</span></Label>
+              <Textarea
+                placeholder="ระบุหมายเหตุ..."
+                value={adjustNote}
+                onChange={(e) => setAdjustNote(e.target.value)}
+                className="min-h-[60px]"
+              />
+            </div>
+
+            {/* Preview */}
+            {adjustAddon && adjustPreview && !adjustValidationMsg && (
+              <div className="rounded-lg border border-border/50 bg-muted/30 p-3 space-y-1">
+                <p className="text-xs font-semibold text-muted-foreground mb-2">หลังปรับสต็อก:</p>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-muted-foreground w-16">Total:</span>
+                  <span>{adjustAddon.total}</span>
+                  <span className="text-muted-foreground">→</span>
+                  <span className="font-semibold">{adjustPreview.total}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-muted-foreground w-16">Available:</span>
+                  <span className="text-success">{adjustAddon.available}</span>
+                  <span className="text-muted-foreground">→</span>
+                  <span className="font-semibold text-success">{adjustPreview.available}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-muted-foreground w-16">Damaged:</span>
+                  <span className="text-destructive">{adjustAddon.damaged}</span>
+                  <span className="text-muted-foreground">→</span>
+                  <span className="font-semibold text-destructive">{adjustPreview.damaged}</span>
+                </div>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAdjustOpen(false)}>ยกเลิก</Button>
-            <Button onClick={handleAdjustSave}>ยืนยัน</Button>
+            <Button onClick={handleAdjustSave} disabled={adjustSaving || !!adjustValidationMsg}>
+              {adjustSaving ? "กำลังบันทึก..." : "บันทึก"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
