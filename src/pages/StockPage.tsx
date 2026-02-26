@@ -60,6 +60,7 @@ const StockPage = () => {
   const [addons, setAddons] = useState<Addon[]>(mockAddons);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [adjustAddon, setAdjustAddon] = useState<Addon | null>(null);
   const [adjustAction, setAdjustAction] = useState<AdjustAction>("add");
@@ -67,11 +68,17 @@ const StockPage = () => {
   const [adjustSaving, setAdjustSaving] = useState(false);
   const { toast } = useToast();
 
+  const categories = useMemo(() => {
+    const cats = Array.from(new Set(addons.map((a) => a.category)));
+    return cats.sort();
+  }, [addons]);
+
   const filteredAddons = addons.filter((a) => {
     const matchesSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.id.toLowerCase().includes(searchQuery.toLowerCase());
-    if (statusFilter === "low") return matchesSearch && a.available > 0 && a.available <= 2;
-    if (statusFilter === "out") return matchesSearch && a.available === 0;
-    return matchesSearch;
+    const matchesCategory = categoryFilter === "all" || a.category === categoryFilter;
+    if (statusFilter === "low") return matchesSearch && matchesCategory && a.available > 0 && a.available <= 2;
+    if (statusFilter === "out") return matchesSearch && matchesCategory && a.available === 0;
+    return matchesSearch && matchesCategory;
   });
 
   const totals = addons.reduce((acc, a) => ({
@@ -237,6 +244,15 @@ const StockPage = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input placeholder="ค้นหา Add-on..." className="pl-10" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
             </div>
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="w-48"><SelectValue placeholder="หมวดหมู่" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">ทุกหมวดหมู่</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-44"><SelectValue placeholder="สถานะ" /></SelectTrigger>
               <SelectContent>
