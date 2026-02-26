@@ -123,8 +123,8 @@ const AddonManagementPage = () => {
     { icon: Star, label: "รีวิว", href: "/" },
     { icon: FileText, label: "รายงาน", href: "/" },
     { icon: Database, label: "จัดการข้อมูล", href: "/" },
-    { icon: Boxes, label: "Stock อุปกรณ์เสริม", href: "/stock" },
-    { icon: Package, label: "การจัดการ Add-on", href: "/addon-management", active: true },
+    { icon: Boxes, label: "การจัดการ Add-on", href: "/stock" },
+    { icon: Package, label: "Stock อุปกรณ์เสริม", href: "/addon-management", active: true },
     { icon: Wrench, label: "ซ่อมบำรุง", href: "/maintenance" },
     { icon: Settings, label: "ตั้งค่า", href: "/" },
   ];
@@ -163,7 +163,7 @@ const AddonManagementPage = () => {
       <main className="flex-1 p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold">การจัดการ Add-on</h1>
+            <h1 className="text-2xl font-bold">Stock อุปกรณ์เสริม</h1>
             <p className="text-sm text-muted-foreground">เพิ่ม แก้ไข ลบ และจัดการสถานะรายการอุปกรณ์เสริม</p>
           </div>
           <div className="flex items-center gap-2">
