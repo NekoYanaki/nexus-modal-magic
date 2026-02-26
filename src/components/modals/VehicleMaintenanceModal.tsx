@@ -271,7 +271,7 @@ export function VehicleMaintenanceModal({ open, onClose, vehicle }: VehicleMaint
               <TabsList className="h-12 bg-transparent gap-2 -mb-px">
                 <TabsTrigger value="parts-maintenance" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">
                   <Package className="w-4 h-4 mr-1" />
-                  อะไหล่และบำรุงรักษา
+                  บำรุงรักษา
                 </TabsTrigger>
                 <TabsTrigger value="job" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">
                   งานซ่อม
@@ -286,48 +286,6 @@ export function VehicleMaintenanceModal({ open, onClose, vehicle }: VehicleMaint
             <TabsContent value="parts-maintenance" className="p-6 mt-0">
               <div className="space-y-8">
 
-                {/* ── Section 1: Parts Stock ── */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <Package className="w-5 h-5 text-primary" />
-                    Parts Stock — อะไหล่ที่ใช้กับรถคันนี้
-                  </h3>
-                  <Card>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>ชื่ออะไหล่</TableHead>
-                          <TableHead className="text-center">คงเหลือ</TableHead>
-                          <TableHead className="text-center">จุดสั่งซื้อ</TableHead>
-                          <TableHead className="text-center">สถานะ</TableHead>
-                          <TableHead className="text-right">จัดการ</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {partsStock.map((part) => {
-                          const st = getPartStatus(part);
-                          return (
-                            <TableRow key={part.id}>
-                              <TableCell className="font-medium">{part.name}</TableCell>
-                              <TableCell className="text-center font-semibold">{part.available} / {part.total}</TableCell>
-                              <TableCell className="text-center text-muted-foreground">{part.minStock}</TableCell>
-                              <TableCell className="text-center">
-                                {st === "ok" && <Badge className="bg-success/10 text-success border-0">พร้อมใช้</Badge>}
-                                {st === "low" && <Badge className="bg-warning/10 text-warning border-0">ใกล้หมด</Badge>}
-                                {st === "out" && <Badge className="bg-destructive/10 text-destructive border-0">หมด</Badge>}
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <Button variant="outline" size="sm" onClick={() => handleAdjustOpen(part)}>
-                                  ปรับสต็อก
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
-                  </Card>
-                </div>
 
                 {/* ── Section 2: Maintenance Schedule ── */}
                 <div>
