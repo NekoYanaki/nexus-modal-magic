@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import BookingPage from "./pages/BookingPage";
 import MaintenancePage from "./pages/MaintenancePage";
 import StockPage from "./pages/StockPage";
+import AddonManagementPage from "./pages/AddonManagementPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/booking" element={<BookingPage />} />
           <Route path="/maintenance" element={<MaintenancePage />} />
           <Route path="/stock" element={<StockPage />} />
+          <Route path="/addon-management" element={<AddonManagementPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
