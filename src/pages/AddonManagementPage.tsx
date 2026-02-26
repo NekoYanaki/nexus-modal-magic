@@ -242,7 +242,7 @@ const AddonManagementPage = () => {
                 <TableHead>รหัส</TableHead>
                 <TableHead>ชื่อ Add-on</TableHead>
                 <TableHead>หมวดหมู่</TableHead>
-                <TableHead className="text-right">ราคาเริ่มต้น (บาท)</TableHead>
+                
                 <TableHead className="text-center">สถานะการใช้งาน</TableHead>
                 <TableHead className="text-center">สถานะ</TableHead>
                 <TableHead className="text-right">จัดการ</TableHead>
@@ -254,7 +254,7 @@ const AddonManagementPage = () => {
                   <TableCell className="font-mono text-sm text-muted-foreground">{addon.id}</TableCell>
                   <TableCell className="font-semibold">{addon.name}</TableCell>
                   <TableCell><Badge variant="outline">{addon.category}</Badge></TableCell>
-                  <TableCell className="text-right">{addon.defaultPrice.toLocaleString()}</TableCell>
+                  
                   <TableCell className="text-center">{getStockStatusBadge(addon.stockStatus)}</TableCell>
                   <TableCell className="text-center">
                     <Badge variant={addon.isActive ? "default" : "secondary"}>
@@ -302,10 +302,6 @@ const AddonManagementPage = () => {
             <div className="space-y-2">
               <Label>หมวดหมู่</Label>
               <Input value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} placeholder="เช่น เครื่องปั่นไฟ" />
-            </div>
-            <div className="space-y-2">
-              <Label>ราคาเริ่มต้น (บาท)</Label>
-              <Input type="number" value={formData.defaultPrice} onChange={(e) => setFormData({ ...formData, defaultPrice: Number(e.target.value) })} />
             </div>
             <div className="space-y-2">
               <Label>สถานะการใช้งาน</Label>
