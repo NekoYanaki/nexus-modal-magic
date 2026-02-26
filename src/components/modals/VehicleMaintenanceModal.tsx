@@ -279,6 +279,10 @@ export function VehicleMaintenanceModal({ open, onClose, vehicle }: VehicleMaint
                 <TabsTrigger value="defects" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">
                   ตำหนิ/ความเสียหาย
                 </TabsTrigger>
+                <TabsTrigger value="history" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">
+                  <FileText className="w-4 h-4 mr-1" />
+                  ประวัติการซ่อมบำรุง
+                </TabsTrigger>
               </TabsList>
             </div>
 
@@ -341,42 +345,44 @@ export function VehicleMaintenanceModal({ open, onClose, vehicle }: VehicleMaint
                   </div>
                 </div>
 
-                {/* ── Section 3: Maintenance History ── */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-primary" />
-                    Maintenance History — ประวัติการซ่อมบำรุง
-                  </h3>
-                  <Card>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>วันที่</TableHead>
-                          <TableHead>รายการ</TableHead>
-                          <TableHead>อะไหล่ที่ใช้</TableHead>
-                          <TableHead>เลขไมล์</TableHead>
-                          <TableHead>สถานะ</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {maintenanceHistory.map((record) => (
-                          <TableRow key={record.id}>
-                            <TableCell>{record.date}</TableCell>
-                            <TableCell>{record.items}</TableCell>
-                            <TableCell className="text-muted-foreground text-sm">{record.partsUsed || "-"}</TableCell>
-                            <TableCell>{record.mileage.toLocaleString()} กม.</TableCell>
-                            <TableCell>
-                              <Badge className="bg-success/10 text-success border-success/20">
-                                {record.status === "completed" ? "เสร็จสิ้น" : "รอดำเนินการ"}
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </Card>
-                </div>
+              </div>
+            </TabsContent>
 
+            {/* ═══ History Tab ═══ */}
+            <TabsContent value="history" className="p-6 mt-0">
+              <div>
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-primary" />
+                  Maintenance History — ประวัติการซ่อมบำรุง
+                </h3>
+                <Card>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>วันที่</TableHead>
+                        <TableHead>รายการ</TableHead>
+                        <TableHead>อะไหล่ที่ใช้</TableHead>
+                        <TableHead>เลขไมล์</TableHead>
+                        <TableHead>สถานะ</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {maintenanceHistory.map((record) => (
+                        <TableRow key={record.id}>
+                          <TableCell>{record.date}</TableCell>
+                          <TableCell>{record.items}</TableCell>
+                          <TableCell className="text-muted-foreground text-sm">{record.partsUsed || "-"}</TableCell>
+                          <TableCell>{record.mileage.toLocaleString()} กม.</TableCell>
+                          <TableCell>
+                            <Badge className="bg-success/10 text-success border-success/20">
+                              {record.status === "completed" ? "เสร็จสิ้น" : "รอดำเนินการ"}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </Card>
               </div>
             </TabsContent>
 
