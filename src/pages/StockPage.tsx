@@ -247,10 +247,6 @@ const StockPage = () => {
             <p className="text-sm text-muted-foreground">บริหารจำนวนคงเหลือและสถานะอุปกรณ์ในคลัง</p>
           </div>
           <div className="flex items-center gap-4">
-            <Button className="bg-primary hover:bg-primary/90" onClick={handleAdd}>
-              <Plus className="w-4 h-4 mr-2" />
-              เพิ่ม Add-on
-            </Button>
             <div className="flex items-center gap-2">
               <Bell className="w-5 h-5 text-muted-foreground" />
               <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
@@ -341,10 +337,7 @@ const StockPage = () => {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <Button variant="outline" size="sm" className="text-xs" onClick={() => handleAdjustOpen(addon)}>
-                          ปรับสต็อก
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-warning" onClick={() => handleEdit(addon)}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-warning" onClick={() => handleAdjustOpen(addon)}>
                           <Pencil className="w-4 h-4" />
                         </Button>
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { setDeletingAddon(addon); setDeleteDialogOpen(true); }}>
