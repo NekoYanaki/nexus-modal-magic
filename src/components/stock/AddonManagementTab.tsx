@@ -1,0 +1,232 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Search, Plus, Pencil, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+interface Addon {
+  id: string;
+  name: string;
+  defaultPrice: number;
+  isActive: boolean;
+  total: number;
+  available: number;
+  reserved: number;
+  damaged: number;
+}
+
+interface AddonManagementTabProps {
+  addons: Addon[];
+  setAddons: React.Dispatch<React.SetStateAction<Addon[]>>;
+}
+
+const AddonManagementTab = ({ addons, setAddons }: AddonManagementTabProps) => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingAddon, setEditingAddon] = useState<Addon | null>(null);
+  const [formData, setFormData] = useState({ name: "", defaultPrice: 0, isActive: true });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingAddon, setDeletingAddon] = useState<Addon | null>(null);
+  const { toast } = useToast();
+
+  const filteredAddons = addons.filter((a) => {
+    const matchesSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.id.toLowerCase().includes(searchQuery.toLowerCase());
+    if (activeFilter === "active") return matchesSearch && a.isActive;
+    if (activeFilter === "inactive") return matchesSearch && !a.isActive;
+    return matchesSearch;
+  });
+
+  const handleAdd = () => {
+    setEditingAddon(null);
+    setFormData({ name: "", defaultPrice: 0, isActive: true });
+    setDialogOpen(true);
+  };
+
+  const handleEdit = (addon: Addon) => {
+    setEditingAddon(addon);
+    setFormData({ name: addon.name, defaultPrice: addon.defaultPrice, isActive: addon.isActive });
+    setDialogOpen(true);
+  };
+
+  const handleSave = () => {
+    if (!formData.name.trim()) {
+      toast({ title: "กรุณากรอกชื่อ Add-on", variant: "destructive" });
+      return;
+    }
+    if (editingAddon) {
+      setAddons((prev) => prev.map((a) => a.id === editingAddon.id ? { ...a, ...formData } : a));
+      toast({ title: "สำเร็จ", description: "แก้ไข Add-on เรียบร้อยแล้ว" });
+    } else {
+      const newId = `AD${String(addons.length + 1).padStart(4, "0")}`;
+      setAddons((prev) => [...prev, { id: newId, ...formData, total: 0, available: 0, reserved: 0, damaged: 0 }]);
+      toast({ title: "สำเร็จ", description: "เพิ่ม Add-on เรียบร้อยแล้ว" });
+    }
+    setDialogOpen(false);
+  };
+
+  const handleDelete = () => {
+    if (deletingAddon) {
+      setAddons((prev) => prev.filter((a) => a.id !== deletingAddon.id));
+      toast({ title: "สำเร็จ", description: "ลบ Add-on เรียบร้อยแล้ว" });
+    }
+    setDeleteDialogOpen(false);
+    setDeletingAddon(null);
+  };
+
+  const handleToggleActive = (addon: Addon) => {
+    setAddons((prev) => prev.map((a) => a.id === addon.id ? { ...a, isActive: !a.isActive } : a));
+    toast({
+      title: addon.isActive ? "ปิดใช้งาน" : "เปิดใช้งาน",
+      description: `${addon.name} ${addon.isActive ? "ถูกปิดใช้งานแล้ว" : "ถูกเปิดใช้งานแล้ว"}`,
+    });
+  };
+
+  const activeCount = addons.filter((a) => a.isActive).length;
+  const inactiveCount = addons.filter((a) => !a.isActive).length;
+
+  return (
+    <>
+      {/* Summary */}
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <Card className="p-4 text-center">
+          <p className="text-2xl font-bold">{addons.length}</p>
+          <p className="text-xs text-muted-foreground">Add-on ทั้งหมด</p>
+        </Card>
+        <Card className="p-4 text-center">
+          <p className="text-2xl font-bold text-success">{activeCount}</p>
+          <p className="text-xs text-muted-foreground">เปิดใช้งาน</p>
+        </Card>
+        <Card className="p-4 text-center">
+          <p className="text-2xl font-bold text-muted-foreground">{inactiveCount}</p>
+          <p className="text-xs text-muted-foreground">ปิดใช้งาน</p>
+        </Card>
+      </div>
+
+      {/* Table */}
+      <Card className="p-6">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input placeholder="ค้นหา Add-on..." className="pl-10" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+          </div>
+          <Select value={activeFilter} onValueChange={setActiveFilter}>
+            <SelectTrigger className="w-44"><SelectValue placeholder="สถานะ" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">ทั้งหมด</SelectItem>
+              <SelectItem value="active">เปิดใช้งาน</SelectItem>
+              <SelectItem value="inactive">ปิดใช้งาน</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button onClick={handleAdd} className="gap-2">
+            <Plus className="w-4 h-4" />
+            เพิ่ม Add-on
+          </Button>
+        </div>
+
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>รหัส</TableHead>
+              <TableHead>ชื่อ Add-on</TableHead>
+              <TableHead className="text-right">ราคาเริ่มต้น (บาท)</TableHead>
+              <TableHead className="text-center">สถานะ</TableHead>
+              <TableHead className="text-center">เปิด/ปิด</TableHead>
+              <TableHead className="text-right">จัดการ</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredAddons.map((addon) => (
+              <TableRow key={addon.id}>
+                <TableCell className="font-mono text-sm text-muted-foreground">{addon.id}</TableCell>
+                <TableCell className="font-semibold">{addon.name}</TableCell>
+                <TableCell className="text-right">{addon.defaultPrice.toLocaleString()}</TableCell>
+                <TableCell className="text-center">
+                  <Badge variant={addon.isActive ? "default" : "secondary"}>
+                    {addon.isActive ? "เปิดใช้งาน" : "ปิดใช้งาน"}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-center">
+                  <Switch checked={addon.isActive} onCheckedChange={() => handleToggleActive(addon)} />
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex items-center justify-end gap-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-warning" onClick={() => handleEdit(addon)}>
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { setDeletingAddon(addon); setDeleteDialogOpen(true); }}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+            {filteredAddons.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล Add-on</TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </Card>
+
+      {/* Add/Edit Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingAddon ? "แก้ไข Add-on" : "เพิ่ม Add-on"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>ชื่อ Add-on</Label>
+              <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="เช่น เบาะนั่งเด็ก" />
+            </div>
+            <div className="space-y-2">
+              <Label>ราคาเริ่มต้น (บาท)</Label>
+              <Input type="number" value={formData.defaultPrice} onChange={(e) => setFormData({ ...formData, defaultPrice: Number(e.target.value) })} />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label>เปิดใช้งาน</Label>
+              <Switch checked={formData.isActive} onCheckedChange={(v) => setFormData({ ...formData, isActive: v })} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>ยกเลิก</Button>
+            <Button onClick={handleSave}>{editingAddon ? "บันทึก" : "เพิ่ม"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>ยืนยันการลบ</DialogTitle>
+          </DialogHeader>
+          <p className="text-muted-foreground">
+            คุณต้องการลบ <span className="font-semibold text-foreground">{deletingAddon?.name}</span> ออกจากระบบหรือไม่?
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>ยกเลิก</Button>
+            <Button variant="destructive" onClick={handleDelete}>ลบ</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
+
+export default AddonManagementTab;
