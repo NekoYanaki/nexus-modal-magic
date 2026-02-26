@@ -198,10 +198,10 @@ const MaintenancePage = () => {
             <Link
               key={index}
               to={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+              className={`flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
                 item.active
-                  ? "bg-primary-foreground/20 text-primary-foreground"
-                  : "text-primary-foreground/80 hover:bg-primary-foreground/10"
+                  ? "bg-accent/20 text-primary-foreground rounded-r-lg border-l-4 border-accent"
+                  : "text-primary-foreground/80 hover:bg-primary-foreground/10 rounded-lg"
               }`}
             >
               <item.icon className="w-4 h-4" />
@@ -241,35 +241,35 @@ const MaintenancePage = () => {
               <p className="text-sm text-muted-foreground">รถทั้งหมด</p>
               <p className="text-2xl font-bold">{totalVehicles}</p>
             </div>
-            <Car className="w-8 h-8 text-muted-foreground/50" />
+            <Car className="w-8 h-8 text-muted-foreground/30" />
           </Card>
-          <Card className="p-4 flex items-center justify-between border-success/30">
+          <Card className="p-4 flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">รถว่าง</p>
               <p className="text-2xl font-bold text-success">{availableVehicles}</p>
             </div>
-            <CheckCircle className="w-8 h-8 text-success/50" />
+            <CheckCircle className="w-8 h-8 text-success/30" />
           </Card>
-          <Card className="p-4 flex items-center justify-between border-primary/30">
+          <Card className="p-4 flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">รถถูกจอง</p>
               <p className="text-2xl font-bold text-primary">{bookedVehicles}</p>
             </div>
-            <Calendar className="w-8 h-8 text-primary/50" />
+            <Calendar className="w-8 h-8 text-primary/30" />
           </Card>
-          <Card className="p-4 flex items-center justify-between border-warning/30">
+          <Card className="p-4 flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">ซ่อมบำรุง</p>
               <p className="text-2xl font-bold text-warning">{maintenanceVehicles}</p>
             </div>
-            <Settings className="w-8 h-8 text-warning/50" />
+            <Settings className="w-8 h-8 text-warning/30" />
           </Card>
-          <Card className="p-4 flex items-center justify-between border-destructive/30">
+          <Card className="p-4 flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">แจ้งเตือน</p>
               <p className="text-2xl font-bold text-destructive">0</p>
             </div>
-            <Bell className="w-8 h-8 text-destructive/50" />
+            <Bell className="w-8 h-8 text-destructive/30" />
           </Card>
         </div>
 

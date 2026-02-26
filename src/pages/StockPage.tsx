@@ -167,10 +167,10 @@ const StockPage = () => {
             <Link
               key={index}
               to={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+              className={`flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
                 item.active
-                  ? "bg-primary-foreground/20 text-primary-foreground"
-                  : "text-primary-foreground/80 hover:bg-primary-foreground/10"
+                  ? "bg-accent/20 text-primary-foreground rounded-r-lg border-l-4 border-accent"
+                  : "text-primary-foreground/80 hover:bg-primary-foreground/10 rounded-lg"
               }`}
             >
               <item.icon className="w-4 h-4" />
@@ -210,21 +210,21 @@ const StockPage = () => {
               <p className="text-sm text-muted-foreground">Add-on ทั้งหมด</p>
               <p className="text-2xl font-bold">{addons.length}</p>
             </div>
-            <Package className="w-8 h-8 text-muted-foreground/50" />
+            <Package className="w-8 h-8 text-muted-foreground/30" />
           </Card>
-          <Card className="p-4 flex items-center justify-between border-success/30">
+          <Card className="p-4 flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">ใช้งานอยู่</p>
               <p className="text-2xl font-bold text-success">{addons.filter((a) => a.isActive).length}</p>
             </div>
-            <Package className="w-8 h-8 text-success/50" />
+            <Package className="w-8 h-8 text-success/30" />
           </Card>
-          <Card className="p-4 flex items-center justify-between border-warning/30">
+          <Card className="p-4 flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">ปิดใช้งาน</p>
               <p className="text-2xl font-bold text-warning">{addons.filter((a) => !a.isActive).length}</p>
             </div>
-            <Package className="w-8 h-8 text-warning/50" />
+            <Package className="w-8 h-8 text-warning/30" />
           </Card>
         </div>
 
