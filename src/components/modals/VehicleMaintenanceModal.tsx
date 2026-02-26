@@ -222,6 +222,9 @@ export function VehicleMaintenanceModal({ open, onClose, vehicle }: VehicleMaint
     { id: "1", label: "เปลี่ยนแบตเตอรี่ (Replace Battery)", checked: false },
     { id: "2", label: "ถ่ายน้ำมันเครื่อง (Oil Change)", checked: false },
   ]);
+  const [newTaskLabel, setNewTaskLabel] = useState("");
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const [editingTaskLabel, setEditingTaskLabel] = useState("");
 
   const [maintenanceHistory] = useState<MaintenanceHistory[]>([
     { id: "1", date: "15 ม.ค. 2023", items: "เปลี่ยนแบตเตอรี่", mileage: 115000, status: "completed", partsUsed: "แบตเตอรี่ 12V x1" },
@@ -292,6 +295,24 @@ export function VehicleMaintenanceModal({ open, onClose, vehicle }: VehicleMaint
   // ── Maintenance helpers ──
   const toggleTask = (taskId: string) => {
     setTasks(tasks.map(task => task.id === taskId ? { ...task, checked: !task.checked } : task));
+  };
+  const handleAddTask = () => {
+    if (!newTaskLabel.trim()) return;
+    setTasks(prev => [...prev, { id: Date.now().toString(), label: newTaskLabel.trim(), checked: false }]);
+    setNewTaskLabel("");
+  };
+  const handleDeleteTask = (taskId: string) => {
+    setTasks(prev => prev.filter(t => t.id !== taskId));
+  };
+  const handleStartEditTask = (task: MaintenanceTask) => {
+    setEditingTaskId(task.id);
+    setEditingTaskLabel(task.label);
+  };
+  const handleSaveEditTask = () => {
+    if (!editingTaskLabel.trim() || !editingTaskId) return;
+    setTasks(prev => prev.map(t => t.id === editingTaskId ? { ...t, label: editingTaskLabel.trim() } : t));
+    setEditingTaskId(null);
+    setEditingTaskLabel("");
   };
   const handleStartJob = () => setHasActiveJob(true);
   const handleCompleteJob = () => {
@@ -530,13 +551,48 @@ export function VehicleMaintenanceModal({ open, onClose, vehicle }: VehicleMaint
                       <div><p className="text-xs text-muted-foreground">Assigned Mechanic</p><div className="flex items-center gap-2"><div className="w-6 h-6 bg-secondary rounded-full flex items-center justify-center text-xs font-medium">S</div><span className="font-medium">Somchai K.</span></div></div>
                     </div>
                     <div className="space-y-3 mb-6">
-                      <h5 className="font-medium">Task Checklist</h5>
+                      <div className="flex items-center justify-between">
+                        <h5 className="font-medium">Task Checklist</h5>
+                        <span className="text-xs text-muted-foreground">{tasks.filter(t => t.checked).length}/{tasks.length} เสร็จ</span>
+                      </div>
                       {tasks.map((task) => (
-                        <label key={task.id} className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-secondary/30">
+                        <div key={task.id} className="flex items-center gap-3 p-3 border rounded-lg group hover:bg-secondary/30">
                           <Checkbox checked={task.checked} onCheckedChange={() => toggleTask(task.id)} />
-                          <span className={task.checked ? "line-through text-muted-foreground" : ""}>{task.label}</span>
-                        </label>
+                          {editingTaskId === task.id ? (
+                            <div className="flex-1 flex items-center gap-2">
+                              <Input
+                                value={editingTaskLabel}
+                                onChange={(e) => setEditingTaskLabel(e.target.value)}
+                                className="h-8 text-sm"
+                                onKeyDown={(e) => e.key === "Enter" && handleSaveEditTask()}
+                                autoFocus
+                              />
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleSaveEditTask}><Save className="w-3 h-3" /></Button>
+                            </div>
+                          ) : (
+                            <>
+                              <span className={`flex-1 cursor-pointer ${task.checked ? "line-through text-muted-foreground" : ""}`} onClick={() => toggleTask(task.id)}>{task.label}</span>
+                              <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleStartEditTask(task)}><Edit2 className="w-3 h-3" /></Button>
+                                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleDeleteTask(task.id)}><Minus className="w-3 h-3" /></Button>
+                              </div>
+                            </>
+                          )}
+                        </div>
                       ))}
+                      {/* Add new task inline */}
+                      <div className="flex items-center gap-2">
+                        <Input
+                          placeholder="เพิ่มรายการใหม่..."
+                          value={newTaskLabel}
+                          onChange={(e) => setNewTaskLabel(e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && handleAddTask()}
+                          className="h-9 text-sm"
+                        />
+                        <Button variant="outline" size="sm" onClick={handleAddTask} disabled={!newTaskLabel.trim()}>
+                          <Plus className="w-4 h-4 mr-1" /> เพิ่ม
+                        </Button>
+                      </div>
                     </div>
                     <div className="space-y-4">
                       <div>
