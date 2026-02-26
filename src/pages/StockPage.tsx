@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -14,96 +14,80 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  Car, Search, Plus, Pencil, Trash2, Package, Settings, Bell, Home,
+  Car, Search, Package, Settings, Bell, Home,
   MessageSquare, Users, CalendarDays, Tent, Calendar, CreditCard, Tag,
   Star, FileText, Database, Boxes, CheckCircle, AlertTriangle, Wrench,
-  Minus, ChevronDown, ChevronRight,
+  ChevronDown, ChevronRight, Pencil,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useAddons, type Addon, type StockStatus } from "@/contexts/AddonContext";
 
-interface Addon {
-  id: string;
-  name: string;
-  category: string;
-  defaultPrice: number;
-  isActive: boolean;
-  total: number;
-  available: number;
-  reserved: number;
-  damaged: number;
-}
+const getStatusLabel = (s: StockStatus) => {
+  switch (s) {
+    case "available": return "พร้อมใช้";
+    case "reserved": return "ถูกจอง";
+    case "damaged": return "ส่งซ่อม";
+    case "broken": return "ชำรุด";
+  }
+};
 
-const mockAddons: Addon[] = [
-  { id: "SEAT-001", name: "เบาะนั่งเด็ก ตัวที่ 1", category: "เบาะนั่งเด็ก", defaultPrice: 300, isActive: true, total: 3, available: 2, reserved: 1, damaged: 0 },
-  { id: "SEAT-002", name: "เบาะนั่งเด็ก ตัวที่ 2", category: "เบาะนั่งเด็ก", defaultPrice: 300, isActive: true, total: 3, available: 1, reserved: 1, damaged: 1 },
-  { id: "SEAT-003", name: "เบาะนั่งเด็ก ตัวที่ 3", category: "เบาะนั่งเด็ก", defaultPrice: 300, isActive: true, total: 3, available: 2, reserved: 1, damaged: 0 },
-  { id: "CAMP-001", name: "ชุดแคมปิ้ง A", category: "อุปกรณ์แคมปิ้ง", defaultPrice: 100, isActive: true, total: 5, available: 3, reserved: 2, damaged: 0 },
-  { id: "CAMP-002", name: "ชุดแคมปิ้ง B", category: "อุปกรณ์แคมปิ้ง", defaultPrice: 100, isActive: true, total: 5, available: 4, reserved: 1, damaged: 0 },
-  { id: "BBQ-001", name: "ชุดปิ้งย่างใหญ่", category: "ชุดปิ้งย่าง", defaultPrice: 150, isActive: true, total: 4, available: 4, reserved: 0, damaged: 0 },
-  { id: "BBQ-002", name: "ชุดปิ้งย่างเล็ก", category: "ชุดปิ้งย่าง", defaultPrice: 100, isActive: true, total: 4, available: 3, reserved: 1, damaged: 0 },
-  { id: "GEN-001", name: "เครื่องปั่นไฟ Honda 3kW", category: "เครื่องปั่นไฟ", defaultPrice: 30000, isActive: true, total: 1, available: 0, reserved: 1, damaged: 0 },
-  { id: "GEN-002", name: "เครื่องปั่นไฟ Yamaha 2kW", category: "เครื่องปั่นไฟ", defaultPrice: 25000, isActive: true, total: 1, available: 1, reserved: 0, damaged: 0 },
-  { id: "GEN-003", name: "เครื่องปั่นไฟ Honda 5kW", category: "เครื่องปั่นไฟ", defaultPrice: 45000, isActive: false, total: 1, available: 0, reserved: 0, damaged: 1 },
-  { id: "TBL-001", name: "โต๊ะกลางแจ้ง 6 ที่นั่ง", category: "โต๊ะกลางแจ้ง", defaultPrice: 500, isActive: true, total: 3, available: 3, reserved: 0, damaged: 0 },
-  { id: "TBL-002", name: "โต๊ะกลางแจ้ง 4 ที่นั่ง", category: "โต๊ะกลางแจ้ง", defaultPrice: 400, isActive: true, total: 3, available: 2, reserved: 1, damaged: 0 },
-  { id: "CHR-001", name: "เก้าอี้พับ ชุด A (4 ตัว)", category: "เก้าอี้พับ", defaultPrice: 300, isActive: true, total: 4, available: 2, reserved: 2, damaged: 0 },
-  { id: "CHR-002", name: "เก้าอี้พับ ชุด B (4 ตัว)", category: "เก้าอี้พับ", defaultPrice: 300, isActive: true, total: 4, available: 4, reserved: 0, damaged: 0 },
-  { id: "ICE-001", name: "ถังน้ำแข็ง 20L", category: "ถังน้ำแข็ง", defaultPrice: 50, isActive: false, total: 0, available: 0, reserved: 0, damaged: 0 },
-];
-
-type AdjustAction = "add" | "reduce" | "damaged" | "return";
-
-import { useMemo } from "react";
+const getStatusBadge = (s: StockStatus) => {
+  switch (s) {
+    case "available": return <Badge className="bg-success/10 text-success border-success/20">พร้อมใช้</Badge>;
+    case "reserved": return <Badge className="bg-warning/10 text-warning border-warning/20">ถูกจอง</Badge>;
+    case "damaged": return <Badge className="bg-destructive/10 text-destructive border-destructive/20">ส่งซ่อม</Badge>;
+    case "broken": return <Badge className="bg-muted text-muted-foreground border-muted-foreground/20">ชำรุด</Badge>;
+  }
+};
 
 const StockPage = () => {
-  const [addons, setAddons] = useState<Addon[]>(mockAddons);
+  const { addons, setAddons } = useAddons();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [adjustAddon, setAdjustAddon] = useState<Addon | null>(null);
-  const [adjustAction, setAdjustAction] = useState<AdjustAction>("add");
-  const [adjustQty, setAdjustQty] = useState(1);
-  const [adjustSaving, setAdjustSaving] = useState(false);
+  const [newStatus, setNewStatus] = useState<StockStatus>("available");
   const { toast } = useToast();
 
   const categories = useMemo(() => {
-    const cats = Array.from(new Set(addons.map((a) => a.category)));
-    return cats.sort();
+    return Array.from(new Set(addons.map((a) => a.category))).sort();
   }, [addons]);
 
   const filteredAddons = addons.filter((a) => {
     const matchesSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.id.toLowerCase().includes(searchQuery.toLowerCase()) || a.category.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === "all" || a.category === categoryFilter;
-    if (statusFilter === "low") return matchesSearch && matchesCategory && a.available > 0 && a.available <= 2;
-    if (statusFilter === "out") return matchesSearch && matchesCategory && a.available === 0;
-    return matchesSearch && matchesCategory;
+    const matchesStatus = statusFilter === "all" || a.stockStatus === statusFilter;
+    return matchesSearch && matchesCategory && matchesStatus;
   });
 
-  // Group by category
   const groupedByCategory = useMemo(() => {
-    const groups: Record<string, { category: string; total: number; available: number; reserved: number; damaged: number; items: typeof filteredAddons }> = {};
+    const groups: Record<string, { category: string; total: number; available: number; reserved: number; damaged: number; broken: number; items: Addon[] }> = {};
     filteredAddons.forEach((a) => {
       if (!groups[a.category]) {
-        groups[a.category] = { category: a.category, total: 0, available: 0, reserved: 0, damaged: 0, items: [] };
+        groups[a.category] = { category: a.category, total: 0, available: 0, reserved: 0, damaged: 0, broken: 0, items: [] };
       }
-      groups[a.category].total += a.total;
-      groups[a.category].available += a.available;
-      groups[a.category].reserved += a.reserved;
-      groups[a.category].damaged += a.damaged;
+      groups[a.category].total += 1;
+      if (a.stockStatus === "available") groups[a.category].available += 1;
+      if (a.stockStatus === "reserved") groups[a.category].reserved += 1;
+      if (a.stockStatus === "damaged") groups[a.category].damaged += 1;
+      if (a.stockStatus === "broken") groups[a.category].broken += 1;
       groups[a.category].items.push(a);
     });
     return Object.values(groups).sort((a, b) => a.category.localeCompare(b.category));
   }, [filteredAddons]);
 
-  const totals = addons.reduce((acc, a) => ({
-    total: acc.total + a.total,
-    available: acc.available + a.available,
-    reserved: acc.reserved + a.reserved,
-    damaged: acc.damaged + a.damaged,
-  }), { total: 0, available: 0, reserved: 0, damaged: 0 });
+  const totals = useMemo(() => {
+    return addons.reduce((acc, a) => ({
+      total: acc.total + 1,
+      available: acc.available + (a.stockStatus === "available" ? 1 : 0),
+      reserved: acc.reserved + (a.stockStatus === "reserved" ? 1 : 0),
+      damaged: acc.damaged + (a.stockStatus === "damaged" ? 1 : 0),
+      broken: acc.broken + (a.stockStatus === "broken" ? 1 : 0),
+    }), { total: 0, available: 0, reserved: 0, damaged: 0, broken: 0 });
+  }, [addons]);
 
   const toggleCategory = (cat: string) => {
     setExpandedCategories((prev) => {
@@ -115,65 +99,15 @@ const StockPage = () => {
 
   const handleAdjustOpen = (addon: Addon) => {
     setAdjustAddon(addon);
-    setAdjustAction("add");
-    setAdjustQty(1);
+    setNewStatus(addon.stockStatus);
     setAdjustOpen(true);
   };
 
-  const adjustMaxQty = useMemo(() => {
-    if (!adjustAddon) return 99;
-    switch (adjustAction) {
-      case "reduce": return adjustAddon.available;
-      case "damaged": return adjustAddon.available;
-      case "return": return adjustAddon.damaged;
-      default: return 99;
-    }
-  }, [adjustAddon, adjustAction]);
-
-  const adjustValidationMsg = useMemo(() => {
-    if (!adjustAddon) return "";
-    if (adjustQty > adjustMaxQty) {
-      switch (adjustAction) {
-        case "reduce": return `ไม่สามารถลดเกินจำนวนพร้อมใช้ (${adjustAddon.available})`;
-        case "damaged": return `ไม่สามารถแจ้งชำรุดเกินจำนวนพร้อมใช้ (${adjustAddon.available})`;
-        case "return": return `ไม่สามารถคืนเกินจำนวนชำรุด (${adjustAddon.damaged})`;
-      }
-    }
-    return "";
-  }, [adjustAddon, adjustAction, adjustQty, adjustMaxQty]);
-
-  const adjustPreview = useMemo(() => {
-    if (!adjustAddon) return null;
-    const p = { available: adjustAddon.available, damaged: adjustAddon.damaged, total: adjustAddon.total };
-    const qty = Math.min(adjustQty, adjustMaxQty);
-    switch (adjustAction) {
-      case "add": p.total += qty; p.available += qty; break;
-      case "reduce": p.total -= qty; p.available -= qty; break;
-      case "damaged": p.available -= qty; p.damaged += qty; break;
-      case "return": p.damaged -= qty; p.available += qty; break;
-    }
-    return p;
-  }, [adjustAddon, adjustAction, adjustQty, adjustMaxQty]);
-
-  const handleAdjustSave = async () => {
-    if (!adjustAddon || adjustValidationMsg) return;
-    setAdjustSaving(true);
-    await new Promise((r) => setTimeout(r, 500));
-    setAddons((prev) => prev.map((a) => {
-      if (a.id !== adjustAddon.id) return a;
-      const updated = { ...a };
-      const qty = Math.min(adjustQty, adjustMaxQty);
-      switch (adjustAction) {
-        case "add": updated.total += qty; updated.available += qty; break;
-        case "reduce": updated.total -= qty; updated.available -= qty; break;
-        case "damaged": updated.available -= qty; updated.damaged += qty; break;
-        case "return": updated.damaged -= qty; updated.available += qty; break;
-      }
-      return updated;
-    }));
-    setAdjustSaving(false);
+  const handleAdjustSave = () => {
+    if (!adjustAddon) return;
+    setAddons((prev) => prev.map((a) => a.id === adjustAddon.id ? { ...a, stockStatus: newStatus } : a));
     setAdjustOpen(false);
-    toast({ title: "สำเร็จ", description: "ปรับสต็อกเรียบร้อยแล้ว" });
+    toast({ title: "สำเร็จ", description: `เปลี่ยนสถานะ ${adjustAddon.name} เป็น "${getStatusLabel(newStatus)}" แล้ว` });
   };
 
   const sidebarItems = [
@@ -199,8 +133,8 @@ const StockPage = () => {
   const summaryCards = [
     { label: "รายการทั้งหมด", value: totals.total, icon: Package, color: "text-primary", bg: "bg-primary/10" },
     { label: "พร้อมใช้งาน", value: totals.available, icon: CheckCircle, color: "text-success", bg: "bg-success/10" },
-    { label: "จองแล้ว", value: totals.reserved, icon: AlertTriangle, color: "text-warning", bg: "bg-warning/10" },
-    { label: "ชำรุด / ซ่อมบำรุง", value: totals.damaged, icon: Wrench, color: "text-destructive", bg: "bg-destructive/10" },
+    { label: "ถูกจอง", value: totals.reserved, icon: AlertTriangle, color: "text-warning", bg: "bg-warning/10" },
+    { label: "ส่งซ่อม / ชำรุด", value: totals.damaged + totals.broken, icon: Wrench, color: "text-destructive", bg: "bg-destructive/10" },
   ];
 
   return (
@@ -282,8 +216,10 @@ const StockPage = () => {
               <SelectTrigger className="w-44"><SelectValue placeholder="สถานะ" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">ทั้งหมด</SelectItem>
-                <SelectItem value="low">สต็อกน้อย</SelectItem>
-                <SelectItem value="out">หมดสต็อก</SelectItem>
+                <SelectItem value="available">พร้อมใช้</SelectItem>
+                <SelectItem value="reserved">ถูกจอง</SelectItem>
+                <SelectItem value="damaged">ส่งซ่อม</SelectItem>
+                <SelectItem value="broken">ชำรุด</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -294,9 +230,9 @@ const StockPage = () => {
                 <TableHead className="w-8"></TableHead>
                 <TableHead>หมวดหมู่อุปกรณ์</TableHead>
                 <TableHead className="text-center">จำนวน</TableHead>
-                <TableHead className="text-center">ทั้งหมด</TableHead>
                 <TableHead className="text-center">พร้อมใช้</TableHead>
-                <TableHead className="text-center">จองแล้ว</TableHead>
+                <TableHead className="text-center">ถูกจอง</TableHead>
+                <TableHead className="text-center">ส่งซ่อม</TableHead>
                 <TableHead className="text-center">ชำรุด</TableHead>
               </TableRow>
             </TableHeader>
@@ -312,34 +248,27 @@ const StockPage = () => {
                       <TableCell>
                         <p className="font-semibold">{group.category}</p>
                       </TableCell>
-                      <TableCell className="text-center font-semibold">{group.items.length}</TableCell>
                       <TableCell className="text-center font-semibold">{group.total}</TableCell>
                       <TableCell className="text-center"><span className="text-success font-semibold">{group.available}</span></TableCell>
                       <TableCell className="text-center"><span className="text-warning font-semibold">{group.reserved}</span></TableCell>
                       <TableCell className="text-center"><span className="text-destructive font-semibold">{group.damaged}</span></TableCell>
+                      <TableCell className="text-center"><span className="text-muted-foreground font-semibold">{group.broken}</span></TableCell>
                     </TableRow>
                     {isExpanded && group.items.map((addon) => (
                       <TableRow key={addon.id} className="bg-muted/30">
                         <TableCell></TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-3">
-                            <div>
-                              <p className="text-sm font-medium">{addon.name}</p>
-                              <p className="text-xs text-muted-foreground">{addon.id} · {addon.defaultPrice.toLocaleString()} บาท</p>
-                            </div>
+                          <div>
+                            <p className="text-sm font-medium">{addon.name}</p>
+                            <p className="text-xs text-muted-foreground">{addon.id} · {addon.defaultPrice.toLocaleString()} บาท</p>
                           </div>
                         </TableCell>
-                        <TableCell></TableCell>
-                        <TableCell className="text-center text-sm">{addon.total}</TableCell>
-                        <TableCell className="text-center text-sm text-success">{addon.available}</TableCell>
-                        <TableCell className="text-center text-sm text-warning">{addon.reserved}</TableCell>
-                        <TableCell className="text-center text-sm">
-                          <div className="flex items-center justify-center gap-2">
-                            <span className="text-destructive">{addon.damaged}</span>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-warning" onClick={(e) => { e.stopPropagation(); handleAdjustOpen(addon); }}>
-                              <Pencil className="w-3.5 h-3.5" />
-                            </Button>
-                          </div>
+                        <TableCell className="text-center">{getStatusBadge(addon.stockStatus)}</TableCell>
+                        <TableCell colSpan={3}></TableCell>
+                        <TableCell className="text-center">
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-warning" onClick={(e) => { e.stopPropagation(); handleAdjustOpen(addon); }}>
+                            <Pencil className="w-3.5 h-3.5" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -356,82 +285,47 @@ const StockPage = () => {
         </Card>
       </main>
 
-      {/* Adjust Stock Dialog */}
+      {/* Adjust Status Dialog */}
       <Dialog open={adjustOpen} onOpenChange={setAdjustOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>ปรับสต็อก — {adjustAddon?.name}</DialogTitle>
+            <DialogTitle>เปลี่ยนสถานะ — {adjustAddon?.name}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-5 py-2">
+          <div className="space-y-4 py-2">
             {adjustAddon && (
-              <div className="grid grid-cols-4 gap-3 rounded-lg bg-muted/50 p-3">
-                {[
-                  { label: "ทั้งหมด", value: adjustAddon.total, cls: "text-foreground" },
-                  { label: "พร้อมใช้", value: adjustAddon.available, cls: "text-success" },
-                  { label: "จองแล้ว", value: adjustAddon.reserved, cls: "text-warning" },
-                  { label: "ชำรุด", value: adjustAddon.damaged, cls: "text-destructive" },
-                ].map((s) => (
-                  <div key={s.label} className="text-center">
-                    <p className={`text-lg font-bold ${s.cls}`}>{s.value}</p>
-                    <p className="text-xs text-muted-foreground">{s.label}</p>
-                  </div>
-                ))}
+              <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3">
+                <div>
+                  <p className="font-semibold text-sm">{adjustAddon.name}</p>
+                  <p className="text-xs text-muted-foreground">{adjustAddon.id}</p>
+                </div>
+                <div className="ml-auto">{getStatusBadge(adjustAddon.stockStatus)}</div>
               </div>
             )}
             <div className="space-y-2">
-              <Label>ประเภทการปรับ</Label>
-              <Select value={adjustAction} onValueChange={(v) => { setAdjustAction(v as AdjustAction); setAdjustQty(1); }}>
+              <Label>เปลี่ยนเป็นสถานะ</Label>
+              <Select value={newStatus} onValueChange={(v) => setNewStatus(v as StockStatus)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="add">เพิ่มสต็อก</SelectItem>
-                  <SelectItem value="reduce">ลดสต็อก</SelectItem>
-                  <SelectItem value="damaged">แจ้งชำรุด</SelectItem>
-                  <SelectItem value="return">คืนจากซ่อม</SelectItem>
+                  <SelectItem value="available">พร้อมใช้</SelectItem>
+                  <SelectItem value="reserved">ถูกจอง</SelectItem>
+                  <SelectItem value="damaged">ส่งซ่อม</SelectItem>
+                  <SelectItem value="broken">ชำรุด</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>จำนวน</Label>
-              <div className="flex items-center gap-3">
-                <Button variant="outline" size="icon" className="h-10 w-10" onClick={() => setAdjustQty(Math.max(1, adjustQty - 1))}>
-                  <Minus className="w-4 h-4" />
-                </Button>
-                <Input type="number" min={1} max={adjustMaxQty} value={adjustQty} onChange={(e) => setAdjustQty(Math.max(1, Number(e.target.value)))} className="text-center w-20" />
-                <Button variant="outline" size="icon" className="h-10 w-10" onClick={() => setAdjustQty(adjustQty + 1)}>
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-              {adjustValidationMsg && <p className="text-xs text-destructive">{adjustValidationMsg}</p>}
-            </div>
-            {adjustAddon && adjustPreview && !adjustValidationMsg && (
-              <div className="rounded-lg border border-border/50 bg-muted/30 p-3 space-y-1">
-                <p className="text-xs font-semibold text-muted-foreground mb-2">หลังปรับสต็อก:</p>
+            {adjustAddon && newStatus !== adjustAddon.stockStatus && (
+              <div className="rounded-lg border border-border/50 bg-muted/30 p-3">
                 <div className="flex items-center gap-2 text-sm">
-                  <span className="text-muted-foreground w-16">Total:</span>
-                  <span>{adjustAddon.total}</span>
+                  {getStatusBadge(adjustAddon.stockStatus)}
                   <span className="text-muted-foreground">→</span>
-                  <span className="font-semibold">{adjustPreview.total}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-muted-foreground w-16">Available:</span>
-                  <span className="text-success">{adjustAddon.available}</span>
-                  <span className="text-muted-foreground">→</span>
-                  <span className="font-semibold text-success">{adjustPreview.available}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-muted-foreground w-16">Damaged:</span>
-                  <span className="text-destructive">{adjustAddon.damaged}</span>
-                  <span className="text-muted-foreground">→</span>
-                  <span className="font-semibold text-destructive">{adjustPreview.damaged}</span>
+                  {getStatusBadge(newStatus)}
                 </div>
               </div>
             )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAdjustOpen(false)}>ยกเลิก</Button>
-            <Button onClick={handleAdjustSave} disabled={adjustSaving || !!adjustValidationMsg}>
-              {adjustSaving ? "กำลังบันทึก..." : "บันทึก"}
-            </Button>
+            <Button onClick={handleAdjustSave} disabled={adjustAddon?.stockStatus === newStatus}>บันทึก</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

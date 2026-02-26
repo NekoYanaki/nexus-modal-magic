@@ -9,6 +9,7 @@ import MaintenancePage from "./pages/MaintenancePage";
 import StockPage from "./pages/StockPage";
 import AddonManagementPage from "./pages/AddonManagementPage";
 import NotFound from "./pages/NotFound";
+import { AddonProvider } from "./contexts/AddonContext";
 
 const queryClient = new QueryClient();
 
@@ -18,15 +19,17 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/booking" element={<BookingPage />} />
-          <Route path="/maintenance" element={<MaintenancePage />} />
-          <Route path="/stock" element={<StockPage />} />
-          <Route path="/addon-management" element={<AddonManagementPage />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AddonProvider>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/booking" element={<BookingPage />} />
+            <Route path="/maintenance" element={<MaintenancePage />} />
+            <Route path="/stock" element={<StockPage />} />
+            <Route path="/addon-management" element={<AddonManagementPage />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AddonProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
