@@ -25,6 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 interface Addon {
   id: string;
   name: string;
+  category: string;
   defaultPrice: number;
   isActive: boolean;
   total: number;
@@ -34,13 +35,21 @@ interface Addon {
 }
 
 const mockAddons: Addon[] = [
-  { id: "AD0001", name: "เบาะนั่งเด็ก", defaultPrice: 300, isActive: true, total: 10, available: 5, reserved: 3, damaged: 2 },
-  { id: "AD0002", name: "อุปกรณ์แคมปิ้ง", defaultPrice: 100, isActive: true, total: 15, available: 10, reserved: 4, damaged: 1 },
-  { id: "AD0003", name: "ชุดปิ้งย่าง", defaultPrice: 150, isActive: true, total: 8, available: 8, reserved: 0, damaged: 0 },
-  { id: "AD0004", name: "เครื่องปั่นไฟ", defaultPrice: 30000, isActive: true, total: 3, available: 1, reserved: 1, damaged: 1 },
-  { id: "AD0005", name: "โต๊ะกลางแจ้ง", defaultPrice: 500, isActive: true, total: 6, available: 6, reserved: 0, damaged: 0 },
-  { id: "AD0006", name: "เก้าอี้พับ (ชุด)", defaultPrice: 300, isActive: true, total: 12, available: 8, reserved: 4, damaged: 0 },
-  { id: "AD0007", name: "ถังน้ำแข็ง", defaultPrice: 50, isActive: false, total: 0, available: 0, reserved: 0, damaged: 0 },
+  { id: "SEAT-001", name: "เบาะนั่งเด็ก ตัวที่ 1", category: "เบาะนั่งเด็ก", defaultPrice: 300, isActive: true, total: 3, available: 2, reserved: 1, damaged: 0 },
+  { id: "SEAT-002", name: "เบาะนั่งเด็ก ตัวที่ 2", category: "เบาะนั่งเด็ก", defaultPrice: 300, isActive: true, total: 3, available: 1, reserved: 1, damaged: 1 },
+  { id: "SEAT-003", name: "เบาะนั่งเด็ก ตัวที่ 3", category: "เบาะนั่งเด็ก", defaultPrice: 300, isActive: true, total: 3, available: 2, reserved: 1, damaged: 0 },
+  { id: "CAMP-001", name: "ชุดแคมปิ้ง A", category: "อุปกรณ์แคมปิ้ง", defaultPrice: 100, isActive: true, total: 5, available: 3, reserved: 2, damaged: 0 },
+  { id: "CAMP-002", name: "ชุดแคมปิ้ง B", category: "อุปกรณ์แคมปิ้ง", defaultPrice: 100, isActive: true, total: 5, available: 4, reserved: 1, damaged: 0 },
+  { id: "BBQ-001", name: "ชุดปิ้งย่างใหญ่", category: "ชุดปิ้งย่าง", defaultPrice: 150, isActive: true, total: 4, available: 4, reserved: 0, damaged: 0 },
+  { id: "BBQ-002", name: "ชุดปิ้งย่างเล็ก", category: "ชุดปิ้งย่าง", defaultPrice: 100, isActive: true, total: 4, available: 3, reserved: 1, damaged: 0 },
+  { id: "GEN-001", name: "เครื่องปั่นไฟ Honda 3kW", category: "เครื่องปั่นไฟ", defaultPrice: 30000, isActive: true, total: 1, available: 0, reserved: 1, damaged: 0 },
+  { id: "GEN-002", name: "เครื่องปั่นไฟ Yamaha 2kW", category: "เครื่องปั่นไฟ", defaultPrice: 25000, isActive: true, total: 1, available: 1, reserved: 0, damaged: 0 },
+  { id: "GEN-003", name: "เครื่องปั่นไฟ Honda 5kW", category: "เครื่องปั่นไฟ", defaultPrice: 45000, isActive: false, total: 1, available: 0, reserved: 0, damaged: 1 },
+  { id: "TBL-001", name: "โต๊ะกลางแจ้ง 6 ที่นั่ง", category: "โต๊ะกลางแจ้ง", defaultPrice: 500, isActive: true, total: 3, available: 3, reserved: 0, damaged: 0 },
+  { id: "TBL-002", name: "โต๊ะกลางแจ้ง 4 ที่นั่ง", category: "โต๊ะกลางแจ้ง", defaultPrice: 400, isActive: true, total: 3, available: 2, reserved: 1, damaged: 0 },
+  { id: "CHR-001", name: "เก้าอี้พับ ชุด A (4 ตัว)", category: "เก้าอี้พับ", defaultPrice: 300, isActive: true, total: 4, available: 2, reserved: 2, damaged: 0 },
+  { id: "CHR-002", name: "เก้าอี้พับ ชุด B (4 ตัว)", category: "เก้าอี้พับ", defaultPrice: 300, isActive: true, total: 4, available: 4, reserved: 0, damaged: 0 },
+  { id: "ICE-001", name: "ถังน้ำแข็ง 20L", category: "ถังน้ำแข็ง", defaultPrice: 50, isActive: false, total: 0, available: 0, reserved: 0, damaged: 0 },
 ];
 
 type AdjustAction = "add" | "reduce" | "damaged" | "return";
@@ -241,7 +250,9 @@ const StockPage = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>รหัส</TableHead>
                 <TableHead>ชื่อ Add-on</TableHead>
+                <TableHead>หมวดหมู่</TableHead>
                 <TableHead className="text-center">ทั้งหมด</TableHead>
                 <TableHead className="text-center">พร้อมใช้</TableHead>
                 <TableHead className="text-center">จองแล้ว</TableHead>
@@ -252,12 +263,14 @@ const StockPage = () => {
             <TableBody>
               {filteredAddons.map((addon) => (
                 <TableRow key={addon.id}>
+                  <TableCell className="font-mono text-sm text-muted-foreground">{addon.id}</TableCell>
                   <TableCell>
                     <div>
                       <p className="font-semibold">{addon.name}</p>
-                      <p className="text-xs text-muted-foreground">{addon.id} · {addon.defaultPrice.toLocaleString()} บาท</p>
+                      <p className="text-xs text-muted-foreground">{addon.defaultPrice.toLocaleString()} บาท</p>
                     </div>
                   </TableCell>
+                  <TableCell><Badge variant="outline">{addon.category}</Badge></TableCell>
                   <TableCell className="text-center font-semibold">{addon.total}</TableCell>
                   <TableCell className="text-center"><span className="text-success font-semibold">{addon.available}</span></TableCell>
                   <TableCell className="text-center"><span className="text-warning font-semibold">{addon.reserved}</span></TableCell>
@@ -271,7 +284,7 @@ const StockPage = () => {
               ))}
               {filteredAddons.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล Add-on</TableCell>
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล Add-on</TableCell>
                 </TableRow>
               )}
             </TableBody>
