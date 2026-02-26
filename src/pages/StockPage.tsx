@@ -74,12 +74,28 @@ const StockPage = () => {
   }, [addons]);
 
   const filteredAddons = addons.filter((a) => {
-    const matchesSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.id.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.id.toLowerCase().includes(searchQuery.toLowerCase()) || a.category.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === "all" || a.category === categoryFilter;
     if (statusFilter === "low") return matchesSearch && matchesCategory && a.available > 0 && a.available <= 2;
     if (statusFilter === "out") return matchesSearch && matchesCategory && a.available === 0;
     return matchesSearch && matchesCategory;
   });
+
+  // Group by category
+  const groupedByCategory = useMemo(() => {
+    const groups: Record<string, { category: string; total: number; available: number; reserved: number; damaged: number; items: typeof filteredAddons }> = {};
+    filteredAddons.forEach((a) => {
+      if (!groups[a.category]) {
+        groups[a.category] = { category: a.category, total: 0, available: 0, reserved: 0, damaged: 0, items: [] };
+      }
+      groups[a.category].total += a.total;
+      groups[a.category].available += a.available;
+      groups[a.category].reserved += a.reserved;
+      groups[a.category].damaged += a.damaged;
+      groups[a.category].items.push(a);
+    });
+    return Object.values(groups).sort((a, b) => a.category.localeCompare(b.category));
+  }, [filteredAddons]);
 
   const totals = addons.reduce((acc, a) => ({
     total: acc.total + a.total,
@@ -266,41 +282,35 @@ const StockPage = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>รหัส</TableHead>
-                <TableHead>ชื่อ Add-on</TableHead>
-                <TableHead>หมวดหมู่</TableHead>
+                <TableHead>หมวดหมู่อุปกรณ์</TableHead>
+                <TableHead className="text-center">จำนวนรายการ</TableHead>
                 <TableHead className="text-center">ทั้งหมด</TableHead>
                 <TableHead className="text-center">พร้อมใช้</TableHead>
                 <TableHead className="text-center">จองแล้ว</TableHead>
                 <TableHead className="text-center">ชำรุด</TableHead>
-                <TableHead className="text-right">จัดการ</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredAddons.map((addon) => (
-                <TableRow key={addon.id}>
-                  <TableCell className="font-mono text-sm text-muted-foreground">{addon.id}</TableCell>
+              {groupedByCategory.map((group) => (
+                <TableRow key={group.category}>
                   <TableCell>
                     <div>
-                      <p className="font-semibold">{addon.name}</p>
-                      <p className="text-xs text-muted-foreground">{addon.defaultPrice.toLocaleString()} บาท</p>
+                      <p className="font-semibold">{group.category}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {group.items.map((i) => i.id).join(", ")}
+                      </p>
                     </div>
                   </TableCell>
-                  <TableCell><Badge variant="outline">{addon.category}</Badge></TableCell>
-                  <TableCell className="text-center font-semibold">{addon.total}</TableCell>
-                  <TableCell className="text-center"><span className="text-success font-semibold">{addon.available}</span></TableCell>
-                  <TableCell className="text-center"><span className="text-warning font-semibold">{addon.reserved}</span></TableCell>
-                  <TableCell className="text-center"><span className="text-destructive font-semibold">{addon.damaged}</span></TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-warning" onClick={() => handleAdjustOpen(addon)}>
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                  </TableCell>
+                  <TableCell className="text-center font-semibold">{group.items.length}</TableCell>
+                  <TableCell className="text-center font-semibold">{group.total}</TableCell>
+                  <TableCell className="text-center"><span className="text-success font-semibold">{group.available}</span></TableCell>
+                  <TableCell className="text-center"><span className="text-warning font-semibold">{group.reserved}</span></TableCell>
+                  <TableCell className="text-center"><span className="text-destructive font-semibold">{group.damaged}</span></TableCell>
                 </TableRow>
               ))}
-              {filteredAddons.length === 0 && (
+              {groupedByCategory.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล Add-on</TableCell>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล</TableCell>
                 </TableRow>
               )}
             </TableBody>
