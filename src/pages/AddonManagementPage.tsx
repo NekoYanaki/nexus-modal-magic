@@ -28,24 +28,25 @@ interface Addon {
   category: string;
   defaultPrice: number;
   isActive: boolean;
+  stockStatus: "available" | "reserved" | "damaged";
 }
 
 const mockAddons: Addon[] = [
-  { id: "SEAT-001", name: "เบาะนั่งเด็ก ตัวที่ 1", category: "เบาะนั่งเด็ก", defaultPrice: 300, isActive: true },
-  { id: "SEAT-002", name: "เบาะนั่งเด็ก ตัวที่ 2", category: "เบาะนั่งเด็ก", defaultPrice: 300, isActive: true },
-  { id: "SEAT-003", name: "เบาะนั่งเด็ก ตัวที่ 3", category: "เบาะนั่งเด็ก", defaultPrice: 300, isActive: true },
-  { id: "CAMP-001", name: "ชุดแคมปิ้ง A", category: "อุปกรณ์แคมปิ้ง", defaultPrice: 100, isActive: true },
-  { id: "CAMP-002", name: "ชุดแคมปิ้ง B", category: "อุปกรณ์แคมปิ้ง", defaultPrice: 100, isActive: true },
-  { id: "BBQ-001", name: "ชุดปิ้งย่างใหญ่", category: "ชุดปิ้งย่าง", defaultPrice: 150, isActive: true },
-  { id: "BBQ-002", name: "ชุดปิ้งย่างเล็ก", category: "ชุดปิ้งย่าง", defaultPrice: 100, isActive: true },
-  { id: "GEN-001", name: "เครื่องปั่นไฟ Honda 3kW", category: "เครื่องปั่นไฟ", defaultPrice: 30000, isActive: true },
-  { id: "GEN-002", name: "เครื่องปั่นไฟ Yamaha 2kW", category: "เครื่องปั่นไฟ", defaultPrice: 25000, isActive: true },
-  { id: "GEN-003", name: "เครื่องปั่นไฟ Honda 5kW", category: "เครื่องปั่นไฟ", defaultPrice: 45000, isActive: false },
-  { id: "TBL-001", name: "โต๊ะกลางแจ้ง 6 ที่นั่ง", category: "โต๊ะกลางแจ้ง", defaultPrice: 500, isActive: true },
-  { id: "TBL-002", name: "โต๊ะกลางแจ้ง 4 ที่นั่ง", category: "โต๊ะกลางแจ้ง", defaultPrice: 400, isActive: true },
-  { id: "CHR-001", name: "เก้าอี้พับ ชุด A (4 ตัว)", category: "เก้าอี้พับ", defaultPrice: 300, isActive: true },
-  { id: "CHR-002", name: "เก้าอี้พับ ชุด B (4 ตัว)", category: "เก้าอี้พับ", defaultPrice: 300, isActive: true },
-  { id: "ICE-001", name: "ถังน้ำแข็ง 20L", category: "ถังน้ำแข็ง", defaultPrice: 50, isActive: false },
+  { id: "SEAT-001", name: "เบาะนั่งเด็ก ตัวที่ 1", category: "เบาะนั่งเด็ก", defaultPrice: 300, isActive: true, stockStatus: "available" },
+  { id: "SEAT-002", name: "เบาะนั่งเด็ก ตัวที่ 2", category: "เบาะนั่งเด็ก", defaultPrice: 300, isActive: true, stockStatus: "reserved" },
+  { id: "SEAT-003", name: "เบาะนั่งเด็ก ตัวที่ 3", category: "เบาะนั่งเด็ก", defaultPrice: 300, isActive: true, stockStatus: "available" },
+  { id: "CAMP-001", name: "ชุดแคมปิ้ง A", category: "อุปกรณ์แคมปิ้ง", defaultPrice: 100, isActive: true, stockStatus: "reserved" },
+  { id: "CAMP-002", name: "ชุดแคมปิ้ง B", category: "อุปกรณ์แคมปิ้ง", defaultPrice: 100, isActive: true, stockStatus: "available" },
+  { id: "BBQ-001", name: "ชุดปิ้งย่างใหญ่", category: "ชุดปิ้งย่าง", defaultPrice: 150, isActive: true, stockStatus: "available" },
+  { id: "BBQ-002", name: "ชุดปิ้งย่างเล็ก", category: "ชุดปิ้งย่าง", defaultPrice: 100, isActive: true, stockStatus: "available" },
+  { id: "GEN-001", name: "เครื่องปั่นไฟ Honda 3kW", category: "เครื่องปั่นไฟ", defaultPrice: 30000, isActive: true, stockStatus: "reserved" },
+  { id: "GEN-002", name: "เครื่องปั่นไฟ Yamaha 2kW", category: "เครื่องปั่นไฟ", defaultPrice: 25000, isActive: true, stockStatus: "available" },
+  { id: "GEN-003", name: "เครื่องปั่นไฟ Honda 5kW", category: "เครื่องปั่นไฟ", defaultPrice: 45000, isActive: false, stockStatus: "damaged" },
+  { id: "TBL-001", name: "โต๊ะกลางแจ้ง 6 ที่นั่ง", category: "โต๊ะกลางแจ้ง", defaultPrice: 500, isActive: true, stockStatus: "available" },
+  { id: "TBL-002", name: "โต๊ะกลางแจ้ง 4 ที่นั่ง", category: "โต๊ะกลางแจ้ง", defaultPrice: 400, isActive: true, stockStatus: "reserved" },
+  { id: "CHR-001", name: "เก้าอี้พับ ชุด A (4 ตัว)", category: "เก้าอี้พับ", defaultPrice: 300, isActive: true, stockStatus: "reserved" },
+  { id: "CHR-002", name: "เก้าอี้พับ ชุด B (4 ตัว)", category: "เก้าอี้พับ", defaultPrice: 300, isActive: true, stockStatus: "available" },
+  { id: "ICE-001", name: "ถังน้ำแข็ง 20L", category: "ถังน้ำแข็ง", defaultPrice: 50, isActive: false, stockStatus: "damaged" },
 ];
 
 const AddonManagementPage = () => {
@@ -55,7 +56,7 @@ const AddonManagementPage = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAddon, setEditingAddon] = useState<Addon | null>(null);
-  const [formData, setFormData] = useState({ id: "", name: "", category: "", defaultPrice: 0, isActive: true });
+  const [formData, setFormData] = useState({ id: "", name: "", category: "", defaultPrice: 0, isActive: true, stockStatus: "available" as Addon["stockStatus"] });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingAddon, setDeletingAddon] = useState<Addon | null>(null);
   const { toast } = useToast();
@@ -72,13 +73,13 @@ const AddonManagementPage = () => {
 
   const handleAdd = () => {
     setEditingAddon(null);
-    setFormData({ id: "", name: "", category: "", defaultPrice: 0, isActive: true });
+    setFormData({ id: "", name: "", category: "", defaultPrice: 0, isActive: true, stockStatus: "available" });
     setDialogOpen(true);
   };
 
   const handleEdit = (addon: Addon) => {
     setEditingAddon(addon);
-    setFormData({ id: addon.id, name: addon.name, category: addon.category, defaultPrice: addon.defaultPrice, isActive: addon.isActive });
+    setFormData({ id: addon.id, name: addon.name, category: addon.category, defaultPrice: addon.defaultPrice, isActive: addon.isActive, stockStatus: addon.stockStatus });
     setDialogOpen(true);
   };
 
@@ -124,6 +125,14 @@ const AddonManagementPage = () => {
 
   const activeCount = addons.filter((a) => a.isActive).length;
   const inactiveCount = addons.filter((a) => !a.isActive).length;
+
+  const getStockStatusBadge = (status: Addon["stockStatus"]) => {
+    switch (status) {
+      case "available": return <Badge className="bg-success/10 text-success border-success/20">พร้อมใช้</Badge>;
+      case "reserved": return <Badge className="bg-warning/10 text-warning border-warning/20">ถูกจอง</Badge>;
+      case "damaged": return <Badge className="bg-destructive/10 text-destructive border-destructive/20">ส่งซ่อม</Badge>;
+    }
+  };
 
   const sidebarItems = [
     { icon: Home, label: "Dashboard", href: "/" },
@@ -259,6 +268,7 @@ const AddonManagementPage = () => {
                 <TableHead>ชื่อ Add-on</TableHead>
                 <TableHead>หมวดหมู่</TableHead>
                 <TableHead className="text-right">ราคาเริ่มต้น (บาท)</TableHead>
+                <TableHead className="text-center">สถานะการใช้งาน</TableHead>
                 <TableHead className="text-center">สถานะ</TableHead>
                 <TableHead className="text-right">จัดการ</TableHead>
               </TableRow>
@@ -270,6 +280,7 @@ const AddonManagementPage = () => {
                   <TableCell className="font-semibold">{addon.name}</TableCell>
                   <TableCell><Badge variant="outline">{addon.category}</Badge></TableCell>
                   <TableCell className="text-right">{addon.defaultPrice.toLocaleString()}</TableCell>
+                  <TableCell className="text-center">{getStockStatusBadge(addon.stockStatus)}</TableCell>
                   <TableCell className="text-center">
                     <Badge variant={addon.isActive ? "default" : "secondary"}>
                       {addon.isActive ? "เปิดใช้งาน" : "ปิดใช้งาน"}
