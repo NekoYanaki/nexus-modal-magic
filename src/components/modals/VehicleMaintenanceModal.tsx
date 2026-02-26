@@ -113,7 +113,7 @@ const mockPartsStock: Record<string, PartStock[]> = {
 
 export function VehicleMaintenanceModal({ open, onClose, vehicle }: VehicleMaintenanceModalProps) {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("basic");
+  const [activeTab, setActiveTab] = useState("parts-maintenance");
   const [isEditing, setIsEditing] = useState(false);
   const [currentMileage, setCurrentMileage] = useState(vehicle.currentMileage);
   const [mileageAfterService, setMileageAfterService] = useState("");
@@ -269,12 +269,6 @@ export function VehicleMaintenanceModal({ open, onClose, vehicle }: VehicleMaint
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="border-b px-6 overflow-x-auto">
               <TabsList className="h-12 bg-transparent gap-2 -mb-px">
-                <TabsTrigger value="basic" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">
-                  ข้อมูลพื้นฐาน
-                </TabsTrigger>
-                <TabsTrigger value="technical" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">
-                  ข้อมูลเทคนิค
-                </TabsTrigger>
                 <TabsTrigger value="parts-maintenance" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">
                   <Package className="w-4 h-4 mr-1" />
                   อะไหล่และบำรุงรักษา
@@ -284,15 +278,6 @@ export function VehicleMaintenanceModal({ open, onClose, vehicle }: VehicleMaint
                 </TabsTrigger>
                 <TabsTrigger value="defects" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">
                   ตำหนิ/ความเสียหาย
-                </TabsTrigger>
-                <TabsTrigger value="availability" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">
-                  ความพร้อมใช้
-                </TabsTrigger>
-                <TabsTrigger value="gps" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">
-                  ตำแหน่ง GPS
-                </TabsTrigger>
-                <TabsTrigger value="notes" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">
-                  โน้ต/เอกสาร
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -489,50 +474,6 @@ export function VehicleMaintenanceModal({ open, onClose, vehicle }: VehicleMaint
               </Card>
             </TabsContent>
 
-            {/* ═══ Basic Info Tab ═══ */}
-            <TabsContent value="basic" className="p-6 mt-0">
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4">ข้อมูลพื้นฐาน</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div><p className="text-sm text-muted-foreground">ชื่อรถ</p><p className="font-medium">{vehicle.name}</p></div>
-                  <div><p className="text-sm text-muted-foreground">ปี</p><p className="font-medium">{vehicle.year}</p></div>
-                  <div><p className="text-sm text-muted-foreground">ทะเบียน</p><p className="font-medium">{vehicle.licensePlate}</p></div>
-                  <div><p className="text-sm text-muted-foreground">ประเภท</p><p className="font-medium">{vehicle.type}</p></div>
-                  <div><p className="text-sm text-muted-foreground">ราคา/วัน</p><p className="font-medium text-success">฿{vehicle.pricePerDay.toLocaleString()}</p></div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">สถานะ</p>
-                    <Badge className={vehicle.status === "available" ? "bg-success/10 text-success" : vehicle.status === "booked" ? "bg-primary/10 text-primary" : "bg-warning/10 text-warning"}>
-                      {vehicle.status === "available" ? "ว่าง" : vehicle.status === "booked" ? "ถูกจอง" : "ซ่อมบำรุง"}
-                    </Badge>
-                  </div>
-                </div>
-              </Card>
-            </TabsContent>
-
-            {/* ═══ Technical Tab ═══ */}
-            <TabsContent value="technical" className="p-6 mt-0">
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4">ข้อมูลเทคนิค</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div><p className="text-sm text-muted-foreground">เครื่องยนต์</p><p className="font-medium">{vehicle.techInfo}</p></div>
-                  <div><p className="text-sm text-muted-foreground">เลขไมล์ปัจจุบัน</p><p className="font-medium">{vehicle.currentMileage.toLocaleString()} กม.</p></div>
-                </div>
-              </Card>
-            </TabsContent>
-
-            {/* ═══ Placeholder Tabs ═══ */}
-            <TabsContent value="defects" className="p-6 mt-0">
-              <Card className="p-6"><h3 className="text-lg font-semibold mb-4">ตำหนิ/ความเสียหาย</h3><div className="text-center py-8 text-muted-foreground"><AlertTriangle className="w-12 h-12 mx-auto mb-3 opacity-50" /><p>ไม่มีรายการตำหนิหรือความเสียหาย</p></div></Card>
-            </TabsContent>
-            <TabsContent value="availability" className="p-6 mt-0">
-              <Card className="p-6"><h3 className="text-lg font-semibold mb-4">ความพร้อมใช้</h3><div className="text-center py-8 text-muted-foreground"><Info className="w-12 h-12 mx-auto mb-3 opacity-50" /><p>ปฏิทินความพร้อมใช้งาน</p></div></Card>
-            </TabsContent>
-            <TabsContent value="gps" className="p-6 mt-0">
-              <Card className="p-6"><h3 className="text-lg font-semibold mb-4">ตำแหน่ง GPS</h3><div className="text-center py-8 text-muted-foreground"><MapPin className="w-12 h-12 mx-auto mb-3 opacity-50" /><p>ไม่มีข้อมูลตำแหน่ง GPS</p></div></Card>
-            </TabsContent>
-            <TabsContent value="notes" className="p-6 mt-0">
-              <Card className="p-6"><h3 className="text-lg font-semibold mb-4">โน้ต/เอกสาร</h3><div className="text-center py-8 text-muted-foreground"><FileText className="w-12 h-12 mx-auto mb-3 opacity-50" /><p>ไม่มีโน้ตหรือเอกสาร</p></div></Card>
-            </TabsContent>
           </Tabs>
         </DialogContent>
       </Dialog>
