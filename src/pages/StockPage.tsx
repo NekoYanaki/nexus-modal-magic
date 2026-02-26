@@ -455,17 +455,6 @@ const StockPage = () => {
               )}
             </div>
 
-            {/* Note */}
-            <div className="space-y-2">
-              <Label>หมายเหตุ <span className="text-muted-foreground font-normal">(optional)</span></Label>
-              <Textarea
-                placeholder="ระบุหมายเหตุ..."
-                value={adjustNote}
-                onChange={(e) => setAdjustNote(e.target.value)}
-                className="min-h-[60px]"
-              />
-            </div>
-
             {/* Preview */}
             {adjustAddon && adjustPreview && !adjustValidationMsg && (
               <div className="rounded-lg border border-border/50 bg-muted/30 p-3 space-y-1">
