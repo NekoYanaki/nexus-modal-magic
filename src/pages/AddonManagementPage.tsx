@@ -17,7 +17,7 @@ import { Switch } from "@/components/ui/switch";
 import {
   Car, Search, Plus, Pencil, Trash2, Package, Settings, Bell, Home,
   MessageSquare, Users, CalendarDays, Tent, Calendar, CreditCard, Tag,
-  Star, FileText, Database, Boxes, Wrench,
+  Star, FileText, Database, Boxes, Wrench, CheckCircle, AlertTriangle,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -27,6 +27,7 @@ const AddonManagementPage = () => {
   const { addons, setAddons } = useAddons();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
+  const [stockFilter, setStockFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAddon, setEditingAddon] = useState<Addon | null>(null);
@@ -40,9 +41,9 @@ const AddonManagementPage = () => {
   const filteredAddons = addons.filter((a) => {
     const matchesSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.id.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === "all" || a.category === categoryFilter;
-    if (activeFilter === "active") return matchesSearch && matchesCategory && a.isActive;
-    if (activeFilter === "inactive") return matchesSearch && matchesCategory && !a.isActive;
-    return matchesSearch && matchesCategory;
+    const matchesActive = activeFilter === "all" || (activeFilter === "active" ? a.isActive : !a.isActive);
+    const matchesStock = stockFilter === "all" || (stockFilter === "damaged_broken" ? (a.stockStatus === "damaged" || a.stockStatus === "broken") : a.stockStatus === stockFilter);
+    return matchesSearch && matchesCategory && matchesActive && matchesStock;
   });
 
   const handleAdd = () => {
@@ -97,8 +98,9 @@ const AddonManagementPage = () => {
     });
   };
 
-  const activeCount = addons.filter((a) => a.isActive).length;
-  const inactiveCount = addons.filter((a) => !a.isActive).length;
+  const availableCount = addons.filter((a) => a.stockStatus === "available").length;
+  const reservedCount = addons.filter((a) => a.stockStatus === "reserved").length;
+  const damagedBrokenCount = addons.filter((a) => a.stockStatus === "damaged" || a.stockStatus === "broken").length;
 
   const getStockStatusBadge = (status: Addon["stockStatus"]) => {
     switch (status) {
@@ -176,32 +178,41 @@ const AddonManagementPage = () => {
         </div>
 
         {/* Summary */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <Card className="p-4 flex items-center gap-4">
+        <div className="grid grid-cols-4 gap-4 mb-6">
+          <Card className={`p-4 flex items-center gap-4 cursor-pointer transition-all ${stockFilter === "all" ? "ring-2 ring-primary" : "hover:shadow-md"}`} onClick={() => setStockFilter("all")}>
             <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary/10">
               <Package className="w-6 h-6 text-primary" />
             </div>
             <div>
               <p className="text-2xl font-bold">{addons.length}</p>
-              <p className="text-xs text-muted-foreground">Add-on ทั้งหมด</p>
+              <p className="text-xs text-muted-foreground">รายการทั้งหมด</p>
             </div>
           </Card>
-          <Card className="p-4 flex items-center gap-4">
+          <Card className={`p-4 flex items-center gap-4 cursor-pointer transition-all ${stockFilter === "available" ? "ring-2 ring-success" : "hover:shadow-md"}`} onClick={() => setStockFilter("available")}>
             <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-success/10">
-              <Package className="w-6 h-6 text-success" />
+              <CheckCircle className="w-6 h-6 text-success" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-success">{activeCount}</p>
-              <p className="text-xs text-muted-foreground">เปิดใช้งาน</p>
+              <p className="text-2xl font-bold text-success">{availableCount}</p>
+              <p className="text-xs text-muted-foreground">พร้อมใช้งาน</p>
             </div>
           </Card>
-          <Card className="p-4 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-muted">
-              <Package className="w-6 h-6 text-muted-foreground" />
+          <Card className={`p-4 flex items-center gap-4 cursor-pointer transition-all ${stockFilter === "reserved" ? "ring-2 ring-warning" : "hover:shadow-md"}`} onClick={() => setStockFilter("reserved")}>
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-warning/10">
+              <AlertTriangle className="w-6 h-6 text-warning" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-muted-foreground">{inactiveCount}</p>
-              <p className="text-xs text-muted-foreground">ปิดใช้งาน</p>
+              <p className="text-2xl font-bold text-warning">{reservedCount}</p>
+              <p className="text-xs text-muted-foreground">ถูกจอง</p>
+            </div>
+          </Card>
+          <Card className={`p-4 flex items-center gap-4 cursor-pointer transition-all ${stockFilter === "damaged_broken" ? "ring-2 ring-destructive" : "hover:shadow-md"}`} onClick={() => setStockFilter("damaged_broken")}>
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-destructive/10">
+              <Wrench className="w-6 h-6 text-destructive" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-destructive">{damagedBrokenCount}</p>
+              <p className="text-xs text-muted-foreground">ส่งซ่อม / ชำรุด</p>
             </div>
           </Card>
         </div>
