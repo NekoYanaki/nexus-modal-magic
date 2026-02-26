@@ -17,7 +17,7 @@ import {
   Car, Search, Plus, Pencil, Trash2, Package, Settings, Bell, Home,
   MessageSquare, Users, CalendarDays, Tent, Calendar, CreditCard, Tag,
   Star, FileText, Database, Boxes, CheckCircle, AlertTriangle, Wrench,
-  Minus,
+  Minus, ChevronDown, ChevronRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -61,6 +61,7 @@ const StockPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [adjustAddon, setAdjustAddon] = useState<Addon | null>(null);
   const [adjustAction, setAdjustAction] = useState<AdjustAction>("add");
@@ -103,6 +104,14 @@ const StockPage = () => {
     reserved: acc.reserved + a.reserved,
     damaged: acc.damaged + a.damaged,
   }), { total: 0, available: 0, reserved: 0, damaged: 0 });
+
+  const toggleCategory = (cat: string) => {
+    setExpandedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat); else next.add(cat);
+      return next;
+    });
+  };
 
   const handleAdjustOpen = (addon: Addon) => {
     setAdjustAddon(addon);
@@ -282,8 +291,9 @@ const StockPage = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-8"></TableHead>
                 <TableHead>หมวดหมู่อุปกรณ์</TableHead>
-                <TableHead className="text-center">จำนวนรายการ</TableHead>
+                <TableHead className="text-center">จำนวน</TableHead>
                 <TableHead className="text-center">ทั้งหมด</TableHead>
                 <TableHead className="text-center">พร้อมใช้</TableHead>
                 <TableHead className="text-center">จองแล้ว</TableHead>
@@ -291,26 +301,54 @@ const StockPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {groupedByCategory.map((group) => (
-                <TableRow key={group.category}>
-                  <TableCell>
-                    <div>
-                      <p className="font-semibold">{group.category}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {group.items.map((i) => i.id).join(", ")}
-                      </p>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-center font-semibold">{group.items.length}</TableCell>
-                  <TableCell className="text-center font-semibold">{group.total}</TableCell>
-                  <TableCell className="text-center"><span className="text-success font-semibold">{group.available}</span></TableCell>
-                  <TableCell className="text-center"><span className="text-warning font-semibold">{group.reserved}</span></TableCell>
-                  <TableCell className="text-center"><span className="text-destructive font-semibold">{group.damaged}</span></TableCell>
-                </TableRow>
-              ))}
+              {groupedByCategory.map((group) => {
+                const isExpanded = expandedCategories.has(group.category);
+                return (
+                  <>
+                    <TableRow key={group.category} className="cursor-pointer hover:bg-muted/50" onClick={() => toggleCategory(group.category)}>
+                      <TableCell className="w-8 px-2">
+                        {isExpanded ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+                      </TableCell>
+                      <TableCell>
+                        <p className="font-semibold">{group.category}</p>
+                      </TableCell>
+                      <TableCell className="text-center font-semibold">{group.items.length}</TableCell>
+                      <TableCell className="text-center font-semibold">{group.total}</TableCell>
+                      <TableCell className="text-center"><span className="text-success font-semibold">{group.available}</span></TableCell>
+                      <TableCell className="text-center"><span className="text-warning font-semibold">{group.reserved}</span></TableCell>
+                      <TableCell className="text-center"><span className="text-destructive font-semibold">{group.damaged}</span></TableCell>
+                    </TableRow>
+                    {isExpanded && group.items.map((addon) => (
+                      <TableRow key={addon.id} className="bg-muted/30">
+                        <TableCell></TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div>
+                              <p className="text-sm font-medium">{addon.name}</p>
+                              <p className="text-xs text-muted-foreground">{addon.id} · {addon.defaultPrice.toLocaleString()} บาท</p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell></TableCell>
+                        <TableCell className="text-center text-sm">{addon.total}</TableCell>
+                        <TableCell className="text-center text-sm text-success">{addon.available}</TableCell>
+                        <TableCell className="text-center text-sm text-warning">{addon.reserved}</TableCell>
+                        <TableCell className="text-center text-sm">
+                          <div className="flex items-center justify-center gap-2">
+                            <span className="text-destructive">{addon.damaged}</span>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-warning" onClick={(e) => { e.stopPropagation(); handleAdjustOpen(addon); }}>
+                              <Pencil className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </>
+                );
+              })}
               {groupedByCategory.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล</TableCell>
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล</TableCell>
                 </TableRow>
               )}
             </TableBody>
