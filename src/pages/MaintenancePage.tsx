@@ -56,7 +56,7 @@ interface MaintenanceVehicle {
   seats: number;
   doors: number;
   currentMileage: number;
-  maintenanceStatus: "pending" | "in_progress" | "completed" | "waiting_parts";
+  maintenanceStatus: "pending" | "in_progress" | "completed";
   maintenanceType: string;
   mechanic: string;
   startDate: string;
@@ -115,12 +115,12 @@ const mockMaintenanceVehicles: MaintenanceVehicle[] = [
     seats: 4,
     doors: 4,
     currentMileage: 45200,
-    maintenanceStatus: "waiting_parts",
+    maintenanceStatus: "pending",
     maintenanceType: "ซ่อมช่วงล่าง",
     mechanic: "ช่างวิชัย",
     startDate: "18 ก.พ. 2026",
     estimatedEnd: "1 มี.ค. 2026",
-    issue: "ลูกหมากปีกนกหลวม รออะไหล่",
+    issue: "ลูกหมากปีกนกหลวม",
   },
   {
     id: "4",
@@ -188,13 +188,11 @@ const MaintenancePage = () => {
   const getMaintenanceStatusBadge = (status: MaintenanceVehicle["maintenanceStatus"]) => {
     switch (status) {
       case "pending":
-        return <Badge className="bg-warning/10 text-warning border-warning/20">รอดำเนินการ</Badge>;
+        return <Badge className="bg-warning/10 text-warning border-warning/20">รอซ่อม</Badge>;
       case "in_progress":
         return <Badge className="bg-primary/10 text-primary border-primary/20">กำลังซ่อม</Badge>;
       case "completed":
         return <Badge className="bg-success/10 text-success border-success/20">เสร็จสิ้น</Badge>;
-      case "waiting_parts":
-        return <Badge className="bg-destructive/10 text-destructive border-destructive/20">รออะไหล่</Badge>;
     }
   };
 
@@ -202,7 +200,7 @@ const MaintenancePage = () => {
   const totalMaintenance = mockMaintenanceVehicles.length;
   const pendingCount = mockMaintenanceVehicles.filter((v) => v.maintenanceStatus === "pending").length;
   const inProgressCount = mockMaintenanceVehicles.filter((v) => v.maintenanceStatus === "in_progress").length;
-  const waitingPartsCount = mockMaintenanceVehicles.filter((v) => v.maintenanceStatus === "waiting_parts").length;
+  
   const completedCount = mockMaintenanceVehicles.filter((v) => v.maintenanceStatus === "completed").length;
 
   const sidebarItems = [
@@ -275,7 +273,7 @@ const MaintenancePage = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-5 gap-4 mb-6">
+        <div className="grid grid-cols-4 gap-4 mb-6">
           <Card className="p-4 flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">ทั้งหมด</p>
@@ -285,7 +283,7 @@ const MaintenancePage = () => {
           </Card>
           <Card className="p-4 flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">รอดำเนินการ</p>
+              <p className="text-sm text-muted-foreground">รอซ่อม</p>
               <p className="text-2xl font-bold text-warning">{pendingCount}</p>
             </div>
             <Clock className="w-8 h-8 text-warning/30" />
@@ -296,13 +294,6 @@ const MaintenancePage = () => {
               <p className="text-2xl font-bold text-primary">{inProgressCount}</p>
             </div>
             <Settings className="w-8 h-8 text-primary/30" />
-          </Card>
-          <Card className="p-4 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">รออะไหล่</p>
-              <p className="text-2xl font-bold text-destructive">{waitingPartsCount}</p>
-            </div>
-            <AlertTriangle className="w-8 h-8 text-destructive/30" />
           </Card>
           <Card className="p-4 flex items-center justify-between">
             <div>
@@ -334,9 +325,8 @@ const MaintenancePage = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">ทุกสถานะ</SelectItem>
-                <SelectItem value="pending">รอดำเนินการ</SelectItem>
+                <SelectItem value="pending">รอซ่อม</SelectItem>
                 <SelectItem value="in_progress">กำลังซ่อม</SelectItem>
-                <SelectItem value="waiting_parts">รออะไหล่</SelectItem>
                 <SelectItem value="completed">เสร็จสิ้น</SelectItem>
               </SelectContent>
             </Select>
