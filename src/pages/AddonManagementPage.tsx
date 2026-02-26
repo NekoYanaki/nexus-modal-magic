@@ -28,7 +28,7 @@ interface Addon {
   category: string;
   defaultPrice: number;
   isActive: boolean;
-  stockStatus: "available" | "reserved" | "damaged";
+  stockStatus: "available" | "reserved" | "damaged" | "broken";
 }
 
 const mockAddons: Addon[] = [
@@ -131,6 +131,7 @@ const AddonManagementPage = () => {
       case "available": return <Badge className="bg-success/10 text-success border-success/20">พร้อมใช้</Badge>;
       case "reserved": return <Badge className="bg-warning/10 text-warning border-warning/20">ถูกจอง</Badge>;
       case "damaged": return <Badge className="bg-destructive/10 text-destructive border-destructive/20">ส่งซ่อม</Badge>;
+      case "broken": return <Badge className="bg-muted text-muted-foreground border-muted-foreground/20">ชำรุด</Badge>;
     }
   };
 
@@ -340,6 +341,7 @@ const AddonManagementPage = () => {
                   <SelectItem value="available">พร้อมใช้</SelectItem>
                   <SelectItem value="reserved">ถูกจอง</SelectItem>
                   <SelectItem value="damaged">ส่งซ่อม</SelectItem>
+                  <SelectItem value="broken">ชำรุด</SelectItem>
                 </SelectContent>
               </Select>
             </div>
