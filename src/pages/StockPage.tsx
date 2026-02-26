@@ -305,7 +305,6 @@ const StockPage = () => {
                 <TableHead className="text-center">พร้อมใช้</TableHead>
                 <TableHead className="text-center">จองแล้ว</TableHead>
                 <TableHead className="text-center">ชำรุด</TableHead>
-                <TableHead className="text-center">สถานะ</TableHead>
                 <TableHead className="text-right">จัดการ</TableHead>
               </TableRow>
             </TableHeader>
@@ -330,11 +329,6 @@ const StockPage = () => {
                     <TableCell className="text-center">
                       <span className="text-destructive font-semibold">{addon.damaged}</span>
                     </TableCell>
-                    <TableCell className="text-center">
-                      {status === "ok" && <Badge className="bg-success/10 text-success border-0">พร้อม</Badge>}
-                      {status === "low" && <Badge className="bg-warning/10 text-warning border-0">สต็อกน้อย</Badge>}
-                      {status === "out" && <Badge className="bg-destructive/10 text-destructive border-0">หมด</Badge>}
-                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-warning" onClick={() => handleAdjustOpen(addon)}>
@@ -350,7 +344,7 @@ const StockPage = () => {
               })}
               {filteredAddons.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล Add-on</TableCell>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล Add-on</TableCell>
                 </TableRow>
               )}
             </TableBody>
