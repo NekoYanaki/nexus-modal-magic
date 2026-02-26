@@ -32,11 +32,11 @@ All colors MUST be HSL.
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 6% 90%;
+    --border: 240 6% 92%;
     --input: 240 6% 90%;
     --ring: 216 72% 30%;
 
-    --radius: 1rem;
+    --radius: 0.75rem;
     
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
