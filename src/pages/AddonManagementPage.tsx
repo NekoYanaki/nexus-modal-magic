@@ -52,6 +52,7 @@ const AddonManagementPage = () => {
   const [addons, setAddons] = useState<Addon[]>(mockAddons);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAddon, setEditingAddon] = useState<Addon | null>(null);
   const [formData, setFormData] = useState({ id: "", name: "", category: "", defaultPrice: 0, isActive: true });
@@ -59,11 +60,14 @@ const AddonManagementPage = () => {
   const [deletingAddon, setDeletingAddon] = useState<Addon | null>(null);
   const { toast } = useToast();
 
+  const categories = Array.from(new Set(addons.map((a) => a.category))).sort();
+
   const filteredAddons = addons.filter((a) => {
     const matchesSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.id.toLowerCase().includes(searchQuery.toLowerCase());
-    if (activeFilter === "active") return matchesSearch && a.isActive;
-    if (activeFilter === "inactive") return matchesSearch && !a.isActive;
-    return matchesSearch;
+    const matchesCategory = categoryFilter === "all" || a.category === categoryFilter;
+    if (activeFilter === "active") return matchesSearch && matchesCategory && a.isActive;
+    if (activeFilter === "inactive") return matchesSearch && matchesCategory && !a.isActive;
+    return matchesSearch && matchesCategory;
   });
 
   const handleAdd = () => {
@@ -225,6 +229,15 @@ const AddonManagementPage = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input placeholder="ค้นหา Add-on..." className="pl-10" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
             </div>
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="w-48"><SelectValue placeholder="หมวดหมู่" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">ทุกหมวดหมู่</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Select value={activeFilter} onValueChange={setActiveFilter}>
               <SelectTrigger className="w-44"><SelectValue placeholder="สถานะ" /></SelectTrigger>
               <SelectContent>
@@ -247,7 +260,6 @@ const AddonManagementPage = () => {
                 <TableHead>หมวดหมู่</TableHead>
                 <TableHead className="text-right">ราคาเริ่มต้น (บาท)</TableHead>
                 <TableHead className="text-center">สถานะ</TableHead>
-                <TableHead className="text-center">เปิด/ปิด</TableHead>
                 <TableHead className="text-right">จัดการ</TableHead>
               </TableRow>
             </TableHeader>
@@ -263,9 +275,6 @@ const AddonManagementPage = () => {
                       {addon.isActive ? "เปิดใช้งาน" : "ปิดใช้งาน"}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-center">
-                    <Switch checked={addon.isActive} onCheckedChange={() => handleToggleActive(addon)} />
-                  </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-warning" onClick={() => handleEdit(addon)}>
@@ -280,7 +289,7 @@ const AddonManagementPage = () => {
               ))}
               {filteredAddons.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล Add-on</TableCell>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล Add-on</TableCell>
                 </TableRow>
               )}
             </TableBody>
