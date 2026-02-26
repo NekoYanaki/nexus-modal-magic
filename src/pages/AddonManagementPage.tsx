@@ -332,6 +332,17 @@ const AddonManagementPage = () => {
               <Label>ราคาเริ่มต้น (บาท)</Label>
               <Input type="number" value={formData.defaultPrice} onChange={(e) => setFormData({ ...formData, defaultPrice: Number(e.target.value) })} />
             </div>
+            <div className="space-y-2">
+              <Label>สถานะการใช้งาน</Label>
+              <Select value={formData.stockStatus} onValueChange={(v) => setFormData({ ...formData, stockStatus: v as Addon["stockStatus"] })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="available">พร้อมใช้</SelectItem>
+                  <SelectItem value="reserved">ถูกจอง</SelectItem>
+                  <SelectItem value="damaged">ส่งซ่อม</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex items-center justify-between">
               <Label>เปิดใช้งาน</Label>
               <Switch checked={formData.isActive} onCheckedChange={(v) => setFormData({ ...formData, isActive: v })} />
