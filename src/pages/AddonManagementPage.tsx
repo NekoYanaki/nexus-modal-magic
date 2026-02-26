@@ -25,18 +25,27 @@ import { useToast } from "@/hooks/use-toast";
 interface Addon {
   id: string;
   name: string;
+  category: string;
   defaultPrice: number;
   isActive: boolean;
 }
 
 const mockAddons: Addon[] = [
-  { id: "AD0001", name: "เบาะนั่งเด็ก", defaultPrice: 300, isActive: true },
-  { id: "AD0002", name: "อุปกรณ์แคมปิ้ง", defaultPrice: 100, isActive: true },
-  { id: "AD0003", name: "ชุดปิ้งย่าง", defaultPrice: 150, isActive: true },
-  { id: "AD0004", name: "เครื่องปั่นไฟ", defaultPrice: 30000, isActive: true },
-  { id: "AD0005", name: "โต๊ะกลางแจ้ง", defaultPrice: 500, isActive: true },
-  { id: "AD0006", name: "เก้าอี้พับ (ชุด)", defaultPrice: 300, isActive: true },
-  { id: "AD0007", name: "ถังน้ำแข็ง", defaultPrice: 50, isActive: false },
+  { id: "SEAT-001", name: "เบาะนั่งเด็ก ตัวที่ 1", category: "เบาะนั่งเด็ก", defaultPrice: 300, isActive: true },
+  { id: "SEAT-002", name: "เบาะนั่งเด็ก ตัวที่ 2", category: "เบาะนั่งเด็ก", defaultPrice: 300, isActive: true },
+  { id: "SEAT-003", name: "เบาะนั่งเด็ก ตัวที่ 3", category: "เบาะนั่งเด็ก", defaultPrice: 300, isActive: true },
+  { id: "CAMP-001", name: "ชุดแคมปิ้ง A", category: "อุปกรณ์แคมปิ้ง", defaultPrice: 100, isActive: true },
+  { id: "CAMP-002", name: "ชุดแคมปิ้ง B", category: "อุปกรณ์แคมปิ้ง", defaultPrice: 100, isActive: true },
+  { id: "BBQ-001", name: "ชุดปิ้งย่างใหญ่", category: "ชุดปิ้งย่าง", defaultPrice: 150, isActive: true },
+  { id: "BBQ-002", name: "ชุดปิ้งย่างเล็ก", category: "ชุดปิ้งย่าง", defaultPrice: 100, isActive: true },
+  { id: "GEN-001", name: "เครื่องปั่นไฟ Honda 3kW", category: "เครื่องปั่นไฟ", defaultPrice: 30000, isActive: true },
+  { id: "GEN-002", name: "เครื่องปั่นไฟ Yamaha 2kW", category: "เครื่องปั่นไฟ", defaultPrice: 25000, isActive: true },
+  { id: "GEN-003", name: "เครื่องปั่นไฟ Honda 5kW", category: "เครื่องปั่นไฟ", defaultPrice: 45000, isActive: false },
+  { id: "TBL-001", name: "โต๊ะกลางแจ้ง 6 ที่นั่ง", category: "โต๊ะกลางแจ้ง", defaultPrice: 500, isActive: true },
+  { id: "TBL-002", name: "โต๊ะกลางแจ้ง 4 ที่นั่ง", category: "โต๊ะกลางแจ้ง", defaultPrice: 400, isActive: true },
+  { id: "CHR-001", name: "เก้าอี้พับ ชุด A (4 ตัว)", category: "เก้าอี้พับ", defaultPrice: 300, isActive: true },
+  { id: "CHR-002", name: "เก้าอี้พับ ชุด B (4 ตัว)", category: "เก้าอี้พับ", defaultPrice: 300, isActive: true },
+  { id: "ICE-001", name: "ถังน้ำแข็ง 20L", category: "ถังน้ำแข็ง", defaultPrice: 50, isActive: false },
 ];
 
 const AddonManagementPage = () => {
@@ -45,7 +54,7 @@ const AddonManagementPage = () => {
   const [activeFilter, setActiveFilter] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAddon, setEditingAddon] = useState<Addon | null>(null);
-  const [formData, setFormData] = useState({ name: "", defaultPrice: 0, isActive: true });
+  const [formData, setFormData] = useState({ id: "", name: "", category: "", defaultPrice: 0, isActive: true });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingAddon, setDeletingAddon] = useState<Addon | null>(null);
   const { toast } = useToast();
@@ -59,17 +68,21 @@ const AddonManagementPage = () => {
 
   const handleAdd = () => {
     setEditingAddon(null);
-    setFormData({ name: "", defaultPrice: 0, isActive: true });
+    setFormData({ id: "", name: "", category: "", defaultPrice: 0, isActive: true });
     setDialogOpen(true);
   };
 
   const handleEdit = (addon: Addon) => {
     setEditingAddon(addon);
-    setFormData({ name: addon.name, defaultPrice: addon.defaultPrice, isActive: addon.isActive });
+    setFormData({ id: addon.id, name: addon.name, category: addon.category, defaultPrice: addon.defaultPrice, isActive: addon.isActive });
     setDialogOpen(true);
   };
 
   const handleSave = () => {
+    if (!formData.id.trim()) {
+      toast({ title: "กรุณากรอกรหัส Add-on", variant: "destructive" });
+      return;
+    }
     if (!formData.name.trim()) {
       toast({ title: "กรุณากรอกชื่อ Add-on", variant: "destructive" });
       return;
@@ -78,8 +91,11 @@ const AddonManagementPage = () => {
       setAddons((prev) => prev.map((a) => a.id === editingAddon.id ? { ...a, ...formData } : a));
       toast({ title: "สำเร็จ", description: "แก้ไข Add-on เรียบร้อยแล้ว" });
     } else {
-      const newId = `AD${String(addons.length + 1).padStart(4, "0")}`;
-      setAddons((prev) => [...prev, { id: newId, ...formData }]);
+      if (addons.some((a) => a.id === formData.id)) {
+        toast({ title: "รหัสนี้มีอยู่แล้ว", variant: "destructive" });
+        return;
+      }
+      setAddons((prev) => [...prev, { ...formData }]);
       toast({ title: "สำเร็จ", description: "เพิ่ม Add-on เรียบร้อยแล้ว" });
     }
     setDialogOpen(false);
@@ -228,6 +244,7 @@ const AddonManagementPage = () => {
               <TableRow>
                 <TableHead>รหัส</TableHead>
                 <TableHead>ชื่อ Add-on</TableHead>
+                <TableHead>หมวดหมู่</TableHead>
                 <TableHead className="text-right">ราคาเริ่มต้น (บาท)</TableHead>
                 <TableHead className="text-center">สถานะ</TableHead>
                 <TableHead className="text-center">เปิด/ปิด</TableHead>
@@ -239,6 +256,7 @@ const AddonManagementPage = () => {
                 <TableRow key={addon.id}>
                   <TableCell className="font-mono text-sm text-muted-foreground">{addon.id}</TableCell>
                   <TableCell className="font-semibold">{addon.name}</TableCell>
+                  <TableCell><Badge variant="outline">{addon.category}</Badge></TableCell>
                   <TableCell className="text-right">{addon.defaultPrice.toLocaleString()}</TableCell>
                   <TableCell className="text-center">
                     <Badge variant={addon.isActive ? "default" : "secondary"}>
@@ -262,7 +280,7 @@ const AddonManagementPage = () => {
               ))}
               {filteredAddons.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล Add-on</TableCell>
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล Add-on</TableCell>
                 </TableRow>
               )}
             </TableBody>
@@ -278,8 +296,17 @@ const AddonManagementPage = () => {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
+              <Label>รหัส Add-on</Label>
+              <Input value={formData.id} onChange={(e) => setFormData({ ...formData, id: e.target.value })} placeholder="เช่น GEN-001" disabled={!!editingAddon} />
+              {editingAddon && <p className="text-xs text-muted-foreground">ไม่สามารถแก้ไขรหัสได้</p>}
+            </div>
+            <div className="space-y-2">
               <Label>ชื่อ Add-on</Label>
-              <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="เช่น เบาะนั่งเด็ก" />
+              <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="เช่น เครื่องปั่นไฟ Honda 3kW" />
+            </div>
+            <div className="space-y-2">
+              <Label>หมวดหมู่</Label>
+              <Input value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} placeholder="เช่น เครื่องปั่นไฟ" />
             </div>
             <div className="space-y-2">
               <Label>ราคาเริ่มต้น (บาท)</Label>
