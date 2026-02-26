@@ -174,6 +174,7 @@ const MaintenancePage = () => {
     { icon: Star, label: "รีวิว", href: "/" },
     { icon: FileText, label: "รายงาน", href: "/" },
     { icon: Database, label: "จัดการข้อมูล", href: "/" },
+    { icon: Wrench, label: "Stock / Add-on", href: "/stock" },
     { icon: Settings, label: "ตั้งค่า", href: "/" },
   ];
 
