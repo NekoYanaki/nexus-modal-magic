@@ -132,8 +132,8 @@ export function VehicleMaintenanceModal({ open, onClose, vehicle }: VehicleMaint
   const [adjustNote, setAdjustNote] = useState("");
   const [adjustSaving, setAdjustSaving] = useState(false);
 
-  // Maintenance schedule
-  const [maintenanceItems] = useState<MaintenanceItem[]>([
+  // Maintenance schedule (dynamic)
+  const [maintenanceItems, setMaintenanceItems] = useState<MaintenanceItem[]>([
     {
       id: "1", name: "ถ่ายน้ำมันเครื่อง / เฟืองท้าย", interval: "ทุกๆ 10,000 กม.",
       lastService: "120,000 กม.", lastMileage: 120000, nextDue: "130,000 กม.", nextMileage: 130000,
@@ -150,6 +150,73 @@ export function VehicleMaintenanceModal({ open, onClose, vehicle }: VehicleMaint
       status: "warning", remainingKm: 4570,
     },
   ]);
+
+  // Add/Edit maintenance item state
+  const [showAddItem, setShowAddItem] = useState(false);
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [itemForm, setItemForm] = useState({
+    name: "",
+    interval: "",
+    lastService: "",
+    lastMileage: "",
+    nextDue: "",
+    nextMileage: "",
+  });
+
+  const resetItemForm = () => {
+    setItemForm({ name: "", interval: "", lastService: "", lastMileage: "", nextDue: "", nextMileage: "" });
+    setEditingItemId(null);
+    setShowAddItem(false);
+  };
+
+  const handleAddItem = () => {
+    if (!itemForm.name || !itemForm.interval) return;
+    const lastMileage = Number(itemForm.lastMileage) || 0;
+    const nextMileage = Number(itemForm.nextMileage) || 0;
+    const remainingKm = nextMileage > 0 ? Math.max(0, nextMileage - currentMileage) : undefined;
+    const status: MaintenanceItem["status"] = remainingKm !== undefined
+      ? remainingKm <= 0 ? "overdue" : remainingKm < 3000 ? "warning" : "normal"
+      : "normal";
+
+    const newItem: MaintenanceItem = {
+      id: editingItemId || Date.now().toString(),
+      name: itemForm.name,
+      interval: itemForm.interval,
+      lastService: itemForm.lastService || "-",
+      lastMileage,
+      nextDue: itemForm.nextDue || "-",
+      nextMileage,
+      status,
+      remainingKm,
+    };
+
+    if (editingItemId) {
+      setMaintenanceItems(prev => prev.map(i => i.id === editingItemId ? newItem : i));
+      toast({ title: "แก้ไขรายการเรียบร้อย" });
+    } else {
+      setMaintenanceItems(prev => [...prev, newItem]);
+      toast({ title: "เพิ่มรายการเรียบร้อย" });
+    }
+    resetItemForm();
+  };
+
+  const handleEditItem = (item: MaintenanceItem) => {
+    setEditingItemId(item.id);
+    setItemForm({
+      name: item.name,
+      interval: item.interval,
+      lastService: item.lastService,
+      lastMileage: item.lastMileage.toString(),
+      nextDue: item.nextDue,
+      nextMileage: item.nextMileage.toString(),
+    });
+    setShowAddItem(true);
+  };
+
+  const handleDeleteItem = (id: string) => {
+    setMaintenanceItems(prev => prev.filter(i => i.id !== id));
+    toast({ title: "ลบรายการเรียบร้อย" });
+  };
 
   const [tasks, setTasks] = useState<MaintenanceTask[]>([
     { id: "1", label: "เปลี่ยนแบตเตอรี่ (Replace Battery)", checked: false },
@@ -298,10 +365,54 @@ export function VehicleMaintenanceModal({ open, onClose, vehicle }: VehicleMaint
                       <Wrench className="w-5 h-5 text-primary" />
                       Maintenance Schedule — การบำรุงรักษาตามระยะ
                     </h3>
-                    <Button variant="ghost" size="sm" className="text-primary" onClick={() => setIsEditing(!isEditing)}>
-                      <Edit2 className="w-4 h-4 mr-1" /> Edit
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" onClick={() => { resetItemForm(); setShowAddItem(true); }}>
+                        <Plus className="w-4 h-4 mr-1" /> เพิ่มรายการ
+                      </Button>
+                      <Button variant="ghost" size="sm" className="text-primary" onClick={() => setIsEditing(!isEditing)}>
+                        <Edit2 className="w-4 h-4 mr-1" /> Edit
+                      </Button>
+                    </div>
                   </div>
+
+                  {/* Add / Edit Form */}
+                  {showAddItem && (
+                    <Card className="p-4 mb-4 border-primary/30 bg-primary/5">
+                      <h4 className="font-semibold mb-3">{editingItemId ? "แก้ไขรายการ" : "เพิ่มรายการเช็คตามระยะ"}</h4>
+                      <div className="grid grid-cols-2 gap-3 mb-3">
+                        <div>
+                          <label className="text-xs text-muted-foreground">ชื่อรายการ *</label>
+                          <Input placeholder="เช่น ถ่ายน้ำมันเครื่อง" value={itemForm.name} onChange={(e) => setItemForm(f => ({ ...f, name: e.target.value }))} />
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground">ระยะเวลา/ระยะทาง *</label>
+                          <Input placeholder="เช่น ทุกๆ 10,000 กม." value={itemForm.interval} onChange={(e) => setItemForm(f => ({ ...f, interval: e.target.value }))} />
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground">เปลี่ยนล่าสุดที่</label>
+                          <Input placeholder="เช่น 120,000 กม." value={itemForm.lastService} onChange={(e) => setItemForm(f => ({ ...f, lastService: e.target.value }))} />
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground">เลขไมล์ล่าสุด</label>
+                          <Input type="number" placeholder="120000" value={itemForm.lastMileage} onChange={(e) => setItemForm(f => ({ ...f, lastMileage: e.target.value }))} />
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground">ครบกำหนดครั้งถัดไป</label>
+                          <Input placeholder="เช่น 130,000 กม." value={itemForm.nextDue} onChange={(e) => setItemForm(f => ({ ...f, nextDue: e.target.value }))} />
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground">เลขไมล์ครั้งถัดไป</label>
+                          <Input type="number" placeholder="130000" value={itemForm.nextMileage} onChange={(e) => setItemForm(f => ({ ...f, nextMileage: e.target.value }))} />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 justify-end">
+                        <Button variant="ghost" size="sm" onClick={resetItemForm}>ยกเลิก</Button>
+                        <Button size="sm" onClick={handleAddItem} disabled={!itemForm.name || !itemForm.interval}>
+                          {editingItemId ? "บันทึก" : "เพิ่ม"}
+                        </Button>
+                      </div>
+                    </Card>
+                  )}
 
                   {/* Current Mileage */}
                   <Card className="p-4 bg-secondary/30 mb-4">
@@ -313,10 +424,26 @@ export function VehicleMaintenanceModal({ open, onClose, vehicle }: VehicleMaint
                     </div>
                   </Card>
 
+                  {maintenanceItems.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Wrench className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                      <p>ยังไม่มีรายการเช็คตามระยะ</p>
+                      <p className="text-sm">กดปุ่ม "เพิ่มรายการ" เพื่อเริ่มตั้งค่า</p>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {maintenanceItems.map((item) => (
-                      <Card key={item.id} className="p-4">
-                        <div className="flex items-start justify-between mb-3">
+                      <Card key={item.id} className="p-4 group relative">
+                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEditItem(item)}>
+                            <Edit2 className="w-3 h-3" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleDeleteItem(item.id)}>
+                            <Minus className="w-3 h-3" />
+                          </Button>
+                        </div>
+                        <div className="flex items-start justify-between mb-3 pr-16">
                           <div className="flex items-center gap-2">
                             {item.status === "overdue" ? <AlertTriangle className="w-4 h-4 text-destructive" /> : <Wrench className="w-4 h-4 text-primary" />}
                             <h4 className="font-semibold">{item.name}</h4>
