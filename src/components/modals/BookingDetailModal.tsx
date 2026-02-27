@@ -46,10 +46,10 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
     totalDue: 3650,
     totalAmount: 7650,
     addons: [
-      { name: "เบาะนั่งเด็ก", price: 300 },
-      { name: "ชุดปิ้งย่าง", price: 350 },
-      { name: "กันสาด", price: 400 },
-      { name: "เก้าอี้พับ (ชุด)", price: 150 },
+      { id: "CS-001", name: "เบาะนั่งเด็ก", price: 300 },
+      { id: "BBQ-003", name: "ชุดปิ้งย่าง", price: 350 },
+      { id: "AW-012", name: "กันสาด", price: 400 },
+      { id: "CH-007", name: "เก้าอี้พับ (ชุด)", price: 150 },
     ],
     camps: [
       {
@@ -267,8 +267,11 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
               <div className="space-y-2 text-sm">
                 {mockData.addons.map((addon, i) => (
                   <div key={i} className="flex items-center justify-between p-2 border border-border rounded-lg">
-                    <span>{addon.name}</span>
-                    <span className="font-medium">฿{addon.price.toLocaleString()}</span>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono bg-muted/50">{addon.id}</Badge>
+                      <span className="text-sm">{addon.name}</span>
+                    </div>
+                    <span className="font-medium text-sm">฿{addon.price.toLocaleString()}</span>
                   </div>
                 ))}
                 <div className="h-px bg-border my-2" />
