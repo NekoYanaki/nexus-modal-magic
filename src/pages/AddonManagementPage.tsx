@@ -14,8 +14,9 @@ import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import {
-  Car, Search, Pencil, Package, Settings, Bell, Home,
+  Car, Search, Plus, Pencil, Package, Settings, Bell, Home,
   MessageSquare, Users, CalendarDays, Tent, Calendar, CreditCard, Tag,
   Star, FileText, Database, Boxes, Wrench, CheckCircle, AlertTriangle,
 } from "lucide-react";
@@ -33,6 +34,8 @@ const AddonManagementPage = () => {
   const [adjustAddon, setAdjustAddon] = useState<Addon | null>(null);
   const [newStatus, setNewStatus] = useState<StockStatus>("available");
   const [newBookingRef, setNewBookingRef] = useState("");
+  const [addOpen, setAddOpen] = useState(false);
+  const [addFormData, setAddFormData] = useState({ id: "", name: "", category: "", defaultPrice: 0, isActive: true, stockStatus: "available" as StockStatus, bookingRef: "" });
   const { toast } = useToast();
 
   const categories = Array.from(new Set(addons.map((a) => a.category))).sort();
@@ -59,6 +62,20 @@ const AddonManagementPage = () => {
     toast({ title: "สำเร็จ", description: `เปลี่ยนสถานะ ${adjustAddon.name} แล้ว` });
   };
 
+  const handleAddOpen = () => {
+    setAddFormData({ id: "", name: "", category: "", defaultPrice: 0, isActive: true, stockStatus: "available", bookingRef: "" });
+    setAddOpen(true);
+  };
+
+  const handleAddSave = () => {
+    if (!addFormData.id.trim()) { toast({ title: "กรุณากรอกรหัส", variant: "destructive" }); return; }
+    if (!addFormData.name.trim()) { toast({ title: "กรุณากรอกชื่อ", variant: "destructive" }); return; }
+    if (addons.some((a) => a.id === addFormData.id)) { toast({ title: "รหัสนี้มีอยู่แล้ว", variant: "destructive" }); return; }
+    setAddons((prev) => [...prev, { ...addFormData, bookingRef: addFormData.bookingRef || undefined }]);
+    setAddOpen(false);
+    toast({ title: "สำเร็จ", description: "เพิ่มสินค้าเรียบร้อยแล้ว" });
+  };
+
   const availableCount = addons.filter((a) => a.stockStatus === "available").length;
   const reservedCount = addons.filter((a) => a.stockStatus === "reserved").length;
   const inUseCount = addons.filter((a) => a.stockStatus === "in_use").length;
@@ -70,13 +87,13 @@ const AddonManagementPage = () => {
       case "reserved": {
         const badge = <Badge className="bg-warning/10 text-warning border-warning/20 cursor-default">ถูกจอง</Badge>;
         return bookingRef ? (
-          <TooltipProvider><Tooltip><TooltipTrigger asChild>{badge}</TooltipTrigger><TooltipContent><p className="font-mono text-xs">Booking: {bookingRef}</p></TooltipContent></Tooltip></TooltipProvider>
+          <TooltipProvider delayDuration={0}><Tooltip><TooltipTrigger asChild><span className="inline-flex">{badge}</span></TooltipTrigger><TooltipContent><p className="font-mono text-xs">Booking: {bookingRef}</p></TooltipContent></Tooltip></TooltipProvider>
         ) : badge;
       }
       case "in_use": {
         const badge = <Badge className="bg-primary/10 text-primary border-primary/20 cursor-default">ถูกใช้</Badge>;
         return bookingRef ? (
-          <TooltipProvider><Tooltip><TooltipTrigger asChild>{badge}</TooltipTrigger><TooltipContent><p className="font-mono text-xs">Booking: {bookingRef}</p></TooltipContent></Tooltip></TooltipProvider>
+          <TooltipProvider delayDuration={0}><Tooltip><TooltipTrigger asChild><span className="inline-flex">{badge}</span></TooltipTrigger><TooltipContent><p className="font-mono text-xs">Booking: {bookingRef}</p></TooltipContent></Tooltip></TooltipProvider>
         ) : badge;
       }
       case "damaged": return <Badge className="bg-destructive/10 text-destructive border-destructive/20">ส่งซ่อม</Badge>;
@@ -206,6 +223,10 @@ const AddonManagementPage = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input placeholder="ค้นหา Add-on..." className="pl-10" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
             </div>
+            <Button onClick={handleAddOpen} className="gap-2">
+              <Plus className="w-4 h-4" />
+              เพิ่มสินค้า
+            </Button>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="w-48"><SelectValue placeholder="หมวดหมู่" /></SelectTrigger>
               <SelectContent>
@@ -317,6 +338,56 @@ const AddonManagementPage = () => {
           <DialogFooter>
             <Button variant="outline" onClick={() => setAdjustOpen(false)}>ยกเลิก</Button>
             <Button onClick={handleAdjustSave} disabled={adjustAddon?.stockStatus === newStatus}>บันทึก</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Item Dialog */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>เพิ่มสินค้าใหม่</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>รหัสสินค้า</Label>
+              <Input value={addFormData.id} onChange={(e) => setAddFormData({ ...addFormData, id: e.target.value })} placeholder="เช่น GEN-004" />
+            </div>
+            <div className="space-y-2">
+              <Label>ชื่อสินค้า</Label>
+              <Input value={addFormData.name} onChange={(e) => setAddFormData({ ...addFormData, name: e.target.value })} placeholder="เช่น เครื่องปั่นไฟ Honda 3kW" />
+            </div>
+            <div className="space-y-2">
+              <Label>หมวดหมู่</Label>
+              <Input value={addFormData.category} onChange={(e) => setAddFormData({ ...addFormData, category: e.target.value })} placeholder="เช่น เครื่องปั่นไฟ" />
+            </div>
+            <div className="space-y-2">
+              <Label>สถานะ</Label>
+              <Select value={addFormData.stockStatus} onValueChange={(v) => setAddFormData({ ...addFormData, stockStatus: v as StockStatus })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="available">พร้อมใช้</SelectItem>
+                  <SelectItem value="reserved">ถูกจอง</SelectItem>
+                  <SelectItem value="in_use">ถูกใช้</SelectItem>
+                  <SelectItem value="damaged">ส่งซ่อม</SelectItem>
+                  <SelectItem value="broken">ชำรุด</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {(addFormData.stockStatus === "reserved" || addFormData.stockStatus === "in_use") && (
+              <div className="space-y-2">
+                <Label>รหัสการจอง (Booking Ref)</Label>
+                <Input value={addFormData.bookingRef} onChange={(e) => setAddFormData({ ...addFormData, bookingRef: e.target.value })} placeholder="เช่น BK002" />
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              <Label>เปิดใช้งาน</Label>
+              <Switch checked={addFormData.isActive} onCheckedChange={(v) => setAddFormData({ ...addFormData, isActive: v })} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddOpen(false)}>ยกเลิก</Button>
+            <Button onClick={handleAddSave}>เพิ่ม</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
