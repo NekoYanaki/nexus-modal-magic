@@ -98,8 +98,10 @@ const defaultPickup: PickupInspectionData = {
 
 // Mock invoice addons (from original booking)
 const defaultInvoiceAddons: AddonItem[] = [
-  { value: 'gps', label: 'GPS นำทาง', price: 200 },
-  { value: 'camping_gear', label: 'อุปกรณ์แคมปิ้ง', price: 500 },
+  { value: 'CS-001', label: 'เบาะนั่งเด็ก', price: 300, addonId: 'CS-001' },
+  { value: 'BBQ-003', label: 'ชุดปิ้งย่าง', price: 350, addonId: 'BBQ-003' },
+  { value: 'AW-012', label: 'กันสาด', price: 400, addonId: 'AW-012' },
+  { value: 'CH-007', label: 'เก้าอี้พับ (ชุด)', price: 150, addonId: 'CH-007' },
 ];
 
 const defaultCardPayment: CardPaymentRecord = {
