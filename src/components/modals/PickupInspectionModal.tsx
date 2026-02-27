@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Card } from "@/components/ui/card";
@@ -7,30 +7,20 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Pencil, Save, X, LogIn, Trash2, FileText, ChevronsUpDown, Check, CreditCard, Banknote, Receipt, Shield, ShieldCheck, Camera, Upload, RefreshCw, Car } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Pencil, Save, X, LogIn, Trash2, FileText, ChevronsUpDown, Check, CreditCard, Banknote, Receipt, Shield, ShieldCheck, Camera, Upload, RefreshCw, Car, Package } from "lucide-react";
 import { VehicleSelectionDialog, type SelectableVehicle } from "./VehicleSelectionDialog";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import { cn } from "@/lib/utils";
-
-// Master list of Add-on & Accessories
-const ADDON_OPTIONS = [
-  { value: 'gps', label: 'GPS นำทาง', price: 200 },
-  { value: 'child_seat', label: 'เบาะนั่งเด็ก', price: 300 },
-  { value: 'wifi_router', label: 'WiFi Router', price: 150 },
-  { value: 'camping_gear', label: 'อุปกรณ์แคมปิ้ง', price: 500 },
-  { value: 'bbq_set', label: 'ชุดปิ้งย่าง', price: 350 },
-  { value: 'bicycle_rack', label: 'แร็คจักรยาน', price: 250 },
-  { value: 'awning', label: 'กันสาด', price: 400 },
-  { value: 'generator', label: 'เครื่องปั่นไฟ', price: 600 },
-  { value: 'outdoor_table', label: 'โต๊ะกลางแจ้ง', price: 200 },
-  { value: 'outdoor_chair', label: 'เก้าอี้พับ (ชุด)', price: 150 },
-];
+import { useAddons, type Addon } from "@/contexts/AddonContext";
 
 interface AddonItem {
   value: string;
   label: string;
   price: number;
+  addonId?: string; // ID from stock
+  qty?: number; // quantity selected
 }
 
 interface InsuranceOption {
@@ -135,6 +125,7 @@ export const PickupInspectionModal = ({
   bookedVehicle = null,
   onSave,
 }: PickupInspectionModalProps) => {
+  const { addons: stockAddons } = useAddons();
   const [isEditing, setIsEditing] = useState(false);
   const [pickup, setPickup] = useState<PickupInspectionData>(pickupData);
   const [showVehicleSelection, setShowVehicleSelection] = useState(false);
@@ -155,6 +146,20 @@ export const PickupInspectionModal = ({
     internationalLicense: null,
     passport: null,
   });
+
+  // Build available addon options from stock context (only active & available items)
+  const availableStockAddons = useMemo(() => {
+    return stockAddons.filter(a => a.isActive && a.stockStatus === "available");
+  }, [stockAddons]);
+
+  // Group by category to show available count
+  const categoryAvailableCount = useMemo(() => {
+    const counts: Record<string, number> = {};
+    availableStockAddons.forEach(a => {
+      counts[a.category] = (counts[a.category] || 0) + 1;
+    });
+    return counts;
+  }, [availableStockAddons]);
 
   const handleDocumentUpload = (type: 'internationalLicense' | 'passport', file: File | null) => {
     setDocuments(prev => ({ ...prev, [type]: file }));
@@ -186,19 +191,25 @@ export const PickupInspectionModal = ({
 
   const invoiceAddonTotal = invoiceAddons.reduce((sum, addon) => sum + addon.price, 0);
 
-  // Addon handlers
-  const handleAddAddon = (addonValue: string) => {
-    const masterAddon = ADDON_OPTIONS.find(a => a.value === addonValue);
-    if (!masterAddon) return;
+  // Addon handlers - now uses stock addon by ID
+  const handleAddAddon = (stockAddonId: string) => {
+    const stockAddon = stockAddons.find(a => a.id === stockAddonId);
+    if (!stockAddon) return;
     
-    if (pickup.addons.some(a => a.value === addonValue)) {
+    if (pickup.addons.some(a => a.addonId === stockAddonId)) {
       toast.error("รายการนี้ถูกเพิ่มแล้ว");
       return;
     }
     
     setPickup(prev => ({
       ...prev,
-      addons: [...prev.addons, { ...masterAddon }]
+      addons: [...prev.addons, {
+        value: stockAddon.id,
+        label: stockAddon.name,
+        price: stockAddon.defaultPrice,
+        addonId: stockAddon.id,
+        qty: 1,
+      }]
     }));
   };
 
@@ -218,7 +229,7 @@ export const PickupInspectionModal = ({
     }));
   };
 
-  const totalAddonPrice = pickup.addons.reduce((sum, addon) => sum + addon.price, 0);
+  const totalAddonPrice = pickup.addons.reduce((sum, addon) => sum + (addon.qty || 1) * addon.price, 0);
 
   const handleSave = () => {
     setIsEditing(false);
@@ -383,10 +394,13 @@ export const PickupInspectionModal = ({
               {/* Add-on & Accessories */}
               <div className="pt-3 border-t border-border mt-3">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-muted-foreground text-sm">เพิ่ม Add-on & Accessories ({pickup.addons.length} รายการ)</p>
+                  <p className="text-muted-foreground text-sm flex items-center gap-2">
+                    <Package className="w-4 h-4" />
+                    เพิ่ม Add-on & Accessories ({pickup.addons.length} รายการ)
+                  </p>
                 </div>
                 
-                {/* Searchable Dropdown */}
+                {/* Searchable Dropdown - from Stock */}
                 {isEditing && (
                   <div className="mb-3">
                     <Popover open={addonComboboxOpen} onOpenChange={setAddonComboboxOpen}>
@@ -397,35 +411,49 @@ export const PickupInspectionModal = ({
                           aria-expanded={addonComboboxOpen}
                           className="w-full h-8 justify-between text-sm bg-background"
                         >
-                          <span className="text-muted-foreground">ค้นหา Add-on & Accessories...</span>
+                          <span className="text-muted-foreground">ค้นหา Add-on จาก Stock...</span>
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-full p-0 bg-background border border-border z-50" align="start">
                         <Command>
-                          <CommandInput placeholder="ค้นหา Add-on..." className="h-9" />
+                          <CommandInput placeholder="ค้นหาด้วยชื่อหรือ ID..." className="h-9" />
                           <CommandList>
-                            <CommandEmpty>ไม่พบรายการ</CommandEmpty>
-                            <CommandGroup>
-                              {ADDON_OPTIONS.filter(opt => !pickup.addons.some(a => a.value === opt.value)).map(option => (
-                                <CommandItem
-                                  key={option.value}
-                                  value={option.label}
-                                  onSelect={() => {
-                                    handleAddAddon(option.value);
-                                    setAddonComboboxOpen(false);
-                                  }}
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      pickup.addons.some(a => a.value === option.value) ? "opacity-100" : "opacity-0"
-                                    )}
-                                  />
-                                  {option.label} (฿{option.price.toLocaleString()})
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
+                            <CommandEmpty>ไม่พบรายการที่พร้อมใช้งาน</CommandEmpty>
+                            {Object.entries(
+                              availableStockAddons
+                                .filter(opt => !pickup.addons.some(a => a.addonId === opt.id))
+                                .reduce<Record<string, Addon[]>>((groups, addon) => {
+                                  if (!groups[addon.category]) groups[addon.category] = [];
+                                  groups[addon.category].push(addon);
+                                  return groups;
+                                }, {})
+                            ).map(([category, items]) => (
+                              <CommandGroup key={category} heading={`${category} (พร้อมใช้ ${categoryAvailableCount[category] || 0})`}>
+                                {items.map(option => (
+                                  <CommandItem
+                                    key={option.id}
+                                    value={`${option.id} ${option.name}`}
+                                    onSelect={() => {
+                                      handleAddAddon(option.id);
+                                      setAddonComboboxOpen(false);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        pickup.addons.some(a => a.addonId === option.id) ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    <div className="flex items-center gap-2 flex-1">
+                                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">{option.id}</Badge>
+                                      <span>{option.name}</span>
+                                    </div>
+                                    <span className="text-muted-foreground text-xs ml-2">฿{option.defaultPrice.toLocaleString()}</span>
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            ))}
                           </CommandList>
                         </Command>
                       </PopoverContent>
@@ -438,10 +466,33 @@ export const PickupInspectionModal = ({
                   <div className="space-y-2">
                     {pickup.addons.map((addon) => (
                       <div key={addon.value} className="flex items-center justify-between gap-2 border border-border rounded-lg p-2 bg-background/50">
-                        <span className="text-sm font-medium">{addon.label}</span>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          {addon.addonId && (
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-mono shrink-0">{addon.addonId}</Badge>
+                          )}
+                          <span className="text-sm font-medium truncate">{addon.label}</span>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
                           {isEditing ? (
                             <>
+                              <div className="flex items-center gap-1">
+                                <span className="text-muted-foreground text-xs">x</span>
+                                <Input
+                                  type="number"
+                                  min={1}
+                                  value={addon.qty || 1}
+                                  onChange={(e) => {
+                                    const newQty = Math.max(1, Number(e.target.value));
+                                    setPickup(prev => ({
+                                      ...prev,
+                                      addons: prev.addons.map(a =>
+                                        a.value === addon.value ? { ...a, qty: newQty } : a
+                                      )
+                                    }));
+                                  }}
+                                  className="h-7 w-14 text-sm text-center"
+                                />
+                              </div>
                               <div className="flex items-center gap-1">
                                 <span className="text-muted-foreground text-sm">฿</span>
                                 <Input
@@ -461,7 +512,12 @@ export const PickupInspectionModal = ({
                               </Button>
                             </>
                           ) : (
-                            <span className="text-sm text-primary font-medium">฿{addon.price.toLocaleString()}</span>
+                            <div className="flex items-center gap-2">
+                              {(addon.qty || 1) > 1 && (
+                                <span className="text-xs text-muted-foreground">x{addon.qty}</span>
+                              )}
+                              <span className="text-sm text-primary font-medium">฿{((addon.qty || 1) * addon.price).toLocaleString()}</span>
+                            </div>
                           )}
                         </div>
                       </div>
