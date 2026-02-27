@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -37,18 +38,18 @@ const getStatusLabel = (s: StockStatus) => {
 const getStatusBadge = (s: StockStatus, bookingRef?: string) => {
   switch (s) {
     case "available": return <Badge className="bg-success/10 text-success border-success/20">พร้อมใช้</Badge>;
-    case "reserved": return (
-      <div className="flex items-center gap-1.5">
-        <Badge className="bg-warning/10 text-warning border-warning/20">ถูกจอง</Badge>
-        {bookingRef && <span className="text-xs font-mono text-warning">{bookingRef}</span>}
-      </div>
-    );
-    case "in_use": return (
-      <div className="flex items-center gap-1.5">
-        <Badge className="bg-primary/10 text-primary border-primary/20">ถูกใช้</Badge>
-        {bookingRef && <span className="text-xs font-mono text-primary">{bookingRef}</span>}
-      </div>
-    );
+    case "reserved": {
+      const badge = <Badge className="bg-warning/10 text-warning border-warning/20 cursor-default">ถูกจอง</Badge>;
+      return bookingRef ? (
+        <TooltipProvider><Tooltip><TooltipTrigger asChild>{badge}</TooltipTrigger><TooltipContent><p className="font-mono text-xs">Booking: {bookingRef}</p></TooltipContent></Tooltip></TooltipProvider>
+      ) : badge;
+    }
+    case "in_use": {
+      const badge = <Badge className="bg-primary/10 text-primary border-primary/20 cursor-default">ถูกใช้</Badge>;
+      return bookingRef ? (
+        <TooltipProvider><Tooltip><TooltipTrigger asChild>{badge}</TooltipTrigger><TooltipContent><p className="font-mono text-xs">Booking: {bookingRef}</p></TooltipContent></Tooltip></TooltipProvider>
+      ) : badge;
+    }
     case "damaged": return <Badge className="bg-destructive/10 text-destructive border-destructive/20">ส่งซ่อม</Badge>;
     case "broken": return <Badge className="bg-muted text-muted-foreground border-muted-foreground/20">ชำรุด</Badge>;
   }
