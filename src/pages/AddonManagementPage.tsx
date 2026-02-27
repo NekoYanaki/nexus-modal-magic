@@ -125,8 +125,8 @@ const AddonManagementPage = () => {
     { icon: Star, label: "รีวิว", href: "/" },
     { icon: FileText, label: "รายงาน", href: "/" },
     { icon: Database, label: "จัดการข้อมูล", href: "/" },
-    { icon: Boxes, label: "การจัดการ Add-on", href: "/stock" },
-    { icon: Package, label: "Stock อุปกรณ์เสริม", href: "/addon-management", active: true },
+    { icon: Boxes, label: "การจัดการ Add-on", href: "/addon" },
+    { icon: Package, label: "Stock อุปกรณ์เสริม", href: "/stock", active: true },
     { icon: Wrench, label: "ซ่อมบำรุง", href: "/maintenance" },
     { icon: Settings, label: "ตั้งค่า", href: "/" },
   ];
