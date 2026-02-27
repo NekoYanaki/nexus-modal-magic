@@ -27,15 +27,27 @@ const getStatusLabel = (s: StockStatus) => {
   switch (s) {
     case "available": return "พร้อมใช้";
     case "reserved": return "ถูกจอง";
+    case "in_use": return "ถูกใช้";
     case "damaged": return "ส่งซ่อม";
     case "broken": return "ชำรุด";
   }
 };
 
-const getStatusBadge = (s: StockStatus) => {
+const getStatusBadge = (s: StockStatus, bookingRef?: string) => {
   switch (s) {
     case "available": return <Badge className="bg-success/10 text-success border-success/20">พร้อมใช้</Badge>;
-    case "reserved": return <Badge className="bg-warning/10 text-warning border-warning/20">ถูกจอง</Badge>;
+    case "reserved": return (
+      <div className="flex items-center gap-1.5">
+        <Badge className="bg-warning/10 text-warning border-warning/20">ถูกจอง</Badge>
+        {bookingRef && <span className="text-xs font-mono text-warning">{bookingRef}</span>}
+      </div>
+    );
+    case "in_use": return (
+      <div className="flex items-center gap-1.5">
+        <Badge className="bg-primary/10 text-primary border-primary/20">ถูกใช้</Badge>
+        {bookingRef && <span className="text-xs font-mono text-primary">{bookingRef}</span>}
+      </div>
+    );
     case "damaged": return <Badge className="bg-destructive/10 text-destructive border-destructive/20">ส่งซ่อม</Badge>;
     case "broken": return <Badge className="bg-muted text-muted-foreground border-muted-foreground/20">ชำรุด</Badge>;
   }
@@ -50,6 +62,7 @@ const StockPage = () => {
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [adjustAddon, setAdjustAddon] = useState<Addon | null>(null);
   const [newStatus, setNewStatus] = useState<StockStatus>("available");
+  const [newBookingRef, setNewBookingRef] = useState("");
   const { toast } = useToast();
 
   const categories = useMemo(() => {
@@ -64,14 +77,15 @@ const StockPage = () => {
   });
 
   const groupedByCategory = useMemo(() => {
-    const groups: Record<string, { category: string; total: number; available: number; reserved: number; damaged: number; broken: number; items: Addon[] }> = {};
+    const groups: Record<string, { category: string; total: number; available: number; reserved: number; in_use: number; damaged: number; broken: number; items: Addon[] }> = {};
     filteredAddons.forEach((a) => {
       if (!groups[a.category]) {
-        groups[a.category] = { category: a.category, total: 0, available: 0, reserved: 0, damaged: 0, broken: 0, items: [] };
+        groups[a.category] = { category: a.category, total: 0, available: 0, reserved: 0, in_use: 0, damaged: 0, broken: 0, items: [] };
       }
       groups[a.category].total += 1;
       if (a.stockStatus === "available") groups[a.category].available += 1;
       if (a.stockStatus === "reserved") groups[a.category].reserved += 1;
+      if (a.stockStatus === "in_use") groups[a.category].in_use += 1;
       if (a.stockStatus === "damaged") groups[a.category].damaged += 1;
       if (a.stockStatus === "broken") groups[a.category].broken += 1;
       groups[a.category].items.push(a);
@@ -84,9 +98,10 @@ const StockPage = () => {
       total: acc.total + 1,
       available: acc.available + (a.stockStatus === "available" ? 1 : 0),
       reserved: acc.reserved + (a.stockStatus === "reserved" ? 1 : 0),
+      in_use: acc.in_use + (a.stockStatus === "in_use" ? 1 : 0),
       damaged: acc.damaged + (a.stockStatus === "damaged" ? 1 : 0),
       broken: acc.broken + (a.stockStatus === "broken" ? 1 : 0),
-    }), { total: 0, available: 0, reserved: 0, damaged: 0, broken: 0 });
+    }), { total: 0, available: 0, reserved: 0, in_use: 0, damaged: 0, broken: 0 });
   }, [addons]);
 
   const toggleCategory = (cat: string) => {
@@ -100,12 +115,13 @@ const StockPage = () => {
   const handleAdjustOpen = (addon: Addon) => {
     setAdjustAddon(addon);
     setNewStatus(addon.stockStatus);
+    setNewBookingRef(addon.bookingRef || "");
     setAdjustOpen(true);
   };
 
   const handleAdjustSave = () => {
     if (!adjustAddon) return;
-    setAddons((prev) => prev.map((a) => a.id === adjustAddon.id ? { ...a, stockStatus: newStatus } : a));
+    setAddons((prev) => prev.map((a) => a.id === adjustAddon.id ? { ...a, stockStatus: newStatus, bookingRef: (newStatus === "reserved" || newStatus === "in_use") ? newBookingRef || undefined : undefined } : a));
     setAdjustOpen(false);
     toast({ title: "สำเร็จ", description: `เปลี่ยนสถานะ ${adjustAddon.name} เป็น "${getStatusLabel(newStatus)}" แล้ว` });
   };
@@ -134,6 +150,7 @@ const StockPage = () => {
     { label: "รายการทั้งหมด", value: totals.total, icon: Package, color: "text-primary", bg: "bg-primary/10" },
     { label: "พร้อมใช้งาน", value: totals.available, icon: CheckCircle, color: "text-success", bg: "bg-success/10" },
     { label: "ถูกจอง", value: totals.reserved, icon: AlertTriangle, color: "text-warning", bg: "bg-warning/10" },
+    { label: "ถูกใช้", value: totals.in_use, icon: Car, color: "text-primary", bg: "bg-primary/10" },
     { label: "ส่งซ่อม / ชำรุด", value: totals.damaged + totals.broken, icon: Wrench, color: "text-destructive", bg: "bg-destructive/10" },
   ];
 
@@ -183,7 +200,7 @@ const StockPage = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-5 gap-4 mb-6">
           {summaryCards.map((card) => (
             <Card key={card.label} className="p-4 flex items-center gap-4">
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${card.bg}`}>
@@ -218,6 +235,7 @@ const StockPage = () => {
                 <SelectItem value="all">ทั้งหมด</SelectItem>
                 <SelectItem value="available">พร้อมใช้</SelectItem>
                 <SelectItem value="reserved">ถูกจอง</SelectItem>
+                <SelectItem value="in_use">ถูกใช้</SelectItem>
                 <SelectItem value="damaged">ส่งซ่อม</SelectItem>
                 <SelectItem value="broken">ชำรุด</SelectItem>
               </SelectContent>
@@ -232,6 +250,7 @@ const StockPage = () => {
                 <TableHead className="text-center">จำนวน</TableHead>
                 <TableHead className="text-center">พร้อมใช้</TableHead>
                 <TableHead className="text-center">ถูกจอง</TableHead>
+                <TableHead className="text-center">ถูกใช้</TableHead>
                 <TableHead className="text-center">ส่งซ่อม</TableHead>
                 <TableHead className="text-center">ชำรุด</TableHead>
               </TableRow>
@@ -251,6 +270,7 @@ const StockPage = () => {
                       <TableCell className="text-center font-semibold">{group.total}</TableCell>
                       <TableCell className="text-center"><span className="text-success font-semibold">{group.available}</span></TableCell>
                       <TableCell className="text-center"><span className="text-warning font-semibold">{group.reserved}</span></TableCell>
+                      <TableCell className="text-center"><span className="text-primary font-semibold">{group.in_use}</span></TableCell>
                       <TableCell className="text-center"><span className="text-destructive font-semibold">{group.damaged}</span></TableCell>
                       <TableCell className="text-center"><span className="text-muted-foreground font-semibold">{group.broken}</span></TableCell>
                     </TableRow>
@@ -263,8 +283,8 @@ const StockPage = () => {
                             <p className="text-xs text-muted-foreground">{addon.id} · {addon.defaultPrice.toLocaleString()} บาท</p>
                           </div>
                         </TableCell>
-                        <TableCell className="text-center">{getStatusBadge(addon.stockStatus)}</TableCell>
-                        <TableCell colSpan={3}></TableCell>
+                        <TableCell className="text-center">{getStatusBadge(addon.stockStatus, addon.bookingRef)}</TableCell>
+                        <TableCell colSpan={4}></TableCell>
                         <TableCell className="text-center">
                           <Button variant="ghost" size="icon" className="h-7 w-7 text-warning" onClick={(e) => { e.stopPropagation(); handleAdjustOpen(addon); }}>
                             <Pencil className="w-3.5 h-3.5" />
@@ -277,7 +297,7 @@ const StockPage = () => {
               })}
               {groupedByCategory.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล</TableCell>
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล</TableCell>
                 </TableRow>
               )}
             </TableBody>
@@ -298,7 +318,7 @@ const StockPage = () => {
                   <p className="font-semibold text-sm">{adjustAddon.name}</p>
                   <p className="text-xs text-muted-foreground">{adjustAddon.id}</p>
                 </div>
-                <div className="ml-auto">{getStatusBadge(adjustAddon.stockStatus)}</div>
+                <div className="ml-auto">{getStatusBadge(adjustAddon.stockStatus, adjustAddon.bookingRef)}</div>
               </div>
             )}
             <div className="space-y-2">
@@ -308,17 +328,24 @@ const StockPage = () => {
                 <SelectContent>
                   <SelectItem value="available">พร้อมใช้</SelectItem>
                   <SelectItem value="reserved">ถูกจอง</SelectItem>
+                  <SelectItem value="in_use">ถูกใช้</SelectItem>
                   <SelectItem value="damaged">ส่งซ่อม</SelectItem>
                   <SelectItem value="broken">ชำรุด</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+            {(newStatus === "reserved" || newStatus === "in_use") && (
+              <div className="space-y-2">
+                <Label>รหัสการจอง (Booking Ref)</Label>
+                <Input value={newBookingRef} onChange={(e) => setNewBookingRef(e.target.value)} placeholder="เช่น BK002" />
+              </div>
+            )}
             {adjustAddon && newStatus !== adjustAddon.stockStatus && (
               <div className="rounded-lg border border-border/50 bg-muted/30 p-3">
                 <div className="flex items-center gap-2 text-sm">
-                  {getStatusBadge(adjustAddon.stockStatus)}
+                  {getStatusBadge(adjustAddon.stockStatus, adjustAddon.bookingRef)}
                   <span className="text-muted-foreground">→</span>
-                  {getStatusBadge(newStatus)}
+                  {getStatusBadge(newStatus, (newStatus === "reserved" || newStatus === "in_use") ? newBookingRef : undefined)}
                 </div>
               </div>
             )}
