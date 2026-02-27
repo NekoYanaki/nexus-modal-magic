@@ -274,7 +274,6 @@ const AddonManagementPage = () => {
                 <TableHead>รหัส</TableHead>
                 <TableHead>ชื่อ Add-on</TableHead>
                 <TableHead>หมวดหมู่</TableHead>
-                
                 <TableHead className="text-center">สถานะการใช้งาน</TableHead>
                 <TableHead className="text-center">สถานะ</TableHead>
                 <TableHead className="text-right">จัดการ</TableHead>
@@ -286,8 +285,11 @@ const AddonManagementPage = () => {
                   <TableCell className="font-mono text-sm text-muted-foreground">{addon.id}</TableCell>
                   <TableCell className="font-semibold">{addon.name}</TableCell>
                   <TableCell><Badge variant="outline">{addon.category}</Badge></TableCell>
-                  
-                  <TableCell className="text-center">{getStockStatusBadge(addon.stockStatus, addon.bookingRef)}</TableCell>
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center gap-1.5">
+                      {getStockStatusBadge(addon.stockStatus, addon.bookingRef)}
+                    </div>
+                  </TableCell>
                   <TableCell className="text-center">
                     <Badge variant={addon.isActive ? "default" : "secondary"}>
                       {addon.isActive ? "เปิดใช้งาน" : "ปิดใช้งาน"}
