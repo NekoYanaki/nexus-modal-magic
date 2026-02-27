@@ -158,7 +158,11 @@ const AddonManagementPage = () => {
             <h1 className="text-2xl font-bold">Stock อุปกรณ์เสริม</h1>
             <p className="text-sm text-muted-foreground">เพิ่ม แก้ไข ลบ และจัดการสถานะรายการอุปกรณ์เสริม</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <Button onClick={handleAddOpen} size="sm" className="gap-2">
+              <Plus className="w-4 h-4" />
+              เพิ่มสินค้า
+            </Button>
             <Bell className="w-5 h-5 text-muted-foreground" />
             <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
               <Users className="w-4 h-4" />
@@ -223,10 +227,6 @@ const AddonManagementPage = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input placeholder="ค้นหา Add-on..." className="pl-10" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
             </div>
-            <Button onClick={handleAddOpen} className="gap-2">
-              <Plus className="w-4 h-4" />
-              เพิ่มสินค้า
-            </Button>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="w-48"><SelectValue placeholder="หมวดหมู่" /></SelectTrigger>
               <SelectContent>
