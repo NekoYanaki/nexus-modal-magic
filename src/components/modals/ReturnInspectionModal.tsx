@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Pencil, Save, X, Upload, Image, LogOut, Plus, Trash2, FileText, CreditCard, Banknote, Car } from "lucide-react";
+import { Pencil, Save, X, Upload, Image, LogOut, Plus, Trash2, FileText, CreditCard, Banknote, Car, Package, Receipt } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 
@@ -14,6 +15,13 @@ interface ConditionRecord {
   id: string;
   detail: string;
   image: string | null;
+}
+
+interface PickupAddonItem {
+  value: string;
+  label: string;
+  price: number;
+  addonId?: string;
 }
 
 interface ReturnInspectionData {
@@ -48,6 +56,7 @@ interface ReturnInspectionModalProps {
   onStatusChange: (status: string) => void;
   returnData?: ReturnInspectionData;
   bookedVehicle?: BookedVehicleInfo | null;
+  pickupAddons?: PickupAddonItem[];
   onSave?: (returnData: ReturnInspectionData) => void;
 }
 
@@ -70,6 +79,7 @@ export const ReturnInspectionModal = ({
   onStatusChange,
   returnData = defaultReturn,
   bookedVehicle = null,
+  pickupAddons = [],
   onSave,
 }: ReturnInspectionModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -203,6 +213,33 @@ export const ReturnInspectionModal = ({
               </div>
             </div>
           </Card>
+
+          {/* Pickup Add-ons (Read-only checklist) */}
+          {pickupAddons.length > 0 && (
+            <Card className="p-4 border-blue-200 dark:border-blue-800 bg-blue-50/20 dark:bg-blue-950/10">
+              <h5 className="font-medium text-sm flex items-center gap-2 mb-3">
+                <Package className="w-4 h-4 text-blue-600" />
+                Add-on จากตอนรับรถ ({pickupAddons.length} รายการ)
+              </h5>
+              <div className="space-y-2">
+                {pickupAddons.map((addon) => (
+                  <div key={addon.value} className="flex items-center justify-between gap-2 border border-border rounded-lg p-2 bg-muted/30">
+                    <div className="flex items-center gap-2 min-w-0">
+                      {addon.addonId && (
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-mono shrink-0">{addon.addonId}</Badge>
+                      )}
+                      <span className="text-sm font-medium text-muted-foreground">{addon.label}</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground shrink-0">฿{addon.price.toLocaleString()}</span>
+                  </div>
+                ))}
+                <div className="flex items-center justify-between pt-2 border-t border-border">
+                  <span className="text-sm text-muted-foreground">รวม Add-on</span>
+                  <span className="text-sm font-semibold">฿{pickupAddons.reduce((sum, a) => sum + a.price, 0).toLocaleString()}</span>
+                </div>
+              </div>
+            </Card>
+          )}
 
           <Card className="p-4 bg-gradient-to-br from-blue-50/50 to-blue-100/30 dark:from-blue-950/20 dark:to-blue-900/10 border-blue-200 dark:border-blue-800">
             {/* Edit Button */}

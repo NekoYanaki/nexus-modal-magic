@@ -20,7 +20,7 @@ interface AddonItem {
   label: string;
   price: number;
   addonId?: string; // ID from stock
-  qty?: number; // quantity selected
+  
 }
 
 interface InsuranceOption {
@@ -191,6 +191,11 @@ export const PickupInspectionModal = ({
 
   const invoiceAddonTotal = invoiceAddons.reduce((sum, addon) => sum + addon.price, 0);
 
+  // Combine all addons for external use (invoice + newly added)
+  const allPickupAddons = useMemo(() => {
+    return [...invoiceAddons, ...pickup.addons];
+  }, [invoiceAddons, pickup.addons]);
+
   // Addon handlers - now uses stock addon by ID
   const handleAddAddon = (stockAddonId: string) => {
     const stockAddon = stockAddons.find(a => a.id === stockAddonId);
@@ -208,7 +213,6 @@ export const PickupInspectionModal = ({
         label: stockAddon.name,
         price: stockAddon.defaultPrice,
         addonId: stockAddon.id,
-        qty: 1,
       }]
     }));
   };
@@ -229,7 +233,7 @@ export const PickupInspectionModal = ({
     }));
   };
 
-  const totalAddonPrice = pickup.addons.reduce((sum, addon) => sum + (addon.qty || 1) * addon.price, 0);
+  const totalAddonPrice = pickup.addons.reduce((sum, addon) => sum + addon.price, 0);
 
   const handleSave = () => {
     setIsEditing(false);
@@ -388,12 +392,7 @@ export const PickupInspectionModal = ({
                           )}
                           <span className="text-sm font-medium text-muted-foreground">{addon.label}</span>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          {(addon.qty || 1) > 1 && (
-                            <span className="text-xs text-muted-foreground">x{addon.qty}</span>
-                          )}
-                          <span className="text-sm text-muted-foreground">฿{((addon.qty || 1) * addon.price).toLocaleString()}</span>
-                        </div>
+                        <span className="text-sm text-muted-foreground shrink-0">฿{addon.price.toLocaleString()}</span>
                       </div>
                     ))}
                   </div>
@@ -486,24 +485,6 @@ export const PickupInspectionModal = ({
                           {isEditing ? (
                             <>
                               <div className="flex items-center gap-1">
-                                <span className="text-muted-foreground text-xs">x</span>
-                                <Input
-                                  type="number"
-                                  min={1}
-                                  value={addon.qty || 1}
-                                  onChange={(e) => {
-                                    const newQty = Math.max(1, Number(e.target.value));
-                                    setPickup(prev => ({
-                                      ...prev,
-                                      addons: prev.addons.map(a =>
-                                        a.value === addon.value ? { ...a, qty: newQty } : a
-                                      )
-                                    }));
-                                  }}
-                                  className="h-7 w-14 text-sm text-center"
-                                />
-                              </div>
-                              <div className="flex items-center gap-1">
                                 <span className="text-muted-foreground text-sm">฿</span>
                                 <Input
                                   type="number"
@@ -522,12 +503,7 @@ export const PickupInspectionModal = ({
                               </Button>
                             </>
                           ) : (
-                            <div className="flex items-center gap-2">
-                              {(addon.qty || 1) > 1 && (
-                                <span className="text-xs text-muted-foreground">x{addon.qty}</span>
-                              )}
-                              <span className="text-sm text-primary font-medium">฿{((addon.qty || 1) * addon.price).toLocaleString()}</span>
-                            </div>
+                            <span className="text-sm text-primary font-medium">฿{addon.price.toLocaleString()}</span>
                           )}
                         </div>
                       </div>
