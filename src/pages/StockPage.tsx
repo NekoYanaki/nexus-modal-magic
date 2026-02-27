@@ -41,13 +41,13 @@ const getStatusBadge = (s: StockStatus, bookingRef?: string) => {
     case "reserved": {
       const badge = <Badge className="bg-warning/10 text-warning border-warning/20 cursor-default">ถูกจอง</Badge>;
       return bookingRef ? (
-        <TooltipProvider><Tooltip><TooltipTrigger asChild>{badge}</TooltipTrigger><TooltipContent><p className="font-mono text-xs">Booking: {bookingRef}</p></TooltipContent></Tooltip></TooltipProvider>
+        <TooltipProvider delayDuration={0}><Tooltip><TooltipTrigger asChild><span className="inline-flex">{badge}</span></TooltipTrigger><TooltipContent><p className="font-mono text-xs">Booking: {bookingRef}</p></TooltipContent></Tooltip></TooltipProvider>
       ) : badge;
     }
     case "in_use": {
       const badge = <Badge className="bg-primary/10 text-primary border-primary/20 cursor-default">ถูกใช้</Badge>;
       return bookingRef ? (
-        <TooltipProvider><Tooltip><TooltipTrigger asChild>{badge}</TooltipTrigger><TooltipContent><p className="font-mono text-xs">Booking: {bookingRef}</p></TooltipContent></Tooltip></TooltipProvider>
+        <TooltipProvider delayDuration={0}><Tooltip><TooltipTrigger asChild><span className="inline-flex">{badge}</span></TooltipTrigger><TooltipContent><p className="font-mono text-xs">Booking: {bookingRef}</p></TooltipContent></Tooltip></TooltipProvider>
       ) : badge;
     }
     case "damaged": return <Badge className="bg-destructive/10 text-destructive border-destructive/20">ส่งซ่อม</Badge>;
