@@ -13,11 +13,12 @@ import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import {
-  Car, Search, Package, Settings, Bell, Home,
+  Car, Search, Plus, Pencil, Trash2, Package, Settings, Bell, Home,
   MessageSquare, Users, CalendarDays, Tent, Calendar, CreditCard, Tag,
   Star, FileText, Database, Boxes, CheckCircle, AlertTriangle, Wrench,
-  ChevronDown, ChevronRight, Pencil,
+  ChevronDown, ChevronRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -59,10 +60,11 @@ const StockPage = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
-  const [adjustOpen, setAdjustOpen] = useState(false);
-  const [adjustAddon, setAdjustAddon] = useState<Addon | null>(null);
-  const [newStatus, setNewStatus] = useState<StockStatus>("available");
-  const [newBookingRef, setNewBookingRef] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingAddon, setEditingAddon] = useState<Addon | null>(null);
+  const [formData, setFormData] = useState({ id: "", name: "", category: "", defaultPrice: 0, isActive: true, stockStatus: "available" as Addon["stockStatus"], bookingRef: "" });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingAddon, setDeletingAddon] = useState<Addon | null>(null);
   const { toast } = useToast();
 
   const categories = useMemo(() => {
@@ -112,18 +114,48 @@ const StockPage = () => {
     });
   };
 
-  const handleAdjustOpen = (addon: Addon) => {
-    setAdjustAddon(addon);
-    setNewStatus(addon.stockStatus);
-    setNewBookingRef(addon.bookingRef || "");
-    setAdjustOpen(true);
+  const handleAdd = () => {
+    setEditingAddon(null);
+    setFormData({ id: "", name: "", category: "", defaultPrice: 0, isActive: true, stockStatus: "available", bookingRef: "" });
+    setDialogOpen(true);
   };
 
-  const handleAdjustSave = () => {
-    if (!adjustAddon) return;
-    setAddons((prev) => prev.map((a) => a.id === adjustAddon.id ? { ...a, stockStatus: newStatus, bookingRef: (newStatus === "reserved" || newStatus === "in_use") ? newBookingRef || undefined : undefined } : a));
-    setAdjustOpen(false);
-    toast({ title: "สำเร็จ", description: `เปลี่ยนสถานะ ${adjustAddon.name} เป็น "${getStatusLabel(newStatus)}" แล้ว` });
+  const handleEdit = (addon: Addon) => {
+    setEditingAddon(addon);
+    setFormData({ id: addon.id, name: addon.name, category: addon.category, defaultPrice: addon.defaultPrice, isActive: addon.isActive, stockStatus: addon.stockStatus, bookingRef: addon.bookingRef || "" });
+    setDialogOpen(true);
+  };
+
+  const handleSave = () => {
+    if (!formData.id.trim()) {
+      toast({ title: "กรุณากรอกรหัส Add-on", variant: "destructive" });
+      return;
+    }
+    if (!formData.name.trim()) {
+      toast({ title: "กรุณากรอกชื่อ Add-on", variant: "destructive" });
+      return;
+    }
+    if (editingAddon) {
+      setAddons((prev) => prev.map((a) => a.id === editingAddon.id ? { ...a, ...formData, bookingRef: formData.bookingRef || undefined } : a));
+      toast({ title: "สำเร็จ", description: "แก้ไข Add-on เรียบร้อยแล้ว" });
+    } else {
+      if (addons.some((a) => a.id === formData.id)) {
+        toast({ title: "รหัสนี้มีอยู่แล้ว", variant: "destructive" });
+        return;
+      }
+      setAddons((prev) => [...prev, { ...formData, bookingRef: formData.bookingRef || undefined }]);
+      toast({ title: "สำเร็จ", description: "เพิ่ม Add-on เรียบร้อยแล้ว" });
+    }
+    setDialogOpen(false);
+  };
+
+  const handleDelete = () => {
+    if (deletingAddon) {
+      setAddons((prev) => prev.filter((a) => a.id !== deletingAddon.id));
+      toast({ title: "สำเร็จ", description: "ลบ Add-on เรียบร้อยแล้ว" });
+    }
+    setDeleteDialogOpen(false);
+    setDeletingAddon(null);
   };
 
   const sidebarItems = [
@@ -242,6 +274,13 @@ const StockPage = () => {
             </Select>
           </div>
 
+          <div className="flex justify-end mb-4">
+            <Button onClick={handleAdd} className="gap-2">
+              <Plus className="w-4 h-4" />
+              เพิ่ม Add-on
+            </Button>
+          </div>
+
           <Table>
             <TableHeader>
               <TableRow>
@@ -286,9 +325,14 @@ const StockPage = () => {
                         <TableCell className="text-center">{getStatusBadge(addon.stockStatus, addon.bookingRef)}</TableCell>
                         <TableCell colSpan={4}></TableCell>
                         <TableCell className="text-center">
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-warning" onClick={(e) => { e.stopPropagation(); handleAdjustOpen(addon); }}>
-                            <Pencil className="w-3.5 h-3.5" />
-                          </Button>
+                          <div className="flex items-center justify-center gap-1">
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-warning" onClick={(e) => { e.stopPropagation(); handleEdit(addon); }}>
+                              <Pencil className="w-3.5 h-3.5" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={(e) => { e.stopPropagation(); setDeletingAddon(addon); setDeleteDialogOpen(true); }}>
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -305,25 +349,29 @@ const StockPage = () => {
         </Card>
       </main>
 
-      {/* Adjust Status Dialog */}
-      <Dialog open={adjustOpen} onOpenChange={setAdjustOpen}>
-        <DialogContent className="max-w-sm">
+      {/* Add/Edit Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>เปลี่ยนสถานะ — {adjustAddon?.name}</DialogTitle>
+            <DialogTitle>{editingAddon ? "แก้ไข Add-on" : "เพิ่ม Add-on"}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-2">
-            {adjustAddon && (
-              <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3">
-                <div>
-                  <p className="font-semibold text-sm">{adjustAddon.name}</p>
-                  <p className="text-xs text-muted-foreground">{adjustAddon.id}</p>
-                </div>
-                <div className="ml-auto">{getStatusBadge(adjustAddon.stockStatus, adjustAddon.bookingRef)}</div>
-              </div>
-            )}
+          <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>เปลี่ยนเป็นสถานะ</Label>
-              <Select value={newStatus} onValueChange={(v) => setNewStatus(v as StockStatus)}>
+              <Label>รหัส Add-on</Label>
+              <Input value={formData.id} onChange={(e) => setFormData({ ...formData, id: e.target.value })} placeholder="เช่น GEN-001" disabled={!!editingAddon} />
+              {editingAddon && <p className="text-xs text-muted-foreground">ไม่สามารถแก้ไขรหัสได้</p>}
+            </div>
+            <div className="space-y-2">
+              <Label>ชื่อ Add-on</Label>
+              <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="เช่น เครื่องปั่นไฟ Honda 3kW" />
+            </div>
+            <div className="space-y-2">
+              <Label>หมวดหมู่</Label>
+              <Input value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} placeholder="เช่น เครื่องปั่นไฟ" />
+            </div>
+            <div className="space-y-2">
+              <Label>สถานะการใช้งาน</Label>
+              <Select value={formData.stockStatus} onValueChange={(v) => setFormData({ ...formData, stockStatus: v as Addon["stockStatus"], bookingRef: (v === "available" || v === "damaged" || v === "broken") ? "" : formData.bookingRef })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="available">พร้อมใช้</SelectItem>
@@ -334,25 +382,36 @@ const StockPage = () => {
                 </SelectContent>
               </Select>
             </div>
-            {(newStatus === "reserved" || newStatus === "in_use") && (
+            {(formData.stockStatus === "reserved" || formData.stockStatus === "in_use") && (
               <div className="space-y-2">
                 <Label>รหัสการจอง (Booking Ref)</Label>
-                <Input value={newBookingRef} onChange={(e) => setNewBookingRef(e.target.value)} placeholder="เช่น BK002" />
+                <Input value={formData.bookingRef} onChange={(e) => setFormData({ ...formData, bookingRef: e.target.value })} placeholder="เช่น BK002" />
               </div>
             )}
-            {adjustAddon && newStatus !== adjustAddon.stockStatus && (
-              <div className="rounded-lg border border-border/50 bg-muted/30 p-3">
-                <div className="flex items-center gap-2 text-sm">
-                  {getStatusBadge(adjustAddon.stockStatus, adjustAddon.bookingRef)}
-                  <span className="text-muted-foreground">→</span>
-                  {getStatusBadge(newStatus, (newStatus === "reserved" || newStatus === "in_use") ? newBookingRef : undefined)}
-                </div>
-              </div>
-            )}
+            <div className="flex items-center justify-between">
+              <Label>เปิดใช้งาน</Label>
+              <Switch checked={formData.isActive} onCheckedChange={(v) => setFormData({ ...formData, isActive: v })} />
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAdjustOpen(false)}>ยกเลิก</Button>
-            <Button onClick={handleAdjustSave} disabled={adjustAddon?.stockStatus === newStatus}>บันทึก</Button>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>ยกเลิก</Button>
+            <Button onClick={handleSave}>{editingAddon ? "บันทึก" : "เพิ่ม"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>ยืนยันการลบ</DialogTitle>
+          </DialogHeader>
+          <p className="text-muted-foreground">
+            คุณต้องการลบ <span className="font-semibold text-foreground">{deletingAddon?.name}</span> ออกจากระบบหรือไม่?
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>ยกเลิก</Button>
+            <Button variant="destructive" onClick={handleDelete}>ลบ</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
