@@ -382,8 +382,18 @@ export const PickupInspectionModal = ({
                   <div className="space-y-2">
                     {invoiceAddons.map((addon) => (
                       <div key={addon.value} className="flex items-center justify-between gap-2 border border-border rounded-lg p-2 bg-muted/30">
-                        <span className="text-sm font-medium text-muted-foreground">{addon.label}</span>
-                        <span className="text-sm text-muted-foreground">฿{addon.price.toLocaleString()}</span>
+                        <div className="flex items-center gap-2 min-w-0">
+                          {addon.addonId && (
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-mono shrink-0">{addon.addonId}</Badge>
+                          )}
+                          <span className="text-sm font-medium text-muted-foreground">{addon.label}</span>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {(addon.qty || 1) > 1 && (
+                            <span className="text-xs text-muted-foreground">x{addon.qty}</span>
+                          )}
+                          <span className="text-sm text-muted-foreground">฿{((addon.qty || 1) * addon.price).toLocaleString()}</span>
+                        </div>
                       </div>
                     ))}
                   </div>

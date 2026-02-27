@@ -27,10 +27,9 @@ const BOOKED_VEHICLE: SelectableVehicle = {
 
 // Mock booked add-ons (from customer's booking)
 const BOOKED_ADDONS = [
-  { value: 'child_seat', label: 'เบาะนั่งเด็ก', price: 300 },
-  { value: 'bbq_set', label: 'ชุดปิ้งย่าง', price: 350 },
-  { value: 'awning', label: 'กันสาด', price: 400 },
-  { value: 'outdoor_chair', label: 'เก้าอี้พับ (ชุด)', price: 150 },
+  { value: 'SEAT-001', label: 'เบาะนั่งเด็ก ตัวที่ 1', price: 300, addonId: 'SEAT-001', qty: 1 },
+  { value: 'BBQ-001', label: 'ชุดปิ้งย่างใหญ่', price: 150, addonId: 'BBQ-001', qty: 1 },
+  { value: 'CHR-002', label: 'เก้าอี้พับ ชุด B (4 ตัว)', price: 300, addonId: 'CHR-002', qty: 2 },
 ];
 const Index = () => {
   const [bookingOpen, setBookingOpen] = useState(false);
