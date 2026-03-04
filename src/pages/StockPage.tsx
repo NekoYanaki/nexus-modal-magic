@@ -287,6 +287,7 @@ const StockPage = () => {
               <TableRow>
                 <TableHead className="w-8"></TableHead>
                 <TableHead>หมวดหมู่อุปกรณ์</TableHead>
+                <TableHead className="text-right">ราคา</TableHead>
                 <TableHead className="text-center">จำนวน</TableHead>
                 <TableHead className="text-center">พร้อมใช้</TableHead>
                 <TableHead className="text-center">ถูกจอง</TableHead>
@@ -307,6 +308,7 @@ const StockPage = () => {
                       <TableCell>
                         <p className="font-semibold">{group.category}</p>
                       </TableCell>
+                      <TableCell></TableCell>
                       <TableCell className="text-center font-semibold">{group.total}</TableCell>
                       <TableCell className="text-center"><span className="text-success font-semibold">{group.available}</span></TableCell>
                       <TableCell className="text-center"><span className="text-warning font-semibold">{group.reserved}</span></TableCell>
@@ -320,9 +322,10 @@ const StockPage = () => {
                         <TableCell>
                           <div>
                             <p className="text-sm font-medium">{addon.name}</p>
-                            <p className="text-xs text-muted-foreground">{addon.id} · {addon.defaultPrice.toLocaleString()} บาท</p>
+                            <p className="text-xs text-muted-foreground">{addon.id}</p>
                           </div>
                         </TableCell>
+                        <TableCell className="text-right text-sm font-medium">฿{addon.defaultPrice.toLocaleString()}</TableCell>
                         <TableCell className="text-center">{getStatusBadge(addon.stockStatus, addon.bookingRef)}</TableCell>
                         <TableCell colSpan={4}></TableCell>
                         <TableCell className="text-center">
