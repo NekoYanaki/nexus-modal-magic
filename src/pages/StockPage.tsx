@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,147 +16,93 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import {
-  Car, Search, Plus, Pencil, Trash2, Package, Settings, Bell, Home,
+  Car, Search, Plus, Pencil, Package, Settings, Bell, Home,
   MessageSquare, Users, CalendarDays, Tent, Calendar, CreditCard, Tag,
-  Star, FileText, Database, Boxes, CheckCircle, AlertTriangle, Wrench,
-  ChevronDown, ChevronRight,
+  Star, FileText, Database, Boxes, Wrench, CheckCircle, AlertTriangle,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAddons, type Addon, type StockStatus } from "@/contexts/AddonContext";
 
-const getStatusLabel = (s: StockStatus) => {
-  switch (s) {
-    case "available": return "พร้อมใช้";
-    case "reserved": return "ถูกจอง";
-    case "in_use": return "ถูกใช้";
-    case "damaged": return "ส่งซ่อม";
-    case "broken": return "ชำรุด";
-  }
-};
-
-const getStatusBadge = (s: StockStatus, bookingRef?: string) => {
-  switch (s) {
-    case "available": return <Badge className="bg-success/10 text-success border-success/20">พร้อมใช้</Badge>;
-    case "reserved": {
-      const badge = <Badge className="bg-warning/10 text-warning border-warning/20 cursor-default">ถูกจอง</Badge>;
-      return bookingRef ? (
-        <TooltipProvider delayDuration={0}><Tooltip><TooltipTrigger asChild><span className="inline-flex">{badge}</span></TooltipTrigger><TooltipContent><p className="font-mono text-xs">Booking: {bookingRef}</p></TooltipContent></Tooltip></TooltipProvider>
-      ) : badge;
-    }
-    case "in_use": {
-      const badge = <Badge className="bg-primary/10 text-primary border-primary/20 cursor-default">ถูกใช้</Badge>;
-      return bookingRef ? (
-        <TooltipProvider delayDuration={0}><Tooltip><TooltipTrigger asChild><span className="inline-flex">{badge}</span></TooltipTrigger><TooltipContent><p className="font-mono text-xs">Booking: {bookingRef}</p></TooltipContent></Tooltip></TooltipProvider>
-      ) : badge;
-    }
-    case "damaged": return <Badge className="bg-destructive/10 text-destructive border-destructive/20">ส่งซ่อม</Badge>;
-    case "broken": return <Badge className="bg-muted text-muted-foreground border-muted-foreground/20">ชำรุด</Badge>;
-  }
-};
-
 const StockPage = () => {
   const { addons, setAddons } = useAddons();
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [activeFilter, setActiveFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingAddon, setEditingAddon] = useState<Addon | null>(null);
-  const [formData, setFormData] = useState({ id: "", name: "", category: "", defaultPrice: 0, isActive: true, stockStatus: "available" as Addon["stockStatus"], bookingRef: "" });
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deletingAddon, setDeletingAddon] = useState<Addon | null>(null);
+  const [adjustOpen, setAdjustOpen] = useState(false);
+  const [adjustAddon, setAdjustAddon] = useState<Addon | null>(null);
+  const [newStatus, setNewStatus] = useState<StockStatus>("available");
+  const [newBookingRef, setNewBookingRef] = useState("");
+  const [newCategory, setNewCategory] = useState("");
+  const [newPrice, setNewPrice] = useState(0);
+  const [newIsActive, setNewIsActive] = useState(true);
+  const [addOpen, setAddOpen] = useState(false);
+  const [addFormData, setAddFormData] = useState({ id: "", name: "", category: "", defaultPrice: 0, isActive: true, stockStatus: "available" as StockStatus, bookingRef: "" });
   const { toast } = useToast();
 
-  const categories = useMemo(() => {
-    return Array.from(new Set(addons.map((a) => a.category))).sort();
-  }, [addons]);
+  const categories = Array.from(new Set(addons.map((a) => a.category))).sort();
 
   const filteredAddons = addons.filter((a) => {
-    const matchesSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.id.toLowerCase().includes(searchQuery.toLowerCase()) || a.category.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.id.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === "all" || a.category === categoryFilter;
-    const matchesStatus = statusFilter === "all" || a.stockStatus === statusFilter;
-    return matchesSearch && matchesCategory && matchesStatus;
+    const matchesActive = activeFilter === "all" || (activeFilter === "active" ? a.isActive : !a.isActive);
+    return matchesSearch && matchesCategory && matchesActive;
   });
 
-  const groupedByCategory = useMemo(() => {
-    const groups: Record<string, { category: string; total: number; available: number; reserved: number; in_use: number; damaged: number; broken: number; items: Addon[] }> = {};
-    filteredAddons.forEach((a) => {
-      if (!groups[a.category]) {
-        groups[a.category] = { category: a.category, total: 0, available: 0, reserved: 0, in_use: 0, damaged: 0, broken: 0, items: [] };
+  const handleAdjustOpen = (addon: Addon) => {
+    setAdjustAddon(addon);
+    setNewStatus(addon.stockStatus);
+    setNewBookingRef(addon.bookingRef || "");
+    setNewCategory(addon.category);
+    setNewPrice(addon.defaultPrice);
+    setNewIsActive(addon.isActive);
+    setAdjustOpen(true);
+  };
+
+  const handleAdjustSave = () => {
+    if (!adjustAddon) return;
+    setAddons((prev) => prev.map((a) => a.id === adjustAddon.id ? { ...a, category: newCategory, defaultPrice: newPrice, isActive: newIsActive, stockStatus: newStatus, bookingRef: (newStatus === "reserved" || newStatus === "in_use") ? newBookingRef || undefined : undefined } : a));
+    setAdjustOpen(false);
+    toast({ title: "สำเร็จ", description: `แก้ไขอุปกรณ์ ${adjustAddon.name} แล้ว` });
+  };
+
+  const handleAddOpen = () => {
+    setAddFormData({ id: "", name: "", category: "", defaultPrice: 0, isActive: true, stockStatus: "available", bookingRef: "" });
+    setAddOpen(true);
+  };
+
+  const handleAddSave = () => {
+    if (!addFormData.id.trim()) { toast({ title: "กรุณากรอกรหัส", variant: "destructive" }); return; }
+    if (!addFormData.name.trim()) { toast({ title: "กรุณากรอกชื่อ", variant: "destructive" }); return; }
+    if (addons.some((a) => a.id === addFormData.id)) { toast({ title: "รหัสนี้มีอยู่แล้ว", variant: "destructive" }); return; }
+    setAddons((prev) => [...prev, { ...addFormData, bookingRef: addFormData.bookingRef || undefined }]);
+    setAddOpen(false);
+    toast({ title: "สำเร็จ", description: "เพิ่มสินค้าเรียบร้อยแล้ว" });
+  };
+
+  const availableCount = addons.filter((a) => a.stockStatus === "available").length;
+  const reservedCount = addons.filter((a) => a.stockStatus === "reserved").length;
+  const inUseCount = addons.filter((a) => a.stockStatus === "in_use").length;
+  const damagedBrokenCount = addons.filter((a) => a.stockStatus === "damaged" || a.stockStatus === "broken").length;
+
+  const getStockStatusBadge = (status: Addon["stockStatus"], bookingRef?: string) => {
+    switch (status) {
+      case "available": return <Badge className="bg-success/10 text-success border-success/20">พร้อมใช้</Badge>;
+      case "reserved": {
+        const badge = <Badge className="bg-warning/10 text-warning border-warning/20 cursor-default">ถูกจอง</Badge>;
+        return bookingRef ? (
+          <TooltipProvider delayDuration={0}><Tooltip><TooltipTrigger asChild><span className="inline-flex">{badge}</span></TooltipTrigger><TooltipContent><p className="font-mono text-xs">Booking: {bookingRef}</p></TooltipContent></Tooltip></TooltipProvider>
+        ) : badge;
       }
-      groups[a.category].total += 1;
-      if (a.stockStatus === "available") groups[a.category].available += 1;
-      if (a.stockStatus === "reserved") groups[a.category].reserved += 1;
-      if (a.stockStatus === "in_use") groups[a.category].in_use += 1;
-      if (a.stockStatus === "damaged") groups[a.category].damaged += 1;
-      if (a.stockStatus === "broken") groups[a.category].broken += 1;
-      groups[a.category].items.push(a);
-    });
-    return Object.values(groups).sort((a, b) => a.category.localeCompare(b.category));
-  }, [filteredAddons]);
-
-  const totals = useMemo(() => {
-    return addons.reduce((acc, a) => ({
-      total: acc.total + 1,
-      available: acc.available + (a.stockStatus === "available" ? 1 : 0),
-      reserved: acc.reserved + (a.stockStatus === "reserved" ? 1 : 0),
-      in_use: acc.in_use + (a.stockStatus === "in_use" ? 1 : 0),
-      damaged: acc.damaged + (a.stockStatus === "damaged" ? 1 : 0),
-      broken: acc.broken + (a.stockStatus === "broken" ? 1 : 0),
-    }), { total: 0, available: 0, reserved: 0, in_use: 0, damaged: 0, broken: 0 });
-  }, [addons]);
-
-  const toggleCategory = (cat: string) => {
-    setExpandedCategories((prev) => {
-      const next = new Set(prev);
-      if (next.has(cat)) next.delete(cat); else next.add(cat);
-      return next;
-    });
-  };
-
-  const handleAdd = () => {
-    setEditingAddon(null);
-    setFormData({ id: "", name: "", category: "", defaultPrice: 0, isActive: true, stockStatus: "available", bookingRef: "" });
-    setDialogOpen(true);
-  };
-
-  const handleEdit = (addon: Addon) => {
-    setEditingAddon(addon);
-    setFormData({ id: addon.id, name: addon.name, category: addon.category, defaultPrice: addon.defaultPrice, isActive: addon.isActive, stockStatus: addon.stockStatus, bookingRef: addon.bookingRef || "" });
-    setDialogOpen(true);
-  };
-
-  const handleSave = () => {
-    if (!formData.id.trim()) {
-      toast({ title: "กรุณากรอกรหัส Add-on", variant: "destructive" });
-      return;
-    }
-    if (!formData.name.trim()) {
-      toast({ title: "กรุณากรอกชื่อ Add-on", variant: "destructive" });
-      return;
-    }
-    if (editingAddon) {
-      setAddons((prev) => prev.map((a) => a.id === editingAddon.id ? { ...a, ...formData, bookingRef: formData.bookingRef || undefined } : a));
-      toast({ title: "สำเร็จ", description: "แก้ไข Add-on เรียบร้อยแล้ว" });
-    } else {
-      if (addons.some((a) => a.id === formData.id)) {
-        toast({ title: "รหัสนี้มีอยู่แล้ว", variant: "destructive" });
-        return;
+      case "in_use": {
+        const badge = <Badge className="bg-primary/10 text-primary border-primary/20 cursor-default">ถูกใช้</Badge>;
+        return bookingRef ? (
+          <TooltipProvider delayDuration={0}><Tooltip><TooltipTrigger asChild><span className="inline-flex">{badge}</span></TooltipTrigger><TooltipContent><p className="font-mono text-xs">Booking: {bookingRef}</p></TooltipContent></Tooltip></TooltipProvider>
+        ) : badge;
       }
-      setAddons((prev) => [...prev, { ...formData, bookingRef: formData.bookingRef || undefined }]);
-      toast({ title: "สำเร็จ", description: "เพิ่ม Add-on เรียบร้อยแล้ว" });
+      case "damaged": return <Badge className="bg-destructive/10 text-destructive border-destructive/20">ส่งซ่อม</Badge>;
+      case "broken": return <Badge className="bg-muted text-muted-foreground border-muted-foreground/20">ชำรุด</Badge>;
     }
-    setDialogOpen(false);
-  };
-
-  const handleDelete = () => {
-    if (deletingAddon) {
-      setAddons((prev) => prev.filter((a) => a.id !== deletingAddon.id));
-      toast({ title: "สำเร็จ", description: "ลบ Add-on เรียบร้อยแล้ว" });
-    }
-    setDeleteDialogOpen(false);
-    setDeletingAddon(null);
   };
 
   const sidebarItems = [
@@ -173,18 +119,10 @@ const StockPage = () => {
     { icon: Star, label: "รีวิว", href: "/" },
     { icon: FileText, label: "รายงาน", href: "/" },
     { icon: Database, label: "จัดการข้อมูล", href: "/" },
-    { icon: Boxes, label: "การจัดการ Add-on", href: "/addon", active: true },
-    { icon: Package, label: "Stock อุปกรณ์เสริม", href: "/stock" },
+    { icon: Boxes, label: "การจัดการ Add-on", href: "/addon" },
+    { icon: Package, label: "Stock อุปกรณ์เสริม", href: "/stock", active: true },
     { icon: Wrench, label: "ซ่อมบำรุง", href: "/maintenance" },
     { icon: Settings, label: "ตั้งค่า", href: "/" },
-  ];
-
-  const summaryCards = [
-    { label: "รายการทั้งหมด", value: totals.total, icon: Package, color: "text-primary", bg: "bg-primary/10" },
-    { label: "พร้อมใช้งาน", value: totals.available, icon: CheckCircle, color: "text-success", bg: "bg-success/10" },
-    { label: "ถูกจอง", value: totals.reserved, icon: AlertTriangle, color: "text-warning", bg: "bg-warning/10" },
-    { label: "ถูกใช้", value: totals.in_use, icon: Car, color: "text-primary", bg: "bg-primary/10" },
-    { label: "ส่งซ่อม / ชำรุด", value: totals.damaged + totals.broken, icon: Wrench, color: "text-destructive", bg: "bg-destructive/10" },
   ];
 
   return (
@@ -221,10 +159,14 @@ const StockPage = () => {
       <main className="flex-1 p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold">การจัดการ Add-on</h1>
-            <p className="text-sm text-muted-foreground">บริหารจำนวนคงเหลือและสถานะอุปกรณ์ในคลัง</p>
+            <h1 className="text-2xl font-bold">Stock อุปกรณ์เสริม</h1>
+            <p className="text-sm text-muted-foreground">เพิ่ม แก้ไข ลบ และจัดการสถานะรายการอุปกรณ์เสริม</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <Button onClick={handleAddOpen} size="sm" className="gap-2">
+              <Plus className="w-4 h-4" />
+              เพิ่มสินค้า
+            </Button>
             <Bell className="w-5 h-5 text-muted-foreground" />
             <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
               <Users className="w-4 h-4" />
@@ -233,20 +175,56 @@ const StockPage = () => {
           </div>
         </div>
 
+        {/* Summary */}
         <div className="grid grid-cols-5 gap-4 mb-6">
-          {summaryCards.map((card) => (
-            <Card key={card.label} className="p-4 flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${card.bg}`}>
-                <card.icon className={`w-6 h-6 ${card.color}`} />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{card.value}</p>
-                <p className="text-xs text-muted-foreground">{card.label}</p>
-              </div>
-            </Card>
-          ))}
+          <Card className="p-4 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary/10">
+              <Package className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{addons.length}</p>
+              <p className="text-xs text-muted-foreground">ทั้งหมด</p>
+            </div>
+          </Card>
+          <Card className="p-4 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-success/10">
+              <CheckCircle className="w-6 h-6 text-success" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-success">{availableCount}</p>
+              <p className="text-xs text-muted-foreground">พร้อมใช้</p>
+            </div>
+          </Card>
+          <Card className="p-4 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-warning/10">
+              <AlertTriangle className="w-6 h-6 text-warning" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-warning">{reservedCount}</p>
+              <p className="text-xs text-muted-foreground">ถูกจอง</p>
+            </div>
+          </Card>
+          <Card className="p-4 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary/10">
+              <Car className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-primary">{inUseCount}</p>
+              <p className="text-xs text-muted-foreground">ถูกใช้</p>
+            </div>
+          </Card>
+          <Card className="p-4 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-destructive/10">
+              <Wrench className="w-6 h-6 text-destructive" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-destructive">{damagedBrokenCount}</p>
+              <p className="text-xs text-muted-foreground">ซ่อม/ชำรุด</p>
+            </div>
+          </Card>
         </div>
 
+        {/* Table */}
         <Card className="p-6">
           <div className="flex items-center gap-4 mb-6">
             <div className="flex-1 relative">
@@ -262,90 +240,55 @@ const StockPage = () => {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={activeFilter} onValueChange={setActiveFilter}>
               <SelectTrigger className="w-44"><SelectValue placeholder="สถานะ" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">ทั้งหมด</SelectItem>
-                <SelectItem value="available">พร้อมใช้</SelectItem>
-                <SelectItem value="reserved">ถูกจอง</SelectItem>
-                <SelectItem value="in_use">ถูกใช้</SelectItem>
-                <SelectItem value="damaged">ส่งซ่อม</SelectItem>
-                <SelectItem value="broken">ชำรุด</SelectItem>
+                <SelectItem value="active">เปิดใช้งาน</SelectItem>
+                <SelectItem value="inactive">ปิดใช้งาน</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-
-          <div className="flex justify-end mb-4">
-            <Button onClick={handleAdd} className="gap-2">
-              <Plus className="w-4 h-4" />
-              เพิ่ม Add-on
-            </Button>
           </div>
 
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-8"></TableHead>
-                <TableHead>หมวดหมู่อุปกรณ์</TableHead>
+                <TableHead>รหัส</TableHead>
+                <TableHead>ชื่อ Add-on</TableHead>
+                <TableHead>หมวดหมู่</TableHead>
                 <TableHead className="text-right">ราคา</TableHead>
-                <TableHead className="text-center">จำนวน</TableHead>
-                <TableHead className="text-center">พร้อมใช้</TableHead>
-                <TableHead className="text-center">ถูกจอง</TableHead>
-                <TableHead className="text-center">ถูกใช้</TableHead>
-                <TableHead className="text-center">ส่งซ่อม</TableHead>
-                <TableHead className="text-center">ชำรุด</TableHead>
+                <TableHead className="text-center">สถานะการใช้งาน</TableHead>
+                <TableHead className="text-center">สถานะ</TableHead>
+                <TableHead className="text-right">จัดการ</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {groupedByCategory.map((group) => {
-                const isExpanded = expandedCategories.has(group.category);
-                return (
-                  <>
-                    <TableRow key={group.category} className="cursor-pointer hover:bg-muted/50" onClick={() => toggleCategory(group.category)}>
-                      <TableCell className="w-8 px-2">
-                        {isExpanded ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
-                      </TableCell>
-                      <TableCell>
-                        <p className="font-semibold">{group.category}</p>
-                      </TableCell>
-                      <TableCell></TableCell>
-                      <TableCell className="text-center font-semibold">{group.total}</TableCell>
-                      <TableCell className="text-center"><span className="text-success font-semibold">{group.available}</span></TableCell>
-                      <TableCell className="text-center"><span className="text-warning font-semibold">{group.reserved}</span></TableCell>
-                      <TableCell className="text-center"><span className="text-primary font-semibold">{group.in_use}</span></TableCell>
-                      <TableCell className="text-center"><span className="text-destructive font-semibold">{group.damaged}</span></TableCell>
-                      <TableCell className="text-center"><span className="text-muted-foreground font-semibold">{group.broken}</span></TableCell>
-                    </TableRow>
-                    {isExpanded && group.items.map((addon) => (
-                      <TableRow key={addon.id} className="bg-muted/30">
-                        <TableCell></TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="text-sm font-medium">{addon.name}</p>
-                            <p className="text-xs text-muted-foreground">{addon.id}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right text-sm font-medium">฿{addon.defaultPrice.toLocaleString()}</TableCell>
-                        <TableCell className="text-center">{getStatusBadge(addon.stockStatus, addon.bookingRef)}</TableCell>
-                        <TableCell colSpan={4}></TableCell>
-                        <TableCell className="text-center">
-                          <div className="flex items-center justify-center gap-1">
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-warning" onClick={(e) => { e.stopPropagation(); handleEdit(addon); }}>
-                              <Pencil className="w-3.5 h-3.5" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={(e) => { e.stopPropagation(); setDeletingAddon(addon); setDeleteDialogOpen(true); }}>
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </>
-                );
-              })}
-              {groupedByCategory.length === 0 && (
+              {filteredAddons.map((addon) => (
+                <TableRow key={addon.id}>
+                  <TableCell className="font-mono text-sm text-muted-foreground">{addon.id}</TableCell>
+                  <TableCell className="font-semibold">{addon.name}</TableCell>
+                  <TableCell><Badge variant="outline">{addon.category}</Badge></TableCell>
+                  <TableCell className="text-right font-medium">฿{addon.defaultPrice.toLocaleString()}</TableCell>
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center gap-1.5">
+                      {getStockStatusBadge(addon.stockStatus, addon.bookingRef)}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Badge variant={addon.isActive ? "default" : "secondary"}>
+                      {addon.isActive ? "เปิดใช้งาน" : "ปิดใช้งาน"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-warning" onClick={() => handleAdjustOpen(addon)}>
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {filteredAddons.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล</TableCell>
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล Add-on</TableCell>
                 </TableRow>
               )}
             </TableBody>
@@ -353,29 +296,26 @@ const StockPage = () => {
         </Card>
       </main>
 
-      {/* Add/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+      {/* Edit Dialog */}
+      <Dialog open={adjustOpen} onOpenChange={setAdjustOpen}>
+        <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>{editingAddon ? "แก้ไข Add-on" : "เพิ่ม Add-on"}</DialogTitle>
+            <DialogTitle>แก้ไขอุปกรณ์</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>รหัส Add-on</Label>
-              <Input value={formData.id} onChange={(e) => setFormData({ ...formData, id: e.target.value })} placeholder="เช่น GEN-001" disabled={!!editingAddon} />
-              {editingAddon && <p className="text-xs text-muted-foreground">ไม่สามารถแก้ไขรหัสได้</p>}
-            </div>
-            <div className="space-y-2">
-              <Label>ชื่อ Add-on</Label>
-              <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="เช่น เครื่องปั่นไฟ Honda 3kW" />
-            </div>
+          <div className="space-y-4 py-2">
+            {adjustAddon && (
+              <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3">
+                <div>
+                  <p className="font-semibold text-sm">{adjustAddon.name}</p>
+                  <p className="text-xs text-muted-foreground">{adjustAddon.id}</p>
+                </div>
+                <div className="ml-auto">{getStockStatusBadge(adjustAddon.stockStatus, adjustAddon.bookingRef)}</div>
+              </div>
+            )}
             <div className="space-y-2">
               <Label>หมวดหมู่</Label>
-              <Select value={formData.category} onValueChange={(v) => {
-                const masterItem = addons.find((a) => a.category === v);
-                setFormData({ ...formData, category: v, defaultPrice: masterItem?.defaultPrice ?? formData.defaultPrice });
-              }}>
-                <SelectTrigger><SelectValue placeholder="เลือกหมวดหมู่" /></SelectTrigger>
+              <Select value={newCategory} onValueChange={setNewCategory}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {categories.map((cat) => (
                     <SelectItem key={cat} value={cat}>{cat}</SelectItem>
@@ -385,11 +325,11 @@ const StockPage = () => {
             </div>
             <div className="space-y-2">
               <Label>ราคา (บาท)</Label>
-              <Input type="number" min={0} value={formData.defaultPrice} onChange={(e) => setFormData({ ...formData, defaultPrice: Number(e.target.value) })} placeholder="เช่น 300" />
+              <Input type="number" min={0} value={newPrice} onChange={(e) => setNewPrice(Number(e.target.value))} placeholder="เช่น 300" />
             </div>
             <div className="space-y-2">
-              <Label>สถานะการใช้งาน</Label>
-              <Select value={formData.stockStatus} onValueChange={(v) => setFormData({ ...formData, stockStatus: v as Addon["stockStatus"], bookingRef: (v === "available" || v === "damaged" || v === "broken") ? "" : formData.bookingRef })}>
+              <Label>เปลี่ยนเป็นสถานะ</Label>
+              <Select value={newStatus} onValueChange={(v) => setNewStatus(v as StockStatus)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="available">พร้อมใช้</SelectItem>
@@ -400,36 +340,84 @@ const StockPage = () => {
                 </SelectContent>
               </Select>
             </div>
-            {(formData.stockStatus === "reserved" || formData.stockStatus === "in_use") && (
+            {(newStatus === "reserved" || newStatus === "in_use") && (
               <div className="space-y-2">
                 <Label>รหัสการจอง (Booking Ref)</Label>
-                <Input value={formData.bookingRef} onChange={(e) => setFormData({ ...formData, bookingRef: e.target.value })} placeholder="เช่น BK002" />
+                <Input value={newBookingRef} readOnly disabled className="bg-muted/50 cursor-not-allowed" placeholder="—" />
               </div>
             )}
             <div className="flex items-center justify-between">
               <Label>เปิดใช้งาน</Label>
-              <Switch checked={formData.isActive} onCheckedChange={(v) => setFormData({ ...formData, isActive: v })} />
+              <Switch checked={newIsActive} onCheckedChange={setNewIsActive} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>ยกเลิก</Button>
-            <Button onClick={handleSave}>{editingAddon ? "บันทึก" : "เพิ่ม"}</Button>
+            <Button variant="outline" onClick={() => setAdjustOpen(false)}>ยกเลิก</Button>
+            <Button onClick={handleAdjustSave}>บันทึก</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      {/* Add Item Dialog */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>ยืนยันการลบ</DialogTitle>
+            <DialogTitle>เพิ่มสินค้าใหม่</DialogTitle>
           </DialogHeader>
-          <p className="text-muted-foreground">
-            คุณต้องการลบ <span className="font-semibold text-foreground">{deletingAddon?.name}</span> ออกจากระบบหรือไม่?
-          </p>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>หมวดหมู่</Label>
+              <Select value={addFormData.category} onValueChange={(v) => {
+                const masterItem = addons.find((a) => a.category === v);
+                setAddFormData({ ...addFormData, category: v, defaultPrice: masterItem?.defaultPrice ?? addFormData.defaultPrice });
+              }}>
+                <SelectTrigger><SelectValue placeholder="เลือกหมวดหมู่" /></SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>รหัสสินค้า</Label>
+              <Input value={addFormData.id} onChange={(e) => setAddFormData({ ...addFormData, id: e.target.value })} placeholder="เช่น GEN-004" />
+            </div>
+            <div className="space-y-2">
+              <Label>ชื่อสินค้า</Label>
+              <Input value={addFormData.name} onChange={(e) => setAddFormData({ ...addFormData, name: e.target.value })} placeholder="เช่น เครื่องปั่นไฟ Honda 3kW" />
+            </div>
+            <div className="space-y-2">
+              <Label>ราคา (บาท)</Label>
+              <Input type="number" min={0} value={addFormData.defaultPrice} onChange={(e) => setAddFormData({ ...addFormData, defaultPrice: Number(e.target.value) })} placeholder="เช่น 300" />
+            </div>
+            <div className="space-y-2">
+              <Label>สถานะ</Label>
+              <Select value={addFormData.stockStatus} onValueChange={(v) => setAddFormData({ ...addFormData, stockStatus: v as StockStatus })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="available">พร้อมใช้</SelectItem>
+                  <SelectItem value="reserved">ถูกจอง</SelectItem>
+                  <SelectItem value="in_use">ถูกใช้</SelectItem>
+                  <SelectItem value="damaged">ส่งซ่อม</SelectItem>
+                  <SelectItem value="broken">ชำรุด</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {(addFormData.stockStatus === "reserved" || addFormData.stockStatus === "in_use") && (
+              <div className="space-y-2">
+                <Label>รหัสการจอง (Booking Ref)</Label>
+                <Input value={addFormData.bookingRef} onChange={(e) => setAddFormData({ ...addFormData, bookingRef: e.target.value })} placeholder="เช่น BK002" />
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              <Label>เปิดใช้งาน</Label>
+              <Switch checked={addFormData.isActive} onCheckedChange={(v) => setAddFormData({ ...addFormData, isActive: v })} />
+            </div>
+          </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>ยกเลิก</Button>
-            <Button variant="destructive" onClick={handleDelete}>ลบ</Button>
+            <Button variant="outline" onClick={() => setAddOpen(false)}>ยกเลิก</Button>
+            <Button onClick={handleAddSave}>เพิ่ม</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
