@@ -34,6 +34,7 @@ const AddonManagementPage = () => {
   const [adjustAddon, setAdjustAddon] = useState<Addon | null>(null);
   const [newStatus, setNewStatus] = useState<StockStatus>("available");
   const [newBookingRef, setNewBookingRef] = useState("");
+  const [newCategory, setNewCategory] = useState("");
   const [addOpen, setAddOpen] = useState(false);
   const [addFormData, setAddFormData] = useState({ id: "", name: "", category: "", defaultPrice: 0, isActive: true, stockStatus: "available" as StockStatus, bookingRef: "" });
   const { toast } = useToast();
@@ -52,14 +53,15 @@ const AddonManagementPage = () => {
     setAdjustAddon(addon);
     setNewStatus(addon.stockStatus);
     setNewBookingRef(addon.bookingRef || "");
+    setNewCategory(addon.category);
     setAdjustOpen(true);
   };
 
   const handleAdjustSave = () => {
     if (!adjustAddon) return;
-    setAddons((prev) => prev.map((a) => a.id === adjustAddon.id ? { ...a, stockStatus: newStatus, bookingRef: (newStatus === "reserved" || newStatus === "in_use") ? newBookingRef || undefined : undefined } : a));
+    setAddons((prev) => prev.map((a) => a.id === adjustAddon.id ? { ...a, category: newCategory, stockStatus: newStatus, bookingRef: (newStatus === "reserved" || newStatus === "in_use") ? newBookingRef || undefined : undefined } : a));
     setAdjustOpen(false);
-    toast({ title: "สำเร็จ", description: `เปลี่ยนสถานะ ${adjustAddon.name} แล้ว` });
+    toast({ title: "สำเร็จ", description: `แก้ไขอุปกรณ์ ${adjustAddon.name} แล้ว` });
   };
 
   const handleAddOpen = () => {
@@ -290,11 +292,11 @@ const AddonManagementPage = () => {
         </Card>
       </main>
 
-      {/* Adjust Status Dialog */}
+      {/* Edit Dialog */}
       <Dialog open={adjustOpen} onOpenChange={setAdjustOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>เปลี่ยนสถานะ — {adjustAddon?.name}</DialogTitle>
+            <DialogTitle>แก้ไขอุปกรณ์ — {adjustAddon?.name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             {adjustAddon && (
@@ -306,6 +308,17 @@ const AddonManagementPage = () => {
                 <div className="ml-auto">{getStockStatusBadge(adjustAddon.stockStatus, adjustAddon.bookingRef)}</div>
               </div>
             )}
+            <div className="space-y-2">
+              <Label>หมวดหมู่</Label>
+              <Select value={newCategory} onValueChange={setNewCategory}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2">
               <Label>เปลี่ยนเป็นสถานะ</Label>
               <Select value={newStatus} onValueChange={(v) => setNewStatus(v as StockStatus)}>
@@ -322,22 +335,13 @@ const AddonManagementPage = () => {
             {(newStatus === "reserved" || newStatus === "in_use") && (
               <div className="space-y-2">
                 <Label>รหัสการจอง (Booking Ref)</Label>
-                <Input value={newBookingRef} onChange={(e) => setNewBookingRef(e.target.value)} placeholder="เช่น BK002" />
-              </div>
-            )}
-            {adjustAddon && newStatus !== adjustAddon.stockStatus && (
-              <div className="rounded-lg border border-border/50 bg-muted/30 p-3">
-                <div className="flex items-center gap-2 text-sm">
-                  {getStockStatusBadge(adjustAddon.stockStatus, adjustAddon.bookingRef)}
-                  <span className="text-muted-foreground">→</span>
-                  {getStockStatusBadge(newStatus, (newStatus === "reserved" || newStatus === "in_use") ? newBookingRef : undefined)}
-                </div>
+                <Input value={newBookingRef} readOnly disabled className="bg-muted/50 cursor-not-allowed" placeholder="—" />
               </div>
             )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAdjustOpen(false)}>ยกเลิก</Button>
-            <Button onClick={handleAdjustSave} disabled={adjustAddon?.stockStatus === newStatus}>บันทึก</Button>
+            <Button onClick={handleAdjustSave}>บันทึก</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -359,7 +363,14 @@ const AddonManagementPage = () => {
             </div>
             <div className="space-y-2">
               <Label>หมวดหมู่</Label>
-              <Input value={addFormData.category} onChange={(e) => setAddFormData({ ...addFormData, category: e.target.value })} placeholder="เช่น เครื่องปั่นไฟ" />
+              <Select value={addFormData.category} onValueChange={(v) => setAddFormData({ ...addFormData, category: v })}>
+                <SelectTrigger><SelectValue placeholder="เลือกหมวดหมู่" /></SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>สถานะ</Label>
