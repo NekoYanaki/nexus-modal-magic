@@ -36,6 +36,7 @@ const AddonManagementPage = () => {
   const [newBookingRef, setNewBookingRef] = useState("");
   const [newCategory, setNewCategory] = useState("");
   const [newPrice, setNewPrice] = useState(0);
+  const [newIsActive, setNewIsActive] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
   const [addFormData, setAddFormData] = useState({ id: "", name: "", category: "", defaultPrice: 0, isActive: true, stockStatus: "available" as StockStatus, bookingRef: "" });
   const { toast } = useToast();
@@ -56,12 +57,13 @@ const AddonManagementPage = () => {
     setNewBookingRef(addon.bookingRef || "");
     setNewCategory(addon.category);
     setNewPrice(addon.defaultPrice);
+    setNewIsActive(addon.isActive);
     setAdjustOpen(true);
   };
 
   const handleAdjustSave = () => {
     if (!adjustAddon) return;
-    setAddons((prev) => prev.map((a) => a.id === adjustAddon.id ? { ...a, category: newCategory, defaultPrice: newPrice, stockStatus: newStatus, bookingRef: (newStatus === "reserved" || newStatus === "in_use") ? newBookingRef || undefined : undefined } : a));
+    setAddons((prev) => prev.map((a) => a.id === adjustAddon.id ? { ...a, category: newCategory, defaultPrice: newPrice, isActive: newIsActive, stockStatus: newStatus, bookingRef: (newStatus === "reserved" || newStatus === "in_use") ? newBookingRef || undefined : undefined } : a));
     setAdjustOpen(false);
     toast({ title: "สำเร็จ", description: `แก้ไขอุปกรณ์ ${adjustAddon.name} แล้ว` });
   };
@@ -300,7 +302,7 @@ const AddonManagementPage = () => {
       <Dialog open={adjustOpen} onOpenChange={setAdjustOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>แก้ไขอุปกรณ์ — {adjustAddon?.name}</DialogTitle>
+            <DialogTitle>แก้ไขอุปกรณ์</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             {adjustAddon && (
@@ -346,6 +348,10 @@ const AddonManagementPage = () => {
                 <Input value={newBookingRef} readOnly disabled className="bg-muted/50 cursor-not-allowed" placeholder="—" />
               </div>
             )}
+            <div className="flex items-center justify-between">
+              <Label>เปิดใช้งาน</Label>
+              <Switch checked={newIsActive} onCheckedChange={setNewIsActive} />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAdjustOpen(false)}>ยกเลิก</Button>
