@@ -35,6 +35,7 @@ const AddonManagementPage = () => {
   const [newStatus, setNewStatus] = useState<StockStatus>("available");
   const [newBookingRef, setNewBookingRef] = useState("");
   const [newCategory, setNewCategory] = useState("");
+  const [newPrice, setNewPrice] = useState(0);
   const [addOpen, setAddOpen] = useState(false);
   const [addFormData, setAddFormData] = useState({ id: "", name: "", category: "", defaultPrice: 0, isActive: true, stockStatus: "available" as StockStatus, bookingRef: "" });
   const { toast } = useToast();
@@ -54,12 +55,13 @@ const AddonManagementPage = () => {
     setNewStatus(addon.stockStatus);
     setNewBookingRef(addon.bookingRef || "");
     setNewCategory(addon.category);
+    setNewPrice(addon.defaultPrice);
     setAdjustOpen(true);
   };
 
   const handleAdjustSave = () => {
     if (!adjustAddon) return;
-    setAddons((prev) => prev.map((a) => a.id === adjustAddon.id ? { ...a, category: newCategory, stockStatus: newStatus, bookingRef: (newStatus === "reserved" || newStatus === "in_use") ? newBookingRef || undefined : undefined } : a));
+    setAddons((prev) => prev.map((a) => a.id === adjustAddon.id ? { ...a, category: newCategory, defaultPrice: newPrice, stockStatus: newStatus, bookingRef: (newStatus === "reserved" || newStatus === "in_use") ? newBookingRef || undefined : undefined } : a));
     setAdjustOpen(false);
     toast({ title: "สำเร็จ", description: `แก้ไขอุปกรณ์ ${adjustAddon.name} แล้ว` });
   };
@@ -254,6 +256,7 @@ const AddonManagementPage = () => {
                 <TableHead>รหัส</TableHead>
                 <TableHead>ชื่อ Add-on</TableHead>
                 <TableHead>หมวดหมู่</TableHead>
+                <TableHead className="text-right">ราคา</TableHead>
                 <TableHead className="text-center">สถานะการใช้งาน</TableHead>
                 <TableHead className="text-center">สถานะ</TableHead>
                 <TableHead className="text-right">จัดการ</TableHead>
@@ -265,6 +268,7 @@ const AddonManagementPage = () => {
                   <TableCell className="font-mono text-sm text-muted-foreground">{addon.id}</TableCell>
                   <TableCell className="font-semibold">{addon.name}</TableCell>
                   <TableCell><Badge variant="outline">{addon.category}</Badge></TableCell>
+                  <TableCell className="text-right font-medium">฿{addon.defaultPrice.toLocaleString()}</TableCell>
                   <TableCell className="text-center">
                     <div className="flex items-center justify-center gap-1.5">
                       {getStockStatusBadge(addon.stockStatus, addon.bookingRef)}
@@ -284,7 +288,7 @@ const AddonManagementPage = () => {
               ))}
               {filteredAddons.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล Add-on</TableCell>
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล Add-on</TableCell>
                 </TableRow>
               )}
             </TableBody>
@@ -318,6 +322,10 @@ const AddonManagementPage = () => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>ราคา (บาท)</Label>
+              <Input type="number" min={0} value={newPrice} onChange={(e) => setNewPrice(Number(e.target.value))} placeholder="เช่น 300" />
             </div>
             <div className="space-y-2">
               <Label>เปลี่ยนเป็นสถานะ</Label>
@@ -363,7 +371,10 @@ const AddonManagementPage = () => {
             </div>
             <div className="space-y-2">
               <Label>หมวดหมู่</Label>
-              <Select value={addFormData.category} onValueChange={(v) => setAddFormData({ ...addFormData, category: v })}>
+              <Select value={addFormData.category} onValueChange={(v) => {
+                const masterItem = addons.find((a) => a.category === v);
+                setAddFormData({ ...addFormData, category: v, defaultPrice: masterItem?.defaultPrice ?? addFormData.defaultPrice });
+              }}>
                 <SelectTrigger><SelectValue placeholder="เลือกหมวดหมู่" /></SelectTrigger>
                 <SelectContent>
                   {categories.map((cat) => (
@@ -371,6 +382,10 @@ const AddonManagementPage = () => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>ราคา (บาท)</Label>
+              <Input type="number" min={0} value={addFormData.defaultPrice} onChange={(e) => setAddFormData({ ...addFormData, defaultPrice: Number(e.target.value) })} placeholder="เช่น 300" />
             </div>
             <div className="space-y-2">
               <Label>สถานะ</Label>
