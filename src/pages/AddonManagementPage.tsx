@@ -28,7 +28,6 @@ const AddonManagementPage = () => {
   const { addons, setAddons } = useAddons();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
-  const [stockFilter, setStockFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [adjustAddon, setAdjustAddon] = useState<Addon | null>(null);
@@ -47,8 +46,7 @@ const AddonManagementPage = () => {
     const matchesSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.id.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === "all" || a.category === categoryFilter;
     const matchesActive = activeFilter === "all" || (activeFilter === "active" ? a.isActive : !a.isActive);
-    const matchesStock = stockFilter === "all" || (stockFilter === "damaged_broken" ? (a.stockStatus === "damaged" || a.stockStatus === "broken") : a.stockStatus === stockFilter);
-    return matchesSearch && matchesCategory && matchesActive && matchesStock;
+    return matchesSearch && matchesCategory && matchesActive;
   });
 
   const handleAdjustOpen = (addon: Addon) => {
@@ -179,7 +177,7 @@ const AddonManagementPage = () => {
 
         {/* Summary */}
         <div className="grid grid-cols-5 gap-4 mb-6">
-          <Card className={`p-4 flex items-center gap-4 cursor-pointer transition-all ${stockFilter === "all" ? "ring-2 ring-primary" : "hover:shadow-md"}`} onClick={() => setStockFilter("all")}>
+          <Card className="p-4 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary/10">
               <Package className="w-6 h-6 text-primary" />
             </div>
@@ -188,7 +186,7 @@ const AddonManagementPage = () => {
               <p className="text-xs text-muted-foreground">ทั้งหมด</p>
             </div>
           </Card>
-          <Card className={`p-4 flex items-center gap-4 cursor-pointer transition-all ${stockFilter === "available" ? "ring-2 ring-success" : "hover:shadow-md"}`} onClick={() => setStockFilter("available")}>
+          <Card className="p-4 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-success/10">
               <CheckCircle className="w-6 h-6 text-success" />
             </div>
@@ -197,7 +195,7 @@ const AddonManagementPage = () => {
               <p className="text-xs text-muted-foreground">พร้อมใช้</p>
             </div>
           </Card>
-          <Card className={`p-4 flex items-center gap-4 cursor-pointer transition-all ${stockFilter === "reserved" ? "ring-2 ring-warning" : "hover:shadow-md"}`} onClick={() => setStockFilter("reserved")}>
+          <Card className="p-4 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-warning/10">
               <AlertTriangle className="w-6 h-6 text-warning" />
             </div>
@@ -206,7 +204,7 @@ const AddonManagementPage = () => {
               <p className="text-xs text-muted-foreground">ถูกจอง</p>
             </div>
           </Card>
-          <Card className={`p-4 flex items-center gap-4 cursor-pointer transition-all ${stockFilter === "in_use" ? "ring-2 ring-primary" : "hover:shadow-md"}`} onClick={() => setStockFilter("in_use")}>
+          <Card className="p-4 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary/10">
               <Car className="w-6 h-6 text-primary" />
             </div>
@@ -215,7 +213,7 @@ const AddonManagementPage = () => {
               <p className="text-xs text-muted-foreground">ถูกใช้</p>
             </div>
           </Card>
-          <Card className={`p-4 flex items-center gap-4 cursor-pointer transition-all ${stockFilter === "damaged_broken" ? "ring-2 ring-destructive" : "hover:shadow-md"}`} onClick={() => setStockFilter("damaged_broken")}>
+          <Card className="p-4 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-destructive/10">
               <Wrench className="w-6 h-6 text-destructive" />
             </div>
