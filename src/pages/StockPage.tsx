@@ -371,7 +371,17 @@ const StockPage = () => {
             </div>
             <div className="space-y-2">
               <Label>หมวดหมู่</Label>
-              <Input value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} placeholder="เช่น เครื่องปั่นไฟ" />
+              <Select value={formData.category} onValueChange={(v) => {
+                const masterItem = addons.find((a) => a.category === v);
+                setFormData({ ...formData, category: v, defaultPrice: masterItem?.defaultPrice ?? formData.defaultPrice });
+              }}>
+                <SelectTrigger><SelectValue placeholder="เลือกหมวดหมู่" /></SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>ราคา (บาท)</Label>
