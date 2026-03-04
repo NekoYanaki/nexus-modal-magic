@@ -374,6 +374,10 @@ const StockPage = () => {
               <Input value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} placeholder="เช่น เครื่องปั่นไฟ" />
             </div>
             <div className="space-y-2">
+              <Label>ราคา (บาท)</Label>
+              <Input type="number" min={0} value={formData.defaultPrice} onChange={(e) => setFormData({ ...formData, defaultPrice: Number(e.target.value) })} placeholder="เช่น 300" />
+            </div>
+            <div className="space-y-2">
               <Label>สถานะการใช้งาน</Label>
               <Select value={formData.stockStatus} onValueChange={(v) => setFormData({ ...formData, stockStatus: v as Addon["stockStatus"], bookingRef: (v === "available" || v === "damaged" || v === "broken") ? "" : formData.bookingRef })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
