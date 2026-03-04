@@ -362,14 +362,6 @@ const AddonManagementPage = () => {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>รหัสสินค้า</Label>
-              <Input value={addFormData.id} onChange={(e) => setAddFormData({ ...addFormData, id: e.target.value })} placeholder="เช่น GEN-004" />
-            </div>
-            <div className="space-y-2">
-              <Label>ชื่อสินค้า</Label>
-              <Input value={addFormData.name} onChange={(e) => setAddFormData({ ...addFormData, name: e.target.value })} placeholder="เช่น เครื่องปั่นไฟ Honda 3kW" />
-            </div>
-            <div className="space-y-2">
               <Label>หมวดหมู่</Label>
               <Select value={addFormData.category} onValueChange={(v) => {
                 const masterItem = addons.find((a) => a.category === v);
@@ -382,6 +374,14 @@ const AddonManagementPage = () => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>รหัสสินค้า</Label>
+              <Input value={addFormData.id} onChange={(e) => setAddFormData({ ...addFormData, id: e.target.value })} placeholder="เช่น GEN-004" />
+            </div>
+            <div className="space-y-2">
+              <Label>ชื่อสินค้า</Label>
+              <Input value={addFormData.name} onChange={(e) => setAddFormData({ ...addFormData, name: e.target.value })} placeholder="เช่น เครื่องปั่นไฟ Honda 3kW" />
             </div>
             <div className="space-y-2">
               <Label>ราคา (บาท)</Label>
