@@ -50,7 +50,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }: { currentPage: nu
 };
 
 const StockPage = () => {
-  const { addons, setAddons } = useAddons();
+  const { addons, setAddons, addonTypes } = useAddons();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
