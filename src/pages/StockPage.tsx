@@ -34,7 +34,7 @@ const StockPage = () => {
   const [newStatus, setNewStatus] = useState<StockStatus>("available");
   const [newBookingRef, setNewBookingRef] = useState("");
   const [newCategory, setNewCategory] = useState("");
-  const [newPrice, setNewPrice] = useState(0);
+  const [newPrice, setNewPrice] = useState("");
   const [newIsActive, setNewIsActive] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
   const [addFormData, setAddFormData] = useState({ id: "", name: "", category: "", defaultPrice: 0, isActive: true, stockStatus: "available" as StockStatus, bookingRef: "" });
@@ -54,14 +54,14 @@ const StockPage = () => {
     setNewStatus(addon.stockStatus);
     setNewBookingRef(addon.bookingRef || "");
     setNewCategory(addon.category);
-    setNewPrice(addon.defaultPrice);
+    setNewPrice(String(addon.defaultPrice));
     setNewIsActive(addon.isActive);
     setAdjustOpen(true);
   };
 
   const handleAdjustSave = () => {
     if (!adjustAddon) return;
-    setAddons((prev) => prev.map((a) => a.id === adjustAddon.id ? { ...a, category: newCategory, defaultPrice: newPrice, isActive: newIsActive, stockStatus: newStatus, bookingRef: (newStatus === "reserved" || newStatus === "in_use") ? newBookingRef || undefined : undefined } : a));
+    setAddons((prev) => prev.map((a) => a.id === adjustAddon.id ? { ...a, category: newCategory, defaultPrice: Number(newPrice) || 0, isActive: newIsActive, stockStatus: newStatus, bookingRef: (newStatus === "reserved" || newStatus === "in_use") ? newBookingRef || undefined : undefined } : a));
     setAdjustOpen(false);
     toast({ title: "สำเร็จ", description: `แก้ไขอุปกรณ์ ${adjustAddon.name} แล้ว` });
   };
@@ -325,7 +325,7 @@ const StockPage = () => {
             </div>
             <div className="space-y-2">
               <Label>ราคา (บาท)</Label>
-              <Input type="number" min={0} value={newPrice} onChange={(e) => setNewPrice(Number(e.target.value))} placeholder="เช่น 300" />
+              <Input type="number" min={0} value={newPrice} onChange={(e) => setNewPrice(e.target.value)} placeholder="เช่น 300" />
             </div>
             <div className="space-y-2">
               <Label>เปลี่ยนเป็นสถานะ</Label>
