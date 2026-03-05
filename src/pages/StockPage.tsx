@@ -54,7 +54,7 @@ const StockPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [kindFilter, setKindFilter] = useState("all");
+  
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [adjustAddon, setAdjustAddon] = useState<Addon | null>(null);
   const [newStatus, setNewStatus] = useState<StockStatus>("available");
@@ -67,25 +67,19 @@ const StockPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
 
-  const categories = Array.from(new Set(addons.map((a) => a.category))).sort();
+  // Only equipment items (exclude consumables)
+  const equipmentAddons = addons.filter((a) => {
+    const addonType = addonTypes.find((t) => t.name === a.category);
+    return addonType?.kind !== "consumable";
+  });
 
-  const getKindLabel = (category: string) => {
-    const addonType = addonTypes.find((t) => t.name === category);
-    return addonType?.kind === "consumable" ? "วัสดุสิ้นเปลือง" : "อุปกรณ์";
-  };
+  const categories = Array.from(new Set(equipmentAddons.map((a) => a.category))).sort();
 
-  const getKindVariant = (category: string) => {
-    const addonType = addonTypes.find((t) => t.name === category);
-    return addonType?.kind === "consumable" ? "secondary" as const : "outline" as const;
-  };
-
-  const filteredAddons = addons.filter((a) => {
+  const filteredAddons = equipmentAddons.filter((a) => {
     const matchesSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.id.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === "all" || a.category === categoryFilter;
     const matchesActive = activeFilter === "all" || (activeFilter === "active" ? a.isActive : !a.isActive);
-    const addonType = addonTypes.find((t) => t.name === a.category);
-    const matchesKind = kindFilter === "all" || addonType?.kind === kindFilter;
-    return matchesSearch && matchesCategory && matchesActive && matchesKind;
+    return matchesSearch && matchesCategory && matchesActive;
   });
 
   const totalPages = Math.ceil(filteredAddons.length / ITEMS_PER_PAGE);
@@ -122,10 +116,10 @@ const StockPage = () => {
     toast({ title: "สำเร็จ", description: "เพิ่มสินค้าเรียบร้อยแล้ว" });
   };
 
-  const availableCount = addons.filter((a) => a.stockStatus === "available").length;
-  const reservedCount = addons.filter((a) => a.stockStatus === "reserved").length;
-  const inUseCount = addons.filter((a) => a.stockStatus === "in_use").length;
-  const damagedBrokenCount = addons.filter((a) => a.stockStatus === "damaged" || a.stockStatus === "broken").length;
+  const availableCount = equipmentAddons.filter((a) => a.stockStatus === "available").length;
+  const reservedCount = equipmentAddons.filter((a) => a.stockStatus === "reserved").length;
+  const inUseCount = equipmentAddons.filter((a) => a.stockStatus === "in_use").length;
+  const damagedBrokenCount = equipmentAddons.filter((a) => a.stockStatus === "damaged" || a.stockStatus === "broken").length;
 
   const getStockStatusBadge = (status: Addon["stockStatus"], bookingRef?: string) => {
     switch (status) {
@@ -224,7 +218,7 @@ const StockPage = () => {
               <Package className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <p className="text-2xl font-bold">{addons.length}</p>
+              <p className="text-2xl font-bold">{equipmentAddons.length}</p>
               <p className="text-xs text-muted-foreground">ทั้งหมด</p>
             </div>
           </Card>
@@ -282,14 +276,6 @@ const StockPage = () => {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={kindFilter} onValueChange={(v) => { setKindFilter(v); setCurrentPage(1); }}>
-              <SelectTrigger className="w-48"><SelectValue placeholder="ประเภท" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">ทุกประเภท</SelectItem>
-                <SelectItem value="equipment">อุปกรณ์</SelectItem>
-                <SelectItem value="consumable">วัสดุสิ้นเปลือง</SelectItem>
-              </SelectContent>
-            </Select>
             <Select value={activeFilter} onValueChange={(v) => { setActiveFilter(v); setCurrentPage(1); }}>
               <SelectTrigger className="w-44"><SelectValue placeholder="สถานะ" /></SelectTrigger>
               <SelectContent>
@@ -306,7 +292,7 @@ const StockPage = () => {
                 <TableHead>รหัส</TableHead>
                 <TableHead>ชื่อ Add-on</TableHead>
                 <TableHead>หมวดหมู่</TableHead>
-                <TableHead className="text-center">ประเภท</TableHead>
+                
                 <TableHead className="text-right">ราคา</TableHead>
                 <TableHead className="text-center">สถานะการใช้งาน</TableHead>
                 <TableHead className="text-center">สถานะ</TableHead>
@@ -319,11 +305,6 @@ const StockPage = () => {
                   <TableCell className="font-mono text-sm text-muted-foreground">{addon.id}</TableCell>
                   <TableCell className="font-semibold">{addon.name}</TableCell>
                   <TableCell><Badge variant="outline">{addon.category}</Badge></TableCell>
-                  <TableCell className="text-center">
-                    <Badge variant={getKindVariant(addon.category)} className="text-xs">
-                      {getKindLabel(addon.category)}
-                    </Badge>
-                  </TableCell>
                   <TableCell className="text-right font-medium">฿{addon.defaultPrice.toLocaleString()}</TableCell>
                   <TableCell className="text-center">
                     <div className="flex items-center justify-center gap-1.5">
@@ -344,7 +325,7 @@ const StockPage = () => {
               ))}
               {filteredAddons.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล Add-on</TableCell>
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล Add-on</TableCell>
                 </TableRow>
               )}
             </TableBody>
