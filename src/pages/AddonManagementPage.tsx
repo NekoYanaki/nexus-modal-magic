@@ -120,6 +120,7 @@ const AddonManagementPage = () => {
         <TableRow>
           <TableHead className="w-32">ID</TableHead>
           <TableHead>ชื่อ</TableHead>
+          <TableHead className="w-36">ประเภท</TableHead>
           <TableHead className="text-right w-40">ราคา</TableHead>
           <TableHead className="text-center w-28">จัดการ</TableHead>
         </TableRow>
@@ -129,6 +130,11 @@ const AddonManagementPage = () => {
           <TableRow key={t.id}>
             <TableCell className="font-semibold">{t.id}</TableCell>
             <TableCell>{t.name}</TableCell>
+            <TableCell>
+              <Badge variant={t.kind === "consumable" ? "secondary" : "default"}>
+                {t.kind === "consumable" ? "วัสดุสิ้นเปลือง" : "อุปกรณ์"}
+              </Badge>
+            </TableCell>
             <TableCell className="text-right">{t.price.toLocaleString()} บาท</TableCell>
             <TableCell className="text-center">
               <div className="flex items-center justify-center gap-1">
@@ -144,7 +150,7 @@ const AddonManagementPage = () => {
         ))}
         {items.length === 0 && (
           <TableRow>
-            <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">{emptyText}</TableCell>
+            <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{emptyText}</TableCell>
           </TableRow>
         )}
       </TableBody>
