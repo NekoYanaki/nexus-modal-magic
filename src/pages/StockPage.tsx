@@ -63,9 +63,20 @@ const StockPage = () => {
   const [newIsActive, setNewIsActive] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
   const [addFormData, setAddFormData] = useState({ id: "", name: "", category: "", defaultPrice: 0, isActive: true, stockStatus: "available" as StockStatus, bookingRef: "" });
+  const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
 
   const categories = Array.from(new Set(addons.map((a) => a.category))).sort();
+
+  const getKindLabel = (category: string) => {
+    const addonType = addonTypes.find((t) => t.name === category);
+    return addonType?.kind === "consumable" ? "วัสดุสิ้นเปลือง" : "อุปกรณ์";
+  };
+
+  const getKindVariant = (category: string) => {
+    const addonType = addonTypes.find((t) => t.name === category);
+    return addonType?.kind === "consumable" ? "secondary" as const : "outline" as const;
+  };
 
   const filteredAddons = addons.filter((a) => {
     const matchesSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.id.toLowerCase().includes(searchQuery.toLowerCase());
@@ -73,6 +84,9 @@ const StockPage = () => {
     const matchesActive = activeFilter === "all" || (activeFilter === "active" ? a.isActive : !a.isActive);
     return matchesSearch && matchesCategory && matchesActive;
   });
+
+  const totalPages = Math.ceil(filteredAddons.length / ITEMS_PER_PAGE);
+  const pagedAddons = filteredAddons.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const handleAdjustOpen = (addon: Addon) => {
     setAdjustAddon(addon);
