@@ -123,6 +123,11 @@ const AddonManagementPage = () => {
     { icon: Settings, label: "ตั้งค่า", href: "/" },
   ];
 
+  const handleToggleActive = (t: AddonType) => {
+    setAddonTypes((prev) => prev.map((item) => item.id === t.id ? { ...item, isActive: !item.isActive } : item));
+    toast({ title: t.isActive ? "ปิดใช้งานแล้ว" : "เปิดใช้งานแล้ว", description: t.name });
+  };
+
   const renderTable = (items: AddonType[], emptyText: string) => (
     <Table>
       <TableHeader>
@@ -131,12 +136,13 @@ const AddonManagementPage = () => {
           <TableHead>ชื่อ</TableHead>
           <TableHead className="w-36">ประเภท</TableHead>
           <TableHead className="text-right w-40">ราคา</TableHead>
+          <TableHead className="text-center w-28">สถานะ</TableHead>
           <TableHead className="text-center w-28">จัดการ</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {items.map((t) => (
-          <TableRow key={t.id}>
+          <TableRow key={t.id} className={!t.isActive ? "opacity-60" : ""}>
             <TableCell className="font-semibold">{t.id}</TableCell>
             <TableCell>{t.name}</TableCell>
             <TableCell>
@@ -145,6 +151,15 @@ const AddonManagementPage = () => {
               </Badge>
             </TableCell>
             <TableCell className="text-right">{t.price.toLocaleString()} บาท</TableCell>
+            <TableCell className="text-center">
+              <Badge
+                variant={t.isActive ? "default" : "outline"}
+                className={`cursor-pointer ${t.isActive ? "bg-green-600 hover:bg-green-700" : ""}`}
+                onClick={() => handleToggleActive(t)}
+              >
+                {t.isActive ? "เปิดใช้งาน" : "ปิดใช้งาน"}
+              </Badge>
+            </TableCell>
             <TableCell className="text-center">
               <div className="flex items-center justify-center gap-1">
                 <Button variant="ghost" size="icon" className="h-8 w-8 text-warning" onClick={() => handleEdit(t)}>
@@ -159,7 +174,7 @@ const AddonManagementPage = () => {
         ))}
         {items.length === 0 && (
           <TableRow>
-            <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{emptyText}</TableCell>
+            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">{emptyText}</TableCell>
           </TableRow>
         )}
       </TableBody>
