@@ -83,7 +83,9 @@ const StockPage = () => {
     const matchesSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.id.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === "all" || a.category === categoryFilter;
     const matchesActive = activeFilter === "all" || (activeFilter === "active" ? a.isActive : !a.isActive);
-    return matchesSearch && matchesCategory && matchesActive;
+    const addonType = addonTypes.find((t) => t.name === a.category);
+    const matchesKind = kindFilter === "all" || addonType?.kind === kindFilter;
+    return matchesSearch && matchesCategory && matchesActive && matchesKind;
   });
 
   const totalPages = Math.ceil(filteredAddons.length / ITEMS_PER_PAGE);
