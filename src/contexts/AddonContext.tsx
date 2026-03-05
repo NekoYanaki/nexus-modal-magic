@@ -1,6 +1,14 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
 export type StockStatus = "available" | "reserved" | "in_use" | "damaged" | "broken";
+export type AddonKind = "equipment" | "consumable";
+
+export interface AddonType {
+  id: string;
+  name: string;
+  price: number;
+  kind: AddonKind;
+}
 
 export interface Addon {
   id: string;
@@ -9,8 +17,18 @@ export interface Addon {
   defaultPrice: number;
   isActive: boolean;
   stockStatus: StockStatus;
-  bookingRef?: string; // รหัสการจองที่ผูกอยู่ (สำหรับ reserved / in_use)
+  bookingRef?: string;
 }
+
+const initialAddonTypes: AddonType[] = [
+  { id: "AD0001", name: "เบาะนั่งเด็ก", price: 300, kind: "equipment" },
+  { id: "AD0002", name: "อุปกรณ์แคมปิ้ง", price: 100, kind: "equipment" },
+  { id: "AD0003", name: "ชุดปิ้งย่าง", price: 150, kind: "equipment" },
+  { id: "AD0004", name: "เครื่องปั่นไฟ", price: 30000, kind: "equipment" },
+  { id: "AD0005", name: "โต๊ะกลางแจ้ง", price: 500, kind: "equipment" },
+  { id: "AD0006", name: "เก้าอี้พับ (ชุด)", price: 300, kind: "equipment" },
+  { id: "AD0007", name: "เตาแก๊ส", price: 200, kind: "consumable" },
+];
 
 const initialAddons: Addon[] = [
   { id: "SEAT-001", name: "เบาะนั่งเด็ก ตัวที่ 1", category: "เบาะนั่งเด็ก", defaultPrice: 300, isActive: true, stockStatus: "in_use", bookingRef: "BK002" },
@@ -28,19 +46,24 @@ const initialAddons: Addon[] = [
   { id: "CHR-001", name: "เก้าอี้พับ ชุด A (4 ตัว)", category: "เก้าอี้พับ", defaultPrice: 300, isActive: true, stockStatus: "reserved", bookingRef: "BK005" },
   { id: "CHR-002", name: "เก้าอี้พับ ชุด B (4 ตัว)", category: "เก้าอี้พับ", defaultPrice: 300, isActive: true, stockStatus: "available" },
   { id: "ICE-001", name: "ถังน้ำแข็ง 20L", category: "ถังน้ำแข็ง", defaultPrice: 50, isActive: false, stockStatus: "broken" },
+  { id: "GAS-001", name: "เตาแก๊สพกพา ตัวที่ 1", category: "เตาแก๊ส", defaultPrice: 200, isActive: true, stockStatus: "available" },
+  { id: "GAS-002", name: "เตาแก๊สพกพา ตัวที่ 2", category: "เตาแก๊ส", defaultPrice: 200, isActive: true, stockStatus: "available" },
 ];
 
 interface AddonContextType {
   addons: Addon[];
   setAddons: React.Dispatch<React.SetStateAction<Addon[]>>;
+  addonTypes: AddonType[];
+  setAddonTypes: React.Dispatch<React.SetStateAction<AddonType[]>>;
 }
 
 const AddonContext = createContext<AddonContextType | null>(null);
 
 export const AddonProvider = ({ children }: { children: ReactNode }) => {
   const [addons, setAddons] = useState<Addon[]>(initialAddons);
+  const [addonTypes, setAddonTypes] = useState<AddonType[]>(initialAddonTypes);
   return (
-    <AddonContext.Provider value={{ addons, setAddons }}>
+    <AddonContext.Provider value={{ addons, setAddons, addonTypes, setAddonTypes }}>
       {children}
     </AddonContext.Provider>
   );
