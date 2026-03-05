@@ -223,12 +223,29 @@ const AddonManagementPage = () => {
           </div>
           <Card>
             <div className="flex items-center gap-4 px-4 pt-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="ค้นหา Add-on..."
+                  value={searchQuery}
+                  onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                  className="pl-9"
+                />
+              </div>
               <Select value={kindFilter} onValueChange={(v) => { setKindFilter(v); setCurrentPage(1); }}>
-                <SelectTrigger className="w-48"><SelectValue placeholder="ประเภท" /></SelectTrigger>
+                <SelectTrigger className="w-48"><SelectValue placeholder="ทุกหมวดหมู่" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">ทุกประเภท</SelectItem>
+                  <SelectItem value="all">ทุกหมวดหมู่</SelectItem>
                   <SelectItem value="equipment">อุปกรณ์</SelectItem>
                   <SelectItem value="consumable">วัสดุสิ้นเปลือง</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={activeFilter} onValueChange={(v) => { setActiveFilter(v); setCurrentPage(1); }}>
+                <SelectTrigger className="w-40"><SelectValue placeholder="ทั้งหมด" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">ทั้งหมด</SelectItem>
+                  <SelectItem value="active">เปิดใช้งาน</SelectItem>
+                  <SelectItem value="inactive">ปิดใช้งาน</SelectItem>
                 </SelectContent>
               </Select>
             </div>
