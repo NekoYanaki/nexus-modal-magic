@@ -67,25 +67,19 @@ const StockPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
 
-  const categories = Array.from(new Set(addons.map((a) => a.category))).sort();
+  // Only equipment items (exclude consumables)
+  const equipmentAddons = addons.filter((a) => {
+    const addonType = addonTypes.find((t) => t.name === a.category);
+    return addonType?.kind !== "consumable";
+  });
 
-  const getKindLabel = (category: string) => {
-    const addonType = addonTypes.find((t) => t.name === category);
-    return addonType?.kind === "consumable" ? "วัสดุสิ้นเปลือง" : "อุปกรณ์";
-  };
+  const categories = Array.from(new Set(equipmentAddons.map((a) => a.category))).sort();
 
-  const getKindVariant = (category: string) => {
-    const addonType = addonTypes.find((t) => t.name === category);
-    return addonType?.kind === "consumable" ? "secondary" as const : "outline" as const;
-  };
-
-  const filteredAddons = addons.filter((a) => {
+  const filteredAddons = equipmentAddons.filter((a) => {
     const matchesSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.id.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === "all" || a.category === categoryFilter;
     const matchesActive = activeFilter === "all" || (activeFilter === "active" ? a.isActive : !a.isActive);
-    const addonType = addonTypes.find((t) => t.name === a.category);
-    const matchesKind = kindFilter === "all" || addonType?.kind === kindFilter;
-    return matchesSearch && matchesCategory && matchesActive && matchesKind;
+    return matchesSearch && matchesCategory && matchesActive;
   });
 
   const totalPages = Math.ceil(filteredAddons.length / ITEMS_PER_PAGE);
