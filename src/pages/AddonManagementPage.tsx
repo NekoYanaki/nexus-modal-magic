@@ -76,7 +76,7 @@ const AddonManagementPage = () => {
 
   const handleEdit = (t: AddonType) => {
     setEditingType(t);
-    setFormData({ id: t.id, name: t.name, price: t.price, kind: t.kind });
+    setFormData({ id: t.id, name: t.name, price: t.price, kind: t.kind, isActive: t.isActive });
     setDialogOpen(true);
   };
 
