@@ -226,7 +226,7 @@ const AddonManagementPage = () => {
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Flame className="w-5 h-5 text-orange-500" />
+                <Flame className="w-5 h-5 text-warning" />
                 <h2 className="text-xl font-bold">วัสดุสิ้นเปลือง</h2>
                 <Badge variant="secondary" className="ml-1">{consumableTypes.length} รายการ</Badge>
               </div>
