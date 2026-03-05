@@ -116,10 +116,10 @@ const StockPage = () => {
     toast({ title: "สำเร็จ", description: "เพิ่มสินค้าเรียบร้อยแล้ว" });
   };
 
-  const availableCount = addons.filter((a) => a.stockStatus === "available").length;
-  const reservedCount = addons.filter((a) => a.stockStatus === "reserved").length;
-  const inUseCount = addons.filter((a) => a.stockStatus === "in_use").length;
-  const damagedBrokenCount = addons.filter((a) => a.stockStatus === "damaged" || a.stockStatus === "broken").length;
+  const availableCount = equipmentAddons.filter((a) => a.stockStatus === "available").length;
+  const reservedCount = equipmentAddons.filter((a) => a.stockStatus === "reserved").length;
+  const inUseCount = equipmentAddons.filter((a) => a.stockStatus === "in_use").length;
+  const damagedBrokenCount = equipmentAddons.filter((a) => a.stockStatus === "damaged" || a.stockStatus === "broken").length;
 
   const getStockStatusBadge = (status: Addon["stockStatus"], bookingRef?: string) => {
     switch (status) {
