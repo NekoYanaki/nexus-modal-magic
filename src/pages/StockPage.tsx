@@ -325,7 +325,7 @@ const StockPage = () => {
             </div>
             <div className="space-y-2">
               <Label>ราคา (บาท)</Label>
-              <Input type="number" min={0} value={newPrice} onChange={(e) => setNewPrice(e.target.value)} placeholder="เช่น 300" />
+              <Input type="number" min={0} value={newPrice} readOnly disabled className="bg-muted cursor-not-allowed" placeholder="เช่น 300" />
             </div>
             <div className="space-y-2">
               <Label>เปลี่ยนเป็นสถานะ</Label>
