@@ -22,20 +22,20 @@ export interface Addon {
 }
 
 const initialAddonTypes: AddonType[] = [
-  { id: "AD0001", name: "เบาะนั่งเด็ก", price: 300, kind: "equipment" },
-  { id: "AD0002", name: "อุปกรณ์แคมปิ้ง", price: 100, kind: "equipment" },
-  { id: "AD0003", name: "ชุดปิ้งย่าง", price: 150, kind: "equipment" },
-  { id: "AD0004", name: "เครื่องปั่นไฟ", price: 30000, kind: "equipment" },
-  { id: "AD0005", name: "โต๊ะกลางแจ้ง", price: 500, kind: "equipment" },
-  { id: "AD0006", name: "เก้าอี้พับ (ชุด)", price: 300, kind: "equipment" },
-  { id: "AD0007", name: "แก๊สกระป๋อง", price: 45, kind: "consumable" },
-  { id: "AD0008", name: "ถ่านไม้ (ถุง)", price: 60, kind: "consumable" },
-  { id: "AD0009", name: "น้ำแข็ง (ถุง)", price: 30, kind: "consumable" },
-  { id: "AD0010", name: "ถุงขยะ (แพ็ค)", price: 20, kind: "consumable" },
-  { id: "AD0011", name: "น้ำดื่ม (แพ็ค)", price: 50, kind: "consumable" },
-  { id: "AD0012", name: "ไม้จุดไฟ", price: 15, kind: "consumable" },
-  { id: "AD0013", name: "น้ำยาล้างจาน", price: 25, kind: "consumable" },
-  { id: "AD0014", name: "กระดาษทิชชู่ (ม้วน)", price: 10, kind: "consumable" },
+  { id: "AD0001", name: "เบาะนั่งเด็ก", price: 300, kind: "equipment", isActive: true },
+  { id: "AD0002", name: "อุปกรณ์แคมปิ้ง", price: 100, kind: "equipment", isActive: true },
+  { id: "AD0003", name: "ชุดปิ้งย่าง", price: 150, kind: "equipment", isActive: true },
+  { id: "AD0004", name: "เครื่องปั่นไฟ", price: 30000, kind: "equipment", isActive: true },
+  { id: "AD0005", name: "โต๊ะกลางแจ้ง", price: 500, kind: "equipment", isActive: true },
+  { id: "AD0006", name: "เก้าอี้พับ (ชุด)", price: 300, kind: "equipment", isActive: false },
+  { id: "AD0007", name: "แก๊สกระป๋อง", price: 45, kind: "consumable", isActive: true },
+  { id: "AD0008", name: "ถ่านไม้ (ถุง)", price: 60, kind: "consumable", isActive: true },
+  { id: "AD0009", name: "น้ำแข็ง (ถุง)", price: 30, kind: "consumable", isActive: true },
+  { id: "AD0010", name: "ถุงขยะ (แพ็ค)", price: 20, kind: "consumable", isActive: false },
+  { id: "AD0011", name: "น้ำดื่ม (แพ็ค)", price: 50, kind: "consumable", isActive: true },
+  { id: "AD0012", name: "ไม้จุดไฟ", price: 15, kind: "consumable", isActive: true },
+  { id: "AD0013", name: "น้ำยาล้างจาน", price: 25, kind: "consumable", isActive: true },
+  { id: "AD0014", name: "กระดาษทิชชู่ (ม้วน)", price: 10, kind: "consumable", isActive: true },
 ];
 
 const initialAddons: Addon[] = [
