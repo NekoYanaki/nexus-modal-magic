@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -53,18 +53,11 @@ const AddonManagementPage = () => {
   const [formData, setFormData] = useState({ id: "", name: "", price: 0, kind: "equipment" as AddonKind });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingType, setDeletingType] = useState<AddonType | null>(null);
-  const [equipPage, setEquipPage] = useState(1);
-  const [consumPage, setConsumPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
 
-  const equipmentTypes = useMemo(() => addonTypes.filter((t) => t.kind === "equipment"), [addonTypes]);
-  const consumableTypes = useMemo(() => addonTypes.filter((t) => t.kind === "consumable"), [addonTypes]);
-
-  const equipTotalPages = Math.ceil(equipmentTypes.length / ITEMS_PER_PAGE);
-  const consumTotalPages = Math.ceil(consumableTypes.length / ITEMS_PER_PAGE);
-
-  const pagedEquipment = equipmentTypes.slice((equipPage - 1) * ITEMS_PER_PAGE, equipPage * ITEMS_PER_PAGE);
-  const pagedConsumable = consumableTypes.slice((consumPage - 1) * ITEMS_PER_PAGE, consumPage * ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(addonTypes.length / ITEMS_PER_PAGE);
+  const pagedItems = addonTypes.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const handleAdd = (kind: AddonKind = "equipment") => {
     setEditingType(null);
@@ -202,44 +195,21 @@ const AddonManagementPage = () => {
           <span className="text-sm">admin</span>
         </div>
 
-        <div className="px-6 pt-6 pb-6 flex-1 space-y-6 overflow-auto">
-          {/* Equipment Section */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Package className="w-5 h-5 text-primary" />
-                <h2 className="text-xl font-bold">อุปกรณ์เสริม (Add-on)</h2>
-                <Badge variant="outline" className="ml-1">{equipmentTypes.length} รายการ</Badge>
-              </div>
-              <Button onClick={() => handleAdd("equipment")} className="gap-2">
-                <Plus className="w-4 h-4" />
-                เพิ่มอุปกรณ์
-              </Button>
+        <div className="px-6 pt-6 pb-6 flex-1 overflow-auto">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-2xl font-bold">จัดการ Add-on</h1>
+              <p className="text-sm text-muted-foreground">จัดการรายการอุปกรณ์เสริม (Add-on) และวัสดุสิ้นเปลือง</p>
             </div>
-            <Card>
-              {renderTable(pagedEquipment, "ไม่พบรายการอุปกรณ์")}
-              <Pagination currentPage={equipPage} totalPages={equipTotalPages} onPageChange={setEquipPage} />
-            </Card>
+            <Button onClick={() => handleAdd("equipment")} className="gap-2">
+              <Plus className="w-4 h-4" />
+              เพิ่ม Add-on
+            </Button>
           </div>
-
-          {/* Consumable Section */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Flame className="w-5 h-5 text-warning" />
-                <h2 className="text-xl font-bold">วัสดุสิ้นเปลือง</h2>
-                <Badge variant="secondary" className="ml-1">{consumableTypes.length} รายการ</Badge>
-              </div>
-              <Button onClick={() => handleAdd("consumable")} variant="outline" className="gap-2">
-                <Plus className="w-4 h-4" />
-                เพิ่มวัสดุสิ้นเปลือง
-              </Button>
-            </div>
-            <Card>
-              {renderTable(pagedConsumable, "ไม่พบรายการวัสดุสิ้นเปลือง")}
-              <Pagination currentPage={consumPage} totalPages={consumTotalPages} onPageChange={setConsumPage} />
-            </Card>
-          </div>
+          <Card>
+            {renderTable(pagedItems, "ไม่พบข้อมูล")}
+            <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+          </Card>
         </div>
       </main>
 
