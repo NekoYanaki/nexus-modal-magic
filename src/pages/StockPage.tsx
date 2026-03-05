@@ -54,6 +54,7 @@ const StockPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [kindFilter, setKindFilter] = useState("all");
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [adjustAddon, setAdjustAddon] = useState<Addon | null>(null);
   const [newStatus, setNewStatus] = useState<StockStatus>("available");
