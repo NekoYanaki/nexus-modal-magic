@@ -195,44 +195,21 @@ const AddonManagementPage = () => {
           <span className="text-sm">admin</span>
         </div>
 
-        <div className="px-6 pt-6 pb-6 flex-1 space-y-6 overflow-auto">
-          {/* Equipment Section */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Package className="w-5 h-5 text-primary" />
-                <h2 className="text-xl font-bold">อุปกรณ์เสริม (Add-on)</h2>
-                <Badge variant="outline" className="ml-1">{equipmentTypes.length} รายการ</Badge>
-              </div>
-              <Button onClick={() => handleAdd("equipment")} className="gap-2">
-                <Plus className="w-4 h-4" />
-                เพิ่มอุปกรณ์
-              </Button>
+        <div className="px-6 pt-6 pb-6 flex-1 overflow-auto">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-2xl font-bold">จัดการ Add-on</h1>
+              <p className="text-sm text-muted-foreground">จัดการรายการอุปกรณ์เสริม (Add-on) และวัสดุสิ้นเปลือง</p>
             </div>
-            <Card>
-              {renderTable(pagedEquipment, "ไม่พบรายการอุปกรณ์")}
-              <Pagination currentPage={equipPage} totalPages={equipTotalPages} onPageChange={setEquipPage} />
-            </Card>
+            <Button onClick={() => handleAdd("equipment")} className="gap-2">
+              <Plus className="w-4 h-4" />
+              เพิ่ม Add-on
+            </Button>
           </div>
-
-          {/* Consumable Section */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Flame className="w-5 h-5 text-warning" />
-                <h2 className="text-xl font-bold">วัสดุสิ้นเปลือง</h2>
-                <Badge variant="secondary" className="ml-1">{consumableTypes.length} รายการ</Badge>
-              </div>
-              <Button onClick={() => handleAdd("consumable")} variant="outline" className="gap-2">
-                <Plus className="w-4 h-4" />
-                เพิ่มวัสดุสิ้นเปลือง
-              </Button>
-            </div>
-            <Card>
-              {renderTable(pagedConsumable, "ไม่พบรายการวัสดุสิ้นเปลือง")}
-              <Pagination currentPage={consumPage} totalPages={consumTotalPages} onPageChange={setConsumPage} />
-            </Card>
-          </div>
+          <Card>
+            {renderTable(pagedItems, "ไม่พบข้อมูล")}
+            <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+          </Card>
         </div>
       </main>
 
