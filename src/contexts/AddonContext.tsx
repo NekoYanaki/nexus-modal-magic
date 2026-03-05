@@ -31,6 +31,10 @@ const initialAddonTypes: AddonType[] = [
   { id: "AD0008", name: "ถ่านไม้ (ถุง)", price: 60, kind: "consumable" },
   { id: "AD0009", name: "น้ำแข็ง (ถุง)", price: 30, kind: "consumable" },
   { id: "AD0010", name: "ถุงขยะ (แพ็ค)", price: 20, kind: "consumable" },
+  { id: "AD0011", name: "น้ำดื่ม (แพ็ค)", price: 50, kind: "consumable" },
+  { id: "AD0012", name: "ไม้จุดไฟ", price: 15, kind: "consumable" },
+  { id: "AD0013", name: "น้ำยาล้างจาน", price: 25, kind: "consumable" },
+  { id: "AD0014", name: "กระดาษทิชชู่ (ม้วน)", price: 10, kind: "consumable" },
 ];
 
 const initialAddons: Addon[] = [
