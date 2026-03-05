@@ -53,18 +53,11 @@ const AddonManagementPage = () => {
   const [formData, setFormData] = useState({ id: "", name: "", price: 0, kind: "equipment" as AddonKind });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingType, setDeletingType] = useState<AddonType | null>(null);
-  const [equipPage, setEquipPage] = useState(1);
-  const [consumPage, setConsumPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
 
-  const equipmentTypes = useMemo(() => addonTypes.filter((t) => t.kind === "equipment"), [addonTypes]);
-  const consumableTypes = useMemo(() => addonTypes.filter((t) => t.kind === "consumable"), [addonTypes]);
-
-  const equipTotalPages = Math.ceil(equipmentTypes.length / ITEMS_PER_PAGE);
-  const consumTotalPages = Math.ceil(consumableTypes.length / ITEMS_PER_PAGE);
-
-  const pagedEquipment = equipmentTypes.slice((equipPage - 1) * ITEMS_PER_PAGE, equipPage * ITEMS_PER_PAGE);
-  const pagedConsumable = consumableTypes.slice((consumPage - 1) * ITEMS_PER_PAGE, consumPage * ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(addonTypes.length / ITEMS_PER_PAGE);
+  const pagedItems = addonTypes.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const handleAdd = (kind: AddonKind = "equipment") => {
     setEditingType(null);
