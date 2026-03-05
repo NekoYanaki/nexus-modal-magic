@@ -27,7 +27,10 @@ const initialAddonTypes: AddonType[] = [
   { id: "AD0004", name: "เครื่องปั่นไฟ", price: 30000, kind: "equipment" },
   { id: "AD0005", name: "โต๊ะกลางแจ้ง", price: 500, kind: "equipment" },
   { id: "AD0006", name: "เก้าอี้พับ (ชุด)", price: 300, kind: "equipment" },
-  { id: "AD0007", name: "เตาแก๊ส", price: 200, kind: "consumable" },
+  { id: "AD0007", name: "แก๊สกระป๋อง", price: 45, kind: "consumable" },
+  { id: "AD0008", name: "ถ่านไม้ (ถุง)", price: 60, kind: "consumable" },
+  { id: "AD0009", name: "น้ำแข็ง (ถุง)", price: 30, kind: "consumable" },
+  { id: "AD0010", name: "ถุงขยะ (แพ็ค)", price: 20, kind: "consumable" },
 ];
 
 const initialAddons: Addon[] = [
@@ -46,8 +49,11 @@ const initialAddons: Addon[] = [
   { id: "CHR-001", name: "เก้าอี้พับ ชุด A (4 ตัว)", category: "เก้าอี้พับ", defaultPrice: 300, isActive: true, stockStatus: "reserved", bookingRef: "BK005" },
   { id: "CHR-002", name: "เก้าอี้พับ ชุด B (4 ตัว)", category: "เก้าอี้พับ", defaultPrice: 300, isActive: true, stockStatus: "available" },
   { id: "ICE-001", name: "ถังน้ำแข็ง 20L", category: "ถังน้ำแข็ง", defaultPrice: 50, isActive: false, stockStatus: "broken" },
-  { id: "GAS-001", name: "เตาแก๊สพกพา ตัวที่ 1", category: "เตาแก๊ส", defaultPrice: 200, isActive: true, stockStatus: "available" },
-  { id: "GAS-002", name: "เตาแก๊สพกพา ตัวที่ 2", category: "เตาแก๊ส", defaultPrice: 200, isActive: true, stockStatus: "available" },
+  { id: "GAS-001", name: "แก๊สกระป๋อง ลัง A", category: "แก๊สกระป๋อง", defaultPrice: 45, isActive: true, stockStatus: "available" },
+  { id: "GAS-002", name: "แก๊สกระป๋อง ลัง B", category: "แก๊สกระป๋อง", defaultPrice: 45, isActive: true, stockStatus: "available" },
+  { id: "COAL-001", name: "ถ่านไม้ ถุงที่ 1", category: "ถ่านไม้ (ถุง)", defaultPrice: 60, isActive: true, stockStatus: "available" },
+  { id: "ICE2-001", name: "น้ำแข็ง ถุงที่ 1", category: "น้ำแข็ง (ถุง)", defaultPrice: 30, isActive: true, stockStatus: "available" },
+  { id: "TRASH-001", name: "ถุงขยะ แพ็คที่ 1", category: "ถุงขยะ (แพ็ค)", defaultPrice: 20, isActive: true, stockStatus: "available" },
 ];
 
 interface AddonContextType {
