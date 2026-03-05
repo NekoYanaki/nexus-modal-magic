@@ -16,7 +16,7 @@ import {
 import {
   Car, Plus, Pencil, Trash2, Package, Settings, Bell, Home,
   MessageSquare, Users, CalendarDays, Tent, Calendar, CreditCard, Tag,
-  Star, FileText, Database, Boxes, Wrench, ChevronLeft, ChevronRight, Flame,
+  Star, FileText, Database, Boxes, Wrench, ChevronLeft, ChevronRight, Flame, Search,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
