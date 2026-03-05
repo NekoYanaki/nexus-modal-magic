@@ -146,7 +146,7 @@ const AddonManagementPage = () => {
           </div>
         </div>
 
-        <Card>
+        <div className="px-6 pb-6 flex-1">
           <Table>
             <TableHeader>
               <TableRow>
