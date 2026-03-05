@@ -119,19 +119,27 @@ const AddonManagementPage = () => {
         </nav>
       </aside>
 
-      <main className="flex-1 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">จัดการ Add-on</h1>
-            <p className="text-sm text-muted-foreground">จัดการรายการอุปกรณ์เสริม (Add-on)</p>
-          </div>
-          <div className="flex items-center gap-3">
+      <main className="flex-1 flex flex-col">
+        {/* Top bar */}
+        <div className="flex items-center justify-end gap-3 px-6 py-3 border-b">
+          <div className="relative">
             <Bell className="w-5 h-5 text-muted-foreground" />
-            <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
-              <Users className="w-4 h-4" />
+            <span className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">04</span>
+          </div>
+          <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
+            <Users className="w-4 h-4" />
+          </div>
+          <span className="text-sm">admin</span>
+        </div>
+
+        {/* Page header */}
+        <div className="px-6 pt-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-2xl font-bold">จัดการ Add-on</h1>
+              <p className="text-sm text-muted-foreground">จัดการรายการอุปกรณ์เสริม (Add-on)</p>
             </div>
-            <span className="text-sm">admin</span>
-            <Button onClick={handleAdd} className="gap-2 ml-2">
+            <Button onClick={handleAdd} className="gap-2">
               <Plus className="w-4 h-4" />
               เพิ่ม Add-on
             </Button>
