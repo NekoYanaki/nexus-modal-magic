@@ -295,6 +295,7 @@ const StockPage = () => {
                 <TableHead>รหัส</TableHead>
                 <TableHead>ชื่อ Add-on</TableHead>
                 <TableHead>หมวดหมู่</TableHead>
+                <TableHead className="text-center">ประเภท</TableHead>
                 <TableHead className="text-right">ราคา</TableHead>
                 <TableHead className="text-center">สถานะการใช้งาน</TableHead>
                 <TableHead className="text-center">สถานะ</TableHead>
@@ -302,11 +303,16 @@ const StockPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredAddons.map((addon) => (
+              {pagedAddons.map((addon) => (
                 <TableRow key={addon.id}>
                   <TableCell className="font-mono text-sm text-muted-foreground">{addon.id}</TableCell>
                   <TableCell className="font-semibold">{addon.name}</TableCell>
                   <TableCell><Badge variant="outline">{addon.category}</Badge></TableCell>
+                  <TableCell className="text-center">
+                    <Badge variant={getKindVariant(addon.category)} className="text-xs">
+                      {getKindLabel(addon.category)}
+                    </Badge>
+                  </TableCell>
                   <TableCell className="text-right font-medium">฿{addon.defaultPrice.toLocaleString()}</TableCell>
                   <TableCell className="text-center">
                     <div className="flex items-center justify-center gap-1.5">
@@ -327,11 +333,12 @@ const StockPage = () => {
               ))}
               {filteredAddons.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล Add-on</TableCell>
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล Add-on</TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
         </Card>
       </main>
 
