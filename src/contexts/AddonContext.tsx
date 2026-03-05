@@ -27,7 +27,10 @@ const initialAddonTypes: AddonType[] = [
   { id: "AD0004", name: "เครื่องปั่นไฟ", price: 30000, kind: "equipment" },
   { id: "AD0005", name: "โต๊ะกลางแจ้ง", price: 500, kind: "equipment" },
   { id: "AD0006", name: "เก้าอี้พับ (ชุด)", price: 300, kind: "equipment" },
-  { id: "AD0007", name: "เตาแก๊ส", price: 200, kind: "consumable" },
+  { id: "AD0007", name: "แก๊สกระป๋อง", price: 45, kind: "consumable" },
+  { id: "AD0008", name: "ถ่านไม้ (ถุง)", price: 60, kind: "consumable" },
+  { id: "AD0009", name: "น้ำแข็ง (ถุง)", price: 30, kind: "consumable" },
+  { id: "AD0010", name: "ถุงขยะ (แพ็ค)", price: 20, kind: "consumable" },
 ];
 
 const initialAddons: Addon[] = [
