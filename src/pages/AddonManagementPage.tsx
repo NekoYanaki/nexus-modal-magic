@@ -54,10 +54,12 @@ const AddonManagementPage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingType, setDeletingType] = useState<AddonType | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [kindFilter, setKindFilter] = useState("all");
   const { toast } = useToast();
 
-  const totalPages = Math.ceil(addonTypes.length / ITEMS_PER_PAGE);
-  const pagedItems = addonTypes.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  const filteredTypes = kindFilter === "all" ? addonTypes : addonTypes.filter((t) => t.kind === kindFilter);
+  const totalPages = Math.ceil(filteredTypes.length / ITEMS_PER_PAGE);
+  const pagedItems = filteredTypes.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const handleAdd = (kind: AddonKind = "equipment") => {
     setEditingType(null);
@@ -213,6 +215,16 @@ const AddonManagementPage = () => {
             </Button>
           </div>
           <Card>
+            <div className="flex items-center gap-4 px-4 pt-4">
+              <Select value={kindFilter} onValueChange={(v) => { setKindFilter(v); setCurrentPage(1); }}>
+                <SelectTrigger className="w-48"><SelectValue placeholder="ประเภท" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">ทุกประเภท</SelectItem>
+                  <SelectItem value="equipment">อุปกรณ์</SelectItem>
+                  <SelectItem value="consumable">วัสดุสิ้นเปลือง</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             {renderTable(pagedItems, "ไม่พบข้อมูล")}
             <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
           </Card>

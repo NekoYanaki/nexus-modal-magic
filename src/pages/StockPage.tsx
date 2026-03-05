@@ -54,6 +54,7 @@ const StockPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [kindFilter, setKindFilter] = useState("all");
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [adjustAddon, setAdjustAddon] = useState<Addon | null>(null);
   const [newStatus, setNewStatus] = useState<StockStatus>("available");
@@ -82,7 +83,9 @@ const StockPage = () => {
     const matchesSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.id.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === "all" || a.category === categoryFilter;
     const matchesActive = activeFilter === "all" || (activeFilter === "active" ? a.isActive : !a.isActive);
-    return matchesSearch && matchesCategory && matchesActive;
+    const addonType = addonTypes.find((t) => t.name === a.category);
+    const matchesKind = kindFilter === "all" || addonType?.kind === kindFilter;
+    return matchesSearch && matchesCategory && matchesActive && matchesKind;
   });
 
   const totalPages = Math.ceil(filteredAddons.length / ITEMS_PER_PAGE);
@@ -277,6 +280,14 @@ const StockPage = () => {
                 {categories.map((cat) => (
                   <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+            <Select value={kindFilter} onValueChange={(v) => { setKindFilter(v); setCurrentPage(1); }}>
+              <SelectTrigger className="w-48"><SelectValue placeholder="ประเภท" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">ทุกประเภท</SelectItem>
+                <SelectItem value="equipment">อุปกรณ์</SelectItem>
+                <SelectItem value="consumable">วัสดุสิ้นเปลือง</SelectItem>
               </SelectContent>
             </Select>
             <Select value={activeFilter} onValueChange={(v) => { setActiveFilter(v); setCurrentPage(1); }}>
