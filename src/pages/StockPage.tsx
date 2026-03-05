@@ -19,10 +19,35 @@ import {
   Car, Search, Plus, Pencil, Package, Settings, Bell, Home,
   MessageSquare, Users, CalendarDays, Tent, Calendar, CreditCard, Tag,
   Star, FileText, Database, Boxes, Wrench, CheckCircle, AlertTriangle,
+  ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAddons, type Addon, type StockStatus } from "@/contexts/AddonContext";
+
+const ITEMS_PER_PAGE = 10;
+
+const Pagination = ({ currentPage, totalPages, onPageChange }: { currentPage: number; totalPages: number; onPageChange: (p: number) => void }) => {
+  if (totalPages <= 1) return null;
+  return (
+    <div className="flex items-center justify-between px-4 py-3 border-t">
+      <p className="text-sm text-muted-foreground">หน้า {currentPage} / {totalPages}</p>
+      <div className="flex items-center gap-1">
+        <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => onPageChange(currentPage - 1)}>
+          <ChevronLeft className="w-4 h-4" />
+        </Button>
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+          <Button key={p} variant={p === currentPage ? "default" : "outline"} size="sm" className="w-8" onClick={() => onPageChange(p)}>
+            {p}
+          </Button>
+        ))}
+        <Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => onPageChange(currentPage + 1)}>
+          <ChevronRight className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  );
+};
 
 const StockPage = () => {
   const { addons, setAddons } = useAddons();
