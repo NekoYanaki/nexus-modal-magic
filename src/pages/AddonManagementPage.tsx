@@ -50,14 +50,21 @@ const AddonManagementPage = () => {
   const { addonTypes, setAddonTypes } = useAddons();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingType, setEditingType] = useState<AddonType | null>(null);
-  const [formData, setFormData] = useState({ id: "", name: "", price: 0, kind: "equipment" as AddonKind });
+  const [formData, setFormData] = useState({ id: "", name: "", price: 0, kind: "equipment" as AddonKind, isActive: true });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingType, setDeletingType] = useState<AddonType | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [kindFilter, setKindFilter] = useState("all");
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
 
-  const filteredTypes = kindFilter === "all" ? addonTypes : addonTypes.filter((t) => t.kind === kindFilter);
+  const filteredTypes = addonTypes.filter((t) => {
+    const matchesKind = kindFilter === "all" || t.kind === kindFilter;
+    const matchesActive = activeFilter === "all" || (activeFilter === "active" ? t.isActive : !t.isActive);
+    const matchesSearch = searchQuery === "" || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesKind && matchesActive && matchesSearch;
+  });
   const totalPages = Math.ceil(filteredTypes.length / ITEMS_PER_PAGE);
   const pagedItems = filteredTypes.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
