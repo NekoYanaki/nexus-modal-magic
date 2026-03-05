@@ -19,13 +19,38 @@ import {
   Car, Search, Plus, Pencil, Package, Settings, Bell, Home,
   MessageSquare, Users, CalendarDays, Tent, Calendar, CreditCard, Tag,
   Star, FileText, Database, Boxes, Wrench, CheckCircle, AlertTriangle,
+  ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAddons, type Addon, type StockStatus } from "@/contexts/AddonContext";
 
+const ITEMS_PER_PAGE = 10;
+
+const Pagination = ({ currentPage, totalPages, onPageChange }: { currentPage: number; totalPages: number; onPageChange: (p: number) => void }) => {
+  if (totalPages <= 1) return null;
+  return (
+    <div className="flex items-center justify-between px-4 py-3 border-t">
+      <p className="text-sm text-muted-foreground">หน้า {currentPage} / {totalPages}</p>
+      <div className="flex items-center gap-1">
+        <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => onPageChange(currentPage - 1)}>
+          <ChevronLeft className="w-4 h-4" />
+        </Button>
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+          <Button key={p} variant={p === currentPage ? "default" : "outline"} size="sm" className="w-8" onClick={() => onPageChange(p)}>
+            {p}
+          </Button>
+        ))}
+        <Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => onPageChange(currentPage + 1)}>
+          <ChevronRight className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 const StockPage = () => {
-  const { addons, setAddons } = useAddons();
+  const { addons, setAddons, addonTypes } = useAddons();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -38,9 +63,20 @@ const StockPage = () => {
   const [newIsActive, setNewIsActive] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
   const [addFormData, setAddFormData] = useState({ id: "", name: "", category: "", defaultPrice: 0, isActive: true, stockStatus: "available" as StockStatus, bookingRef: "" });
+  const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
 
   const categories = Array.from(new Set(addons.map((a) => a.category))).sort();
+
+  const getKindLabel = (category: string) => {
+    const addonType = addonTypes.find((t) => t.name === category);
+    return addonType?.kind === "consumable" ? "วัสดุสิ้นเปลือง" : "อุปกรณ์";
+  };
+
+  const getKindVariant = (category: string) => {
+    const addonType = addonTypes.find((t) => t.name === category);
+    return addonType?.kind === "consumable" ? "secondary" as const : "outline" as const;
+  };
 
   const filteredAddons = addons.filter((a) => {
     const matchesSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.id.toLowerCase().includes(searchQuery.toLowerCase());
@@ -48,6 +84,9 @@ const StockPage = () => {
     const matchesActive = activeFilter === "all" || (activeFilter === "active" ? a.isActive : !a.isActive);
     return matchesSearch && matchesCategory && matchesActive;
   });
+
+  const totalPages = Math.ceil(filteredAddons.length / ITEMS_PER_PAGE);
+  const pagedAddons = filteredAddons.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const handleAdjustOpen = (addon: Addon) => {
     setAdjustAddon(addon);
@@ -229,9 +268,9 @@ const StockPage = () => {
           <div className="flex items-center gap-4 mb-6">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="ค้นหา Add-on..." className="pl-10" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+              <Input placeholder="ค้นหา Add-on..." className="pl-10" value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }} />
             </div>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <Select value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v); setCurrentPage(1); }}>
               <SelectTrigger className="w-48"><SelectValue placeholder="หมวดหมู่" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">ทุกหมวดหมู่</SelectItem>
@@ -240,7 +279,7 @@ const StockPage = () => {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={activeFilter} onValueChange={setActiveFilter}>
+            <Select value={activeFilter} onValueChange={(v) => { setActiveFilter(v); setCurrentPage(1); }}>
               <SelectTrigger className="w-44"><SelectValue placeholder="สถานะ" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">ทั้งหมด</SelectItem>
@@ -256,6 +295,7 @@ const StockPage = () => {
                 <TableHead>รหัส</TableHead>
                 <TableHead>ชื่อ Add-on</TableHead>
                 <TableHead>หมวดหมู่</TableHead>
+                <TableHead className="text-center">ประเภท</TableHead>
                 <TableHead className="text-right">ราคา</TableHead>
                 <TableHead className="text-center">สถานะการใช้งาน</TableHead>
                 <TableHead className="text-center">สถานะ</TableHead>
@@ -263,11 +303,16 @@ const StockPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredAddons.map((addon) => (
+              {pagedAddons.map((addon) => (
                 <TableRow key={addon.id}>
                   <TableCell className="font-mono text-sm text-muted-foreground">{addon.id}</TableCell>
                   <TableCell className="font-semibold">{addon.name}</TableCell>
                   <TableCell><Badge variant="outline">{addon.category}</Badge></TableCell>
+                  <TableCell className="text-center">
+                    <Badge variant={getKindVariant(addon.category)} className="text-xs">
+                      {getKindLabel(addon.category)}
+                    </Badge>
+                  </TableCell>
                   <TableCell className="text-right font-medium">฿{addon.defaultPrice.toLocaleString()}</TableCell>
                   <TableCell className="text-center">
                     <div className="flex items-center justify-center gap-1.5">
@@ -288,11 +333,12 @@ const StockPage = () => {
               ))}
               {filteredAddons.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล Add-on</TableCell>
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล Add-on</TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
         </Card>
       </main>
 
