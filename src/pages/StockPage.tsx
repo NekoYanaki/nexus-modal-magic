@@ -292,7 +292,7 @@ const StockPage = () => {
                 <TableHead>รหัส</TableHead>
                 <TableHead>ชื่อ Add-on</TableHead>
                 <TableHead>หมวดหมู่</TableHead>
-                <TableHead className="text-center">ประเภท</TableHead>
+                
                 <TableHead className="text-right">ราคา</TableHead>
                 <TableHead className="text-center">สถานะการใช้งาน</TableHead>
                 <TableHead className="text-center">สถานะ</TableHead>
