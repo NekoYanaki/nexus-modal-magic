@@ -147,47 +147,49 @@ const AddonManagementPage = () => {
         </div>
 
         <div className="px-6 pb-6 flex-1">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-32">ID</TableHead>
-                <TableHead>ชื่อ</TableHead>
-                <TableHead className="w-32">ประเภท</TableHead>
-                <TableHead className="text-right w-40">ราคา</TableHead>
-                <TableHead className="text-center w-28">จัดการ</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {addonTypes.map((t) => (
-                <TableRow key={t.id}>
-                  <TableCell className="font-semibold">{t.id}</TableCell>
-                  <TableCell>{t.name}</TableCell>
-                  <TableCell>
-                    <Badge variant={t.kind === "consumable" ? "secondary" : "outline"} className="text-xs">
-                      {kindLabel(t.kind)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">{t.price.toLocaleString()} บาท</TableCell>
-                  <TableCell className="text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-warning" onClick={() => handleEdit(t)}>
-                        <Pencil className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { setDeletingType(t); setDeleteDialogOpen(true); }}>
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {addonTypes.length === 0 && (
+          <Card>
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล</TableCell>
+                  <TableHead className="w-32">ID</TableHead>
+                  <TableHead>ชื่อ</TableHead>
+                  <TableHead className="w-32">ประเภท</TableHead>
+                  <TableHead className="text-right w-40">ราคา</TableHead>
+                  <TableHead className="text-center w-28">จัดการ</TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </Card>
+              </TableHeader>
+              <TableBody>
+                {addonTypes.map((t) => (
+                  <TableRow key={t.id}>
+                    <TableCell className="font-semibold">{t.id}</TableCell>
+                    <TableCell>{t.name}</TableCell>
+                    <TableCell>
+                      <Badge variant={t.kind === "consumable" ? "secondary" : "outline"} className="text-xs">
+                        {kindLabel(t.kind)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">{t.price.toLocaleString()} บาท</TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-warning" onClick={() => handleEdit(t)}>
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { setDeletingType(t); setDeleteDialogOpen(true); }}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {addonTypes.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </Card>
+        </div>
       </main>
 
       {/* Add/Edit Dialog */}
