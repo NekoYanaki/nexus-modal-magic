@@ -8,6 +8,7 @@ export interface AddonType {
   name: string;
   price: number;
   kind: AddonKind;
+  isActive: boolean;
 }
 
 export interface Addon {
