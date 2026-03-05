@@ -215,6 +215,16 @@ const AddonManagementPage = () => {
             </Button>
           </div>
           <Card>
+            <div className="flex items-center gap-4 px-4 pt-4">
+              <Select value={kindFilter} onValueChange={(v) => { setKindFilter(v); setCurrentPage(1); }}>
+                <SelectTrigger className="w-48"><SelectValue placeholder="ประเภท" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">ทุกประเภท</SelectItem>
+                  <SelectItem value="equipment">อุปกรณ์</SelectItem>
+                  <SelectItem value="consumable">วัสดุสิ้นเปลือง</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             {renderTable(pagedItems, "ไม่พบข้อมูล")}
             <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
           </Card>

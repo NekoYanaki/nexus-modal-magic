@@ -282,6 +282,14 @@ const StockPage = () => {
                 ))}
               </SelectContent>
             </Select>
+            <Select value={kindFilter} onValueChange={(v) => { setKindFilter(v); setCurrentPage(1); }}>
+              <SelectTrigger className="w-48"><SelectValue placeholder="ประเภท" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">ทุกประเภท</SelectItem>
+                <SelectItem value="equipment">อุปกรณ์</SelectItem>
+                <SelectItem value="consumable">วัสดุสิ้นเปลือง</SelectItem>
+              </SelectContent>
+            </Select>
             <Select value={activeFilter} onValueChange={(v) => { setActiveFilter(v); setCurrentPage(1); }}>
               <SelectTrigger className="w-44"><SelectValue placeholder="สถานะ" /></SelectTrigger>
               <SelectContent>
