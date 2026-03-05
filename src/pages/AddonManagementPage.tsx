@@ -16,7 +16,7 @@ import {
 import {
   Car, Plus, Pencil, Trash2, Package, Settings, Bell, Home,
   MessageSquare, Users, CalendarDays, Tent, Calendar, CreditCard, Tag,
-  Star, FileText, Database, Boxes, Wrench, ChevronLeft, ChevronRight, Flame,
+  Star, FileText, Database, Boxes, Wrench, ChevronLeft, ChevronRight, Flame, Search,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -50,26 +50,33 @@ const AddonManagementPage = () => {
   const { addonTypes, setAddonTypes } = useAddons();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingType, setEditingType] = useState<AddonType | null>(null);
-  const [formData, setFormData] = useState({ id: "", name: "", price: 0, kind: "equipment" as AddonKind });
+  const [formData, setFormData] = useState({ id: "", name: "", price: 0, kind: "equipment" as AddonKind, isActive: true });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingType, setDeletingType] = useState<AddonType | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [kindFilter, setKindFilter] = useState("all");
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
 
-  const filteredTypes = kindFilter === "all" ? addonTypes : addonTypes.filter((t) => t.kind === kindFilter);
+  const filteredTypes = addonTypes.filter((t) => {
+    const matchesKind = kindFilter === "all" || t.kind === kindFilter;
+    const matchesActive = activeFilter === "all" || (activeFilter === "active" ? t.isActive : !t.isActive);
+    const matchesSearch = searchQuery === "" || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesKind && matchesActive && matchesSearch;
+  });
   const totalPages = Math.ceil(filteredTypes.length / ITEMS_PER_PAGE);
   const pagedItems = filteredTypes.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const handleAdd = (kind: AddonKind = "equipment") => {
     setEditingType(null);
-    setFormData({ id: "", name: "", price: 0, kind });
+    setFormData({ id: "", name: "", price: 0, kind, isActive: true });
     setDialogOpen(true);
   };
 
   const handleEdit = (t: AddonType) => {
     setEditingType(t);
-    setFormData({ id: t.id, name: t.name, price: t.price, kind: t.kind });
+    setFormData({ id: t.id, name: t.name, price: t.price, kind: t.kind, isActive: t.isActive });
     setDialogOpen(true);
   };
 
@@ -116,6 +123,11 @@ const AddonManagementPage = () => {
     { icon: Settings, label: "ตั้งค่า", href: "/" },
   ];
 
+  const handleToggleActive = (t: AddonType) => {
+    setAddonTypes((prev) => prev.map((item) => item.id === t.id ? { ...item, isActive: !item.isActive } : item));
+    toast({ title: t.isActive ? "ปิดใช้งานแล้ว" : "เปิดใช้งานแล้ว", description: t.name });
+  };
+
   const renderTable = (items: AddonType[], emptyText: string) => (
     <Table>
       <TableHeader>
@@ -124,12 +136,13 @@ const AddonManagementPage = () => {
           <TableHead>ชื่อ</TableHead>
           <TableHead className="w-36">ประเภท</TableHead>
           <TableHead className="text-right w-40">ราคา</TableHead>
+          <TableHead className="text-center w-28">สถานะ</TableHead>
           <TableHead className="text-center w-28">จัดการ</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {items.map((t) => (
-          <TableRow key={t.id}>
+          <TableRow key={t.id} className={!t.isActive ? "opacity-60" : ""}>
             <TableCell className="font-semibold">{t.id}</TableCell>
             <TableCell>{t.name}</TableCell>
             <TableCell>
@@ -138,6 +151,15 @@ const AddonManagementPage = () => {
               </Badge>
             </TableCell>
             <TableCell className="text-right">{t.price.toLocaleString()} บาท</TableCell>
+            <TableCell className="text-center">
+              <Badge
+                variant={t.isActive ? "default" : "outline"}
+                className={`cursor-pointer ${t.isActive ? "bg-green-600 hover:bg-green-700" : ""}`}
+                onClick={() => handleToggleActive(t)}
+              >
+                {t.isActive ? "เปิดใช้งาน" : "ปิดใช้งาน"}
+              </Badge>
+            </TableCell>
             <TableCell className="text-center">
               <div className="flex items-center justify-center gap-1">
                 <Button variant="ghost" size="icon" className="h-8 w-8 text-warning" onClick={() => handleEdit(t)}>
@@ -152,7 +174,7 @@ const AddonManagementPage = () => {
         ))}
         {items.length === 0 && (
           <TableRow>
-            <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{emptyText}</TableCell>
+            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">{emptyText}</TableCell>
           </TableRow>
         )}
       </TableBody>
@@ -216,12 +238,29 @@ const AddonManagementPage = () => {
           </div>
           <Card>
             <div className="flex items-center gap-4 px-4 pt-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="ค้นหา Add-on..."
+                  value={searchQuery}
+                  onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                  className="pl-9"
+                />
+              </div>
               <Select value={kindFilter} onValueChange={(v) => { setKindFilter(v); setCurrentPage(1); }}>
-                <SelectTrigger className="w-48"><SelectValue placeholder="ประเภท" /></SelectTrigger>
+                <SelectTrigger className="w-48"><SelectValue placeholder="ทุกหมวดหมู่" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">ทุกประเภท</SelectItem>
+                  <SelectItem value="all">ทุกหมวดหมู่</SelectItem>
                   <SelectItem value="equipment">อุปกรณ์</SelectItem>
                   <SelectItem value="consumable">วัสดุสิ้นเปลือง</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={activeFilter} onValueChange={(v) => { setActiveFilter(v); setCurrentPage(1); }}>
+                <SelectTrigger className="w-40"><SelectValue placeholder="ทั้งหมด" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">ทั้งหมด</SelectItem>
+                  <SelectItem value="active">เปิดใช้งาน</SelectItem>
+                  <SelectItem value="inactive">ปิดใช้งาน</SelectItem>
                 </SelectContent>
               </Select>
             </div>
