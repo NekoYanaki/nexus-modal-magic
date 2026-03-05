@@ -119,67 +119,77 @@ const AddonManagementPage = () => {
         </nav>
       </aside>
 
-      <main className="flex-1 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">จัดการ Add-on</h1>
-            <p className="text-sm text-muted-foreground">จัดการรายการอุปกรณ์เสริม (Add-on)</p>
-          </div>
-          <div className="flex items-center gap-3">
+      <main className="flex-1 flex flex-col">
+        {/* Top bar */}
+        <div className="flex items-center justify-end gap-3 px-6 py-3 border-b">
+          <div className="relative">
             <Bell className="w-5 h-5 text-muted-foreground" />
-            <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
-              <Users className="w-4 h-4" />
+            <span className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">04</span>
+          </div>
+          <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
+            <Users className="w-4 h-4" />
+          </div>
+          <span className="text-sm">admin</span>
+        </div>
+
+        {/* Page header */}
+        <div className="px-6 pt-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-2xl font-bold">จัดการ Add-on</h1>
+              <p className="text-sm text-muted-foreground">จัดการรายการอุปกรณ์เสริม (Add-on)</p>
             </div>
-            <span className="text-sm">admin</span>
-            <Button onClick={handleAdd} className="gap-2 ml-2">
+            <Button onClick={handleAdd} className="gap-2">
               <Plus className="w-4 h-4" />
               เพิ่ม Add-on
             </Button>
           </div>
         </div>
 
-        <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-32">ID</TableHead>
-                <TableHead>ชื่อ</TableHead>
-                <TableHead className="w-32">ประเภท</TableHead>
-                <TableHead className="text-right w-40">ราคา</TableHead>
-                <TableHead className="text-center w-28">จัดการ</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {addonTypes.map((t) => (
-                <TableRow key={t.id}>
-                  <TableCell className="font-semibold">{t.id}</TableCell>
-                  <TableCell>{t.name}</TableCell>
-                  <TableCell>
-                    <Badge variant={t.kind === "consumable" ? "secondary" : "outline"} className="text-xs">
-                      {kindLabel(t.kind)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">{t.price.toLocaleString()} บาท</TableCell>
-                  <TableCell className="text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-warning" onClick={() => handleEdit(t)}>
-                        <Pencil className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { setDeletingType(t); setDeleteDialogOpen(true); }}>
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {addonTypes.length === 0 && (
+        <div className="px-6 pb-6 flex-1">
+          <Card>
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล</TableCell>
+                  <TableHead className="w-32">ID</TableHead>
+                  <TableHead>ชื่อ</TableHead>
+                  <TableHead className="w-32">ประเภท</TableHead>
+                  <TableHead className="text-right w-40">ราคา</TableHead>
+                  <TableHead className="text-center w-28">จัดการ</TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </Card>
+              </TableHeader>
+              <TableBody>
+                {addonTypes.map((t) => (
+                  <TableRow key={t.id}>
+                    <TableCell className="font-semibold">{t.id}</TableCell>
+                    <TableCell>{t.name}</TableCell>
+                    <TableCell>
+                      <Badge variant={t.kind === "consumable" ? "secondary" : "outline"} className="text-xs">
+                        {kindLabel(t.kind)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">{t.price.toLocaleString()} บาท</TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-warning" onClick={() => handleEdit(t)}>
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { setDeletingType(t); setDeleteDialogOpen(true); }}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {addonTypes.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">ไม่พบข้อมูล</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </Card>
+        </div>
       </main>
 
       {/* Add/Edit Dialog */}
