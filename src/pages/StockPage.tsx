@@ -305,11 +305,6 @@ const StockPage = () => {
                   <TableCell className="font-mono text-sm text-muted-foreground">{addon.id}</TableCell>
                   <TableCell className="font-semibold">{addon.name}</TableCell>
                   <TableCell><Badge variant="outline">{addon.category}</Badge></TableCell>
-                  <TableCell className="text-center">
-                    <Badge variant={getKindVariant(addon.category)} className="text-xs">
-                      {getKindLabel(addon.category)}
-                    </Badge>
-                  </TableCell>
                   <TableCell className="text-right font-medium">฿{addon.defaultPrice.toLocaleString()}</TableCell>
                   <TableCell className="text-center">
                     <div className="flex items-center justify-center gap-1.5">
