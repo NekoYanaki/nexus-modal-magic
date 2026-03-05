@@ -218,7 +218,7 @@ const StockPage = () => {
               <Package className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <p className="text-2xl font-bold">{addons.length}</p>
+              <p className="text-2xl font-bold">{equipmentAddons.length}</p>
               <p className="text-xs text-muted-foreground">ทั้งหมด</p>
             </div>
           </Card>
