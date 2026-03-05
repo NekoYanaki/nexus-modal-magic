@@ -70,7 +70,7 @@ const AddonManagementPage = () => {
 
   const handleAdd = (kind: AddonKind = "equipment") => {
     setEditingType(null);
-    setFormData({ id: "", name: "", price: 0, kind });
+    setFormData({ id: "", name: "", price: 0, kind, isActive: true });
     setDialogOpen(true);
   };
 
