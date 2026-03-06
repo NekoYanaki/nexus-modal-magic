@@ -870,6 +870,7 @@ export const PickupInspectionModal = ({
         open={showVehicleSelection}
         onClose={() => setShowVehicleSelection(false)}
         currentVehicleId={assignedVehicle?.id}
+        initialType={assignedVehicle?.type || ""}
         onSelect={(vehicle) => {
           setPendingVehicle(vehicle);
           setShowVehicleSelection(false);
@@ -893,6 +894,15 @@ export const PickupInspectionModal = ({
           setChangeReason("");
         }}
         selectedVehicle={pendingVehicle}
+        originalVehicle={assignedVehicle ? {
+          name: assignedVehicle.name,
+          year: assignedVehicle.year,
+          licensePlate: assignedVehicle.licensePlate,
+          type: assignedVehicle.type,
+          pricePerDay: assignedVehicle.pricePerDay,
+        } : {
+          name: vehicleName,
+        }}
         reason={changeReason}
       />
     </>
