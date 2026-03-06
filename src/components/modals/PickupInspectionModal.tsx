@@ -303,7 +303,7 @@ export const PickupInspectionModal = ({
                 <Car className="w-4 h-4 text-emerald-600" />
                 รถที่จัดให้
               </h5>
-              <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => setShowVehicleSelection(true)}>
+              <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => setShowChangeReason(true)}>
                 <RefreshCw className="w-3 h-3" />
                 เปลี่ยนรถ
               </Button>
