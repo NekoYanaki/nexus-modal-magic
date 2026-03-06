@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Pencil, Save, X, LogIn, Trash2, FileText, ChevronsUpDown, Check, CreditCard, Banknote, Receipt, Shield, ShieldCheck, Camera, Upload, RefreshCw, Car, Package } from "lucide-react";
 import { VehicleSelectionDialog, type SelectableVehicle } from "./VehicleSelectionDialog";
+import { VehicleChangeReasonDialog, VehicleChangeFinalConfirmDialog } from "./VehicleChangeConfirmDialog";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import { cn } from "@/lib/utils";
