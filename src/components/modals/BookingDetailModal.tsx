@@ -335,6 +335,8 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
         selectedVehicle={pendingVehicle}
         reason={changeReason}
       />
+
+      <AlertDialog open={showRejectConfirm} onOpenChange={setShowRejectConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>ยืนยันการปฏิเสธ</AlertDialogTitle>
