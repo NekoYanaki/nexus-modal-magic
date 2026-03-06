@@ -296,17 +296,45 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
         bookingData={mockData}
       />
 
+      <VehicleChangeReasonDialog
+        open={showChangeReason}
+        onClose={() => setShowChangeReason(false)}
+        onConfirm={(reason) => {
+          setChangeReason(reason);
+          setShowChangeReason(false);
+          setShowVehicleSelection(true);
+        }}
+      />
+
       <VehicleSelectionDialog
         open={showVehicleSelection}
         onClose={() => setShowVehicleSelection(false)}
         currentVehicleId={selectedVehicle?.id}
         onSelect={(vehicle) => {
-          setSelectedVehicle(vehicle);
-          toast.success(`เปลี่ยนรถเป็น ${vehicle.name} สำเร็จ`);
+          setPendingVehicle(vehicle);
+          setShowVehicleSelection(false);
+          setShowFinalConfirm(true);
         }}
       />
 
-      <AlertDialog open={showRejectConfirm} onOpenChange={setShowRejectConfirm}>
+      <VehicleChangeFinalConfirmDialog
+        open={showFinalConfirm}
+        onClose={() => {
+          setShowFinalConfirm(false);
+          setPendingVehicle(null);
+        }}
+        onConfirm={() => {
+          if (pendingVehicle) {
+            setSelectedVehicle(pendingVehicle);
+            toast.success(`เปลี่ยนรถเป็น ${pendingVehicle.name} สำเร็จ`);
+          }
+          setShowFinalConfirm(false);
+          setPendingVehicle(null);
+          setChangeReason("");
+        }}
+        selectedVehicle={pendingVehicle}
+        reason={changeReason}
+      />
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>ยืนยันการปฏิเสธ</AlertDialogTitle>
