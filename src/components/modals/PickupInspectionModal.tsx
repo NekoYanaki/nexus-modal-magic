@@ -133,6 +133,10 @@ export const PickupInspectionModal = ({
   const [pickup, setPickup] = useState<PickupInspectionData>(pickupData);
   const [showVehicleSelection, setShowVehicleSelection] = useState(false);
   const [assignedVehicle, setAssignedVehicle] = useState<SelectableVehicle | null>(bookedVehicle);
+  const [showChangeReason, setShowChangeReason] = useState(false);
+  const [showFinalConfirm, setShowFinalConfirm] = useState(false);
+  const [changeReason, setChangeReason] = useState("");
+  const [pendingVehicle, setPendingVehicle] = useState<SelectableVehicle | null>(null);
   const [payment] = useState<PaymentDetail>(paymentDetail);
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmed, setConfirmed] = useState(bookingStatus === "picked_up" || bookingStatus === "returned");
