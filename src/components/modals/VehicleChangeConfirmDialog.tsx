@@ -60,16 +60,55 @@ export const VehicleChangeReasonDialog = ({ open, onClose, onConfirm }: ReasonDi
   );
 };
 
+interface OriginalVehicleInfo {
+  name: string;
+  year?: string;
+  licensePlate?: string;
+  type?: string;
+  pricePerDay?: number;
+}
+
 interface FinalConfirmDialogProps {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
   selectedVehicle: SelectableVehicle | null;
+  originalVehicle?: OriginalVehicleInfo | null;
   reason: string;
 }
 
-export const VehicleChangeFinalConfirmDialog = ({ open, onClose, onConfirm, selectedVehicle, reason }: FinalConfirmDialogProps) => {
+export const VehicleChangeFinalConfirmDialog = ({ open, onClose, onConfirm, selectedVehicle, originalVehicle, reason }: FinalConfirmDialogProps) => {
   if (!selectedVehicle) return null;
+
+  const VehicleInfoBlock = ({ title, vehicle, highlight }: { title: string; vehicle: { name: string; year?: string; licensePlate?: string; type?: string; pricePerDay?: number }; highlight?: boolean }) => (
+    <div className={`rounded-lg border p-3 space-y-2 text-sm ${highlight ? 'border-primary/40 bg-primary/5' : 'border-border bg-muted/30'}`}>
+      <p className={`text-xs font-semibold uppercase tracking-wide ${highlight ? 'text-primary' : 'text-muted-foreground'}`}>{title}</p>
+      <div className="space-y-1">
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">ชื่อรถ</span>
+          <span className="font-semibold text-foreground">{vehicle.name} {vehicle.year || ''}</span>
+        </div>
+        {vehicle.licensePlate && (
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">ทะเบียน</span>
+            <span className="font-medium text-foreground">{vehicle.licensePlate}</span>
+          </div>
+        )}
+        {vehicle.type && (
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">ประเภท</span>
+            <span className="font-medium text-foreground">{vehicle.type}</span>
+          </div>
+        )}
+        {vehicle.pricePerDay != null && (
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">ราคา/วัน</span>
+            <span className="font-medium text-foreground">฿{vehicle.pricePerDay.toLocaleString()}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <AlertDialog open={open} onOpenChange={onClose}>
@@ -82,24 +121,13 @@ export const VehicleChangeFinalConfirmDialog = ({ open, onClose, onConfirm, sele
           <AlertDialogDescription asChild>
             <div className="space-y-3">
               <p>กรุณาตรวจสอบข้อมูลก่อนยืนยัน</p>
-              <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">รถที่เลือก</span>
-                  <span className="font-semibold text-foreground">{selectedVehicle.name} {selectedVehicle.year}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">ทะเบียน</span>
-                  <span className="font-medium text-foreground">{selectedVehicle.licensePlate}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">ประเภท</span>
-                  <span className="font-medium text-foreground">{selectedVehicle.type}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">ราคา/วัน</span>
-                  <span className="font-medium text-foreground">฿{selectedVehicle.pricePerDay.toLocaleString()}</span>
-                </div>
+              {originalVehicle && (
+                <VehicleInfoBlock title="🚗 รถคันเดิม" vehicle={originalVehicle} />
+              )}
+              <div className="flex justify-center">
+                <span className="text-muted-foreground text-lg">↓</span>
               </div>
+              <VehicleInfoBlock title="🚙 รถคันใหม่" vehicle={selectedVehicle} highlight />
               <div className="rounded-lg border border-border bg-muted/30 p-3 text-sm">
                 <span className="text-muted-foreground">เหตุผล: </span>
                 <span className="text-foreground">{reason}</span>

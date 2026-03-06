@@ -310,6 +310,7 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
         open={showVehicleSelection}
         onClose={() => setShowVehicleSelection(false)}
         currentVehicleId={selectedVehicle?.id}
+        initialType={mockData.vehicleType}
         onSelect={(vehicle) => {
           setPendingVehicle(vehicle);
           setShowVehicleSelection(false);
@@ -333,6 +334,18 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
           setChangeReason("");
         }}
         selectedVehicle={pendingVehicle}
+        originalVehicle={selectedVehicle ? {
+          name: selectedVehicle.name,
+          year: selectedVehicle.year,
+          licensePlate: selectedVehicle.licensePlate,
+          type: selectedVehicle.type,
+          pricePerDay: selectedVehicle.pricePerDay,
+        } : {
+          name: mockData.vehicleModel,
+          licensePlate: mockData.licensePlate,
+          type: mockData.vehicleType,
+          pricePerDay: mockData.vehicleRental,
+        }}
         reason={changeReason}
       />
 
