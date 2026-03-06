@@ -21,6 +21,10 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
   const [bookingStatus, setBookingStatus] = useState("confirmed");
   const [showRejectConfirm, setShowRejectConfirm] = useState(false);
   const [showVehicleSelection, setShowVehicleSelection] = useState(false);
+  const [showChangeReason, setShowChangeReason] = useState(false);
+  const [showFinalConfirm, setShowFinalConfirm] = useState(false);
+  const [changeReason, setChangeReason] = useState("");
+  const [pendingVehicle, setPendingVehicle] = useState<SelectableVehicle | null>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<SelectableVehicle | null>(null);
 
   const hasCamp = true;
