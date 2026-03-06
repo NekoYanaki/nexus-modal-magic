@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Pencil, Save, X, LogIn, Trash2, FileText, ChevronsUpDown, Check, CreditCard, Banknote, Receipt, Shield, ShieldCheck, Camera, Upload, RefreshCw, Car, Package } from "lucide-react";
 import { VehicleSelectionDialog, type SelectableVehicle } from "./VehicleSelectionDialog";
+import { VehicleChangeReasonDialog, VehicleChangeFinalConfirmDialog } from "./VehicleChangeConfirmDialog";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import { cn } from "@/lib/utils";
@@ -132,6 +133,10 @@ export const PickupInspectionModal = ({
   const [pickup, setPickup] = useState<PickupInspectionData>(pickupData);
   const [showVehicleSelection, setShowVehicleSelection] = useState(false);
   const [assignedVehicle, setAssignedVehicle] = useState<SelectableVehicle | null>(bookedVehicle);
+  const [showChangeReason, setShowChangeReason] = useState(false);
+  const [showFinalConfirm, setShowFinalConfirm] = useState(false);
+  const [changeReason, setChangeReason] = useState("");
+  const [pendingVehicle, setPendingVehicle] = useState<SelectableVehicle | null>(null);
   const [payment] = useState<PaymentDetail>(paymentDetail);
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmed, setConfirmed] = useState(bookingStatus === "picked_up" || bookingStatus === "returned");
@@ -298,7 +303,7 @@ export const PickupInspectionModal = ({
                 <Car className="w-4 h-4 text-emerald-600" />
                 รถที่จัดให้
               </h5>
-              <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => setShowVehicleSelection(true)}>
+              <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => setShowChangeReason(true)}>
                 <RefreshCw className="w-3 h-3" />
                 เปลี่ยนรถ
               </Button>
@@ -850,15 +855,45 @@ export const PickupInspectionModal = ({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Vehicle Selection Dialog */}
+      {/* Vehicle Change Flow */}
+      <VehicleChangeReasonDialog
+        open={showChangeReason}
+        onClose={() => setShowChangeReason(false)}
+        onConfirm={(reason) => {
+          setChangeReason(reason);
+          setShowChangeReason(false);
+          setShowVehicleSelection(true);
+        }}
+      />
+
       <VehicleSelectionDialog
         open={showVehicleSelection}
         onClose={() => setShowVehicleSelection(false)}
         currentVehicleId={assignedVehicle?.id}
         onSelect={(vehicle) => {
-          setAssignedVehicle(vehicle);
-          toast.success(`เปลี่ยนรถเป็น ${vehicle.name} สำเร็จ`);
+          setPendingVehicle(vehicle);
+          setShowVehicleSelection(false);
+          setShowFinalConfirm(true);
         }}
+      />
+
+      <VehicleChangeFinalConfirmDialog
+        open={showFinalConfirm}
+        onClose={() => {
+          setShowFinalConfirm(false);
+          setPendingVehicle(null);
+        }}
+        onConfirm={() => {
+          if (pendingVehicle) {
+            setAssignedVehicle(pendingVehicle);
+            toast.success(`เปลี่ยนรถเป็น ${pendingVehicle.name} สำเร็จ`);
+          }
+          setShowFinalConfirm(false);
+          setPendingVehicle(null);
+          setChangeReason("");
+        }}
+        selectedVehicle={pendingVehicle}
+        reason={changeReason}
       />
     </>
   );

@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { BookingDocumentModal } from "./BookingDocumentModal";
 import { VehicleSelectionDialog, type SelectableVehicle } from "./VehicleSelectionDialog";
+import { VehicleChangeReasonDialog, VehicleChangeFinalConfirmDialog } from "./VehicleChangeConfirmDialog";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -20,6 +21,10 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
   const [bookingStatus, setBookingStatus] = useState("confirmed");
   const [showRejectConfirm, setShowRejectConfirm] = useState(false);
   const [showVehicleSelection, setShowVehicleSelection] = useState(false);
+  const [showChangeReason, setShowChangeReason] = useState(false);
+  const [showFinalConfirm, setShowFinalConfirm] = useState(false);
+  const [changeReason, setChangeReason] = useState("");
+  const [pendingVehicle, setPendingVehicle] = useState<SelectableVehicle | null>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<SelectableVehicle | null>(null);
 
   const hasCamp = true;
@@ -164,7 +169,7 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
                   variant="ghost"
                   size="sm"
                   className="h-7 text-xs gap-1 text-muted-foreground"
-                  onClick={() => setShowVehicleSelection(true)}
+                  onClick={() => setShowChangeReason(true)}
                 >
                   <RefreshCw className="w-3 h-3" />
                   เปลี่ยนรถ
@@ -291,14 +296,44 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
         bookingData={mockData}
       />
 
+      <VehicleChangeReasonDialog
+        open={showChangeReason}
+        onClose={() => setShowChangeReason(false)}
+        onConfirm={(reason) => {
+          setChangeReason(reason);
+          setShowChangeReason(false);
+          setShowVehicleSelection(true);
+        }}
+      />
+
       <VehicleSelectionDialog
         open={showVehicleSelection}
         onClose={() => setShowVehicleSelection(false)}
         currentVehicleId={selectedVehicle?.id}
         onSelect={(vehicle) => {
-          setSelectedVehicle(vehicle);
-          toast.success(`เปลี่ยนรถเป็น ${vehicle.name} สำเร็จ`);
+          setPendingVehicle(vehicle);
+          setShowVehicleSelection(false);
+          setShowFinalConfirm(true);
         }}
+      />
+
+      <VehicleChangeFinalConfirmDialog
+        open={showFinalConfirm}
+        onClose={() => {
+          setShowFinalConfirm(false);
+          setPendingVehicle(null);
+        }}
+        onConfirm={() => {
+          if (pendingVehicle) {
+            setSelectedVehicle(pendingVehicle);
+            toast.success(`เปลี่ยนรถเป็น ${pendingVehicle.name} สำเร็จ`);
+          }
+          setShowFinalConfirm(false);
+          setPendingVehicle(null);
+          setChangeReason("");
+        }}
+        selectedVehicle={pendingVehicle}
+        reason={changeReason}
       />
 
       <AlertDialog open={showRejectConfirm} onOpenChange={setShowRejectConfirm}>
