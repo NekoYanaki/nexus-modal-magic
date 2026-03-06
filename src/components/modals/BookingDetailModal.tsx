@@ -169,7 +169,7 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
                   variant="ghost"
                   size="sm"
                   className="h-7 text-xs gap-1 text-muted-foreground"
-                  onClick={() => setShowVehicleSelection(true)}
+                  onClick={() => setShowChangeReason(true)}
                 >
                   <RefreshCw className="w-3 h-3" />
                   เปลี่ยนรถ
