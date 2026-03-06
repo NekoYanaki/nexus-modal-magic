@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { BookingDocumentModal } from "./BookingDocumentModal";
 import { VehicleSelectionDialog, type SelectableVehicle } from "./VehicleSelectionDialog";
+import { VehicleChangeReasonDialog, VehicleChangeFinalConfirmDialog } from "./VehicleChangeConfirmDialog";
 import { useState } from "react";
 import { toast } from "sonner";
 
