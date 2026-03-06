@@ -855,15 +855,45 @@ export const PickupInspectionModal = ({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Vehicle Selection Dialog */}
+      {/* Vehicle Change Flow */}
+      <VehicleChangeReasonDialog
+        open={showChangeReason}
+        onClose={() => setShowChangeReason(false)}
+        onConfirm={(reason) => {
+          setChangeReason(reason);
+          setShowChangeReason(false);
+          setShowVehicleSelection(true);
+        }}
+      />
+
       <VehicleSelectionDialog
         open={showVehicleSelection}
         onClose={() => setShowVehicleSelection(false)}
         currentVehicleId={assignedVehicle?.id}
         onSelect={(vehicle) => {
-          setAssignedVehicle(vehicle);
-          toast.success(`เปลี่ยนรถเป็น ${vehicle.name} สำเร็จ`);
+          setPendingVehicle(vehicle);
+          setShowVehicleSelection(false);
+          setShowFinalConfirm(true);
         }}
+      />
+
+      <VehicleChangeFinalConfirmDialog
+        open={showFinalConfirm}
+        onClose={() => {
+          setShowFinalConfirm(false);
+          setPendingVehicle(null);
+        }}
+        onConfirm={() => {
+          if (pendingVehicle) {
+            setAssignedVehicle(pendingVehicle);
+            toast.success(`เปลี่ยนรถเป็น ${pendingVehicle.name} สำเร็จ`);
+          }
+          setShowFinalConfirm(false);
+          setPendingVehicle(null);
+          setChangeReason("");
+        }}
+        selectedVehicle={pendingVehicle}
+        reason={changeReason}
       />
     </>
   );
