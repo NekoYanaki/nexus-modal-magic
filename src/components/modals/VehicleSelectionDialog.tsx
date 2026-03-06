@@ -136,6 +136,13 @@ export const VehicleSelectionDialog = ({
   const [selectedType, setSelectedType] = useState(initialType);
   const [searchQuery, setSearchQuery] = useState("");
 
+  useEffect(() => {
+    if (open) {
+      setSelectedType(initialType);
+      setSearchQuery("");
+    }
+  }, [open, initialType]);
+
   const filteredVehicles = MOCK_FLEET.filter((v) => {
     const matchesType = selectedType ? v.type === selectedType : true;
     const matchesSearch =
