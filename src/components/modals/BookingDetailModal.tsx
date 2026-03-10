@@ -1,4 +1,4 @@
-import { Car, Tent, RefreshCw, MapPin, Calendar, X, Printer, Plus, Trash2, Package, ChevronsUpDown, Check } from "lucide-react";
+import { Car, Tent, RefreshCw, MapPin, Calendar, X, Printer, Plus, Trash2, Package, ChevronsUpDown, Check, Save } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -395,6 +395,18 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
                   <span className="text-sm text-muted-foreground">รวม Add-on</span>
                   <span className="text-sm font-semibold text-primary">฿{addonsTotal.toLocaleString()}</span>
                 </div>
+
+                {isEditingAddons && (
+                  <div className="flex justify-end pt-3">
+                    <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => {
+                      setIsEditingAddons(false);
+                      toast.success("บันทึก Add-on สำเร็จ");
+                    }}>
+                      <Save className="w-3.5 h-3.5" />
+                      บันทึก
+                    </Button>
+                  </div>
+                )}
               </div>
             </Card>
 
