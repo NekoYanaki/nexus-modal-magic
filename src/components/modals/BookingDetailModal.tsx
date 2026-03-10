@@ -258,23 +258,27 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
                 </Button>
               </div>
               <div className="space-y-2 text-sm">
-                {bookingAddons.map((addon, i) => (
-                  <div key={addon.id} className="flex items-center justify-between p-2 border border-border rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono bg-muted/50">{addon.id}</Badge>
-                      <span className="text-sm">{addon.name}</span>
+                {bookingAddons.map((addon) => (
+                  <div key={addon.id} className="flex items-center justify-between gap-2 border border-border rounded-lg p-2 bg-background/50">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-mono shrink-0">{addon.id}</Badge>
+                      <span className="text-sm font-medium truncate">{addon.name}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm">฿{addon.price.toLocaleString()}</span>
-                      {isEditingAddons && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                          onClick={() => handleRemoveAddon(addon.id)}
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {isEditingAddons ? (
+                        <>
+                          <span className="text-sm text-primary font-medium">฿{addon.price.toLocaleString()}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                            onClick={() => handleRemoveAddon(addon.id)}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </>
+                      ) : (
+                        <span className="text-sm text-primary font-medium">฿{addon.price.toLocaleString()}</span>
                       )}
                     </div>
                   </div>
