@@ -389,12 +389,8 @@ export const PickupInspectionModal = ({
                     <p className="font-medium">{pickup.mileage} km</p>
                   )}
               </div>
+            </div>
 
-              {/* Invoice Add-ons (Read-only) */}
-              <div className="pt-3 border-t border-border mt-3">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-muted-foreground text-sm flex items-center gap-2">
-                    <Receipt className="w-4 h-4" />
               {/* Add-on & Accessories (all editable) */}
               <div className="pt-3 border-t border-border mt-3">
                 <div className="flex items-center justify-between mb-2">
