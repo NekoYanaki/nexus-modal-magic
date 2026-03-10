@@ -140,7 +140,7 @@ export const PickupInspectionModal = ({
 }: PickupInspectionModalProps) => {
   const { addons: stockAddons } = useAddons();
   const [isEditing, setIsEditing] = useState(false);
-  const [pickup, setPickup] = useState<PickupInspectionData>(pickupData);
+  const [pickup, setPickup] = useState<PickupInspectionData>(() => mergeInvoiceAddons(pickupData, invoiceAddons));
   const [showVehicleSelection, setShowVehicleSelection] = useState(false);
   const [assignedVehicle, setAssignedVehicle] = useState<SelectableVehicle | null>(bookedVehicle);
   const [showChangeReason, setShowChangeReason] = useState(false);
