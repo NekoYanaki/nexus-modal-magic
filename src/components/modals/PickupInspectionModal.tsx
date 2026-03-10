@@ -206,12 +206,8 @@ export const PickupInspectionModal = ({
   // Calculate insurance price (only if added at pickup, not from booking)
   const insurancePrice = bookedInsurance ? 0 : (selectedInsurance?.price || 0);
 
-  const invoiceAddonTotal = invoiceAddons.reduce((sum, addon) => sum + addon.price, 0);
-
-  // Combine all addons for external use (invoice + newly added)
-  const allPickupAddons = useMemo(() => {
-    return [...invoiceAddons, ...pickup.addons];
-  }, [invoiceAddons, pickup.addons]);
+  // All addons are now in pickup.addons (merged from invoice + newly added)
+  const allPickupAddons = pickup.addons;
 
   // Addon handlers - now uses stock addon by ID
   const handleAddAddon = (stockAddonId: string) => {
