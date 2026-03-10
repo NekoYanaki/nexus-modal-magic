@@ -451,6 +451,7 @@ const StockPage = () => {
                   <SelectItem value="in_use">ถูกใช้</SelectItem>
                   <SelectItem value="damaged">ส่งซ่อม</SelectItem>
                   <SelectItem value="broken">ชำรุด</SelectItem>
+                  <SelectItem value="lost">สูญหาย</SelectItem>
                 </SelectContent>
               </Select>
             </div>
