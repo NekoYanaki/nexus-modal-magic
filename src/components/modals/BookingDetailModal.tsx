@@ -383,7 +383,7 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
                                   </CommandItem>
                                 ))}
                               </CommandGroup>
-                            )
+                            )}
                           </CommandList>
                         </Command>
                       </PopoverContent>
