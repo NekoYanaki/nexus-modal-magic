@@ -1,4 +1,6 @@
-import { Car, Tent, RefreshCw, MapPin, Calendar, X, Printer } from "lucide-react";
+import { Car, Tent, RefreshCw, MapPin, Calendar, X, Printer, Plus, Trash2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useAddons } from "@/contexts/AddonContext";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
