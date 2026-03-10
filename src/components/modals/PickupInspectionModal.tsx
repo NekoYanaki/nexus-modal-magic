@@ -97,6 +97,16 @@ const defaultPickup: PickupInspectionData = {
   addons: [],
 };
 
+// Helper to merge invoice addons into pickup addons (initial state)
+const mergeInvoiceAddons = (pickupData: PickupInspectionData, invoiceAddons: AddonItem[]): PickupInspectionData => {
+  const existingIds = new Set(pickupData.addons.map(a => a.value));
+  const newFromInvoice = invoiceAddons.filter(a => !existingIds.has(a.value));
+  return {
+    ...pickupData,
+    addons: [...newFromInvoice, ...pickupData.addons],
+  };
+};
+
 // Mock invoice addons (from original booking)
 const defaultInvoiceAddons: AddonItem[] = [
   { value: 'CS-001', label: 'เบาะนั่งเด็ก', price: 300, addonId: 'CS-001' },
