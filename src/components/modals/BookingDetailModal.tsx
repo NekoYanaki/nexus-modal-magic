@@ -356,29 +356,7 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
               </div>
             </Card>
 
-            {/* Add-ons & Accessories */}
-            <Card className="p-5 border border-border">
-              <h4 className="font-semibold flex items-center gap-2 mb-4">
-                <span className="text-primary font-bold">+</span>
-                Add-ons & Accessories
-              </h4>
-              <div className="space-y-2 text-sm">
-                {mockData.addons.map((addon, i) => (
-                  <div key={i} className="flex items-center justify-between p-2 border border-border rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono bg-muted/50">{addon.id}</Badge>
-                      <span className="text-sm">{addon.name}</span>
-                    </div>
-                    <span className="font-medium text-sm">฿{addon.price.toLocaleString()}</span>
-                  </div>
-                ))}
-                <div className="h-px bg-border my-2" />
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">รวม Add-on</span>
-                  <span className="font-semibold text-primary">฿{mockData.addonsTotal.toLocaleString()}</span>
-                </div>
-              </div>
-            </Card>
+
           </div>
         </div>
       </DialogContent>
