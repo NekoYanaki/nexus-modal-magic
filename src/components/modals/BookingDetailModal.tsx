@@ -280,24 +280,62 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
                   </div>
                 ))}
 
-                {isEditingAddons && availableAddonTypes.length > 0 && (
-                  <div className="flex items-center gap-2 pt-2">
-                    <Select value={selectedAddonToAdd} onValueChange={setSelectedAddonToAdd}>
-                      <SelectTrigger className="h-8 text-xs flex-1">
-                        <SelectValue placeholder="เลือก Add-on ที่ต้องการเพิ่ม" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableAddonTypes.map((t) => (
-                          <SelectItem key={t.id} value={t.id} className="text-xs">
-                            {t.name} — ฿{t.price.toLocaleString()}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button size="sm" className="h-8 text-xs gap-1" onClick={handleAddAddon} disabled={!selectedAddonToAdd}>
-                      <Plus className="w-3.5 h-3.5" />
-                      เพิ่ม
-                    </Button>
+                {isEditingAddons && (
+                  <div className="pt-2">
+                    <Popover open={addonComboboxOpen} onOpenChange={setAddonComboboxOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={addonComboboxOpen}
+                          className="w-full h-8 justify-between text-sm bg-background"
+                        >
+                          <span className="text-muted-foreground">ค้นหา Add-on จาก Stock...</span>
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0 bg-background border border-border z-50" align="start">
+                        <Command>
+                          <CommandInput placeholder="ค้นหาด้วยชื่อหรือ ID..." className="h-9" />
+                          <CommandList>
+                            <CommandEmpty>ไม่พบรายการที่พร้อมใช้งาน</CommandEmpty>
+                            {Object.entries(
+                              availableStockAddons
+                                .filter(opt => !bookingAddons.some(a => a.id === opt.id))
+                                .reduce<Record<string, Addon[]>>((groups, addon) => {
+                                  if (!groups[addon.category]) groups[addon.category] = [];
+                                  groups[addon.category].push(addon);
+                                  return groups;
+                                }, {})
+                            ).map(([category, items]) => (
+                              <CommandGroup key={category} heading={`${category} (พร้อมใช้ ${categoryAvailableCount[category] || 0})`}>
+                                {items.map(option => (
+                                  <CommandItem
+                                    key={option.id}
+                                    value={`${option.id} ${option.name}`}
+                                    onSelect={() => {
+                                      handleAddAddon(option.id);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        bookingAddons.some(a => a.id === option.id) ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    <div className="flex items-center gap-2 flex-1">
+                                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">{option.id}</Badge>
+                                      <span>{option.name}</span>
+                                    </div>
+                                    <span className="text-muted-foreground text-xs ml-2">฿{option.defaultPrice.toLocaleString()}</span>
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            ))}
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 )}
 
