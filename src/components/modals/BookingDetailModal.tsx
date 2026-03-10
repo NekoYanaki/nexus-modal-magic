@@ -28,6 +28,35 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
   const [changeReason, setChangeReason] = useState("");
   const [pendingVehicle, setPendingVehicle] = useState<SelectableVehicle | null>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<SelectableVehicle | null>(null);
+  const [isEditingAddons, setIsEditingAddons] = useState(false);
+  const [bookingAddons, setBookingAddons] = useState([
+    { id: "CS-001", name: "เบาะนั่งเด็ก", price: 300 },
+    { id: "BBQ-003", name: "ชุดปิ้งย่าง", price: 350 },
+    { id: "AW-012", name: "กันสาด", price: 400 },
+    { id: "CH-007", name: "เก้าอี้พับ (ชุด)", price: 150 },
+  ]);
+  const [selectedAddonToAdd, setSelectedAddonToAdd] = useState("");
+  const { addonTypes } = useAddons();
+
+  const availableAddonTypes = addonTypes.filter(
+    (t) => t.isActive && !bookingAddons.some((a) => a.name === t.name)
+  );
+
+  const handleAddAddon = () => {
+    const addonType = addonTypes.find((t) => t.id === selectedAddonToAdd);
+    if (!addonType) return;
+    const newId = `${addonType.id}-${Date.now().toString().slice(-3)}`;
+    setBookingAddons((prev) => [...prev, { id: newId, name: addonType.name, price: addonType.price }]);
+    setSelectedAddonToAdd("");
+    toast.success(`เพิ่ม ${addonType.name} สำเร็จ`);
+  };
+
+  const handleRemoveAddon = (id: string) => {
+    setBookingAddons((prev) => prev.filter((a) => a.id !== id));
+    toast.success("ลบ Add-on สำเร็จ");
+  };
+
+  const addonsTotal = bookingAddons.reduce((sum, a) => sum + a.price, 0);
 
   const hasCamp = true;
 
@@ -48,16 +77,11 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
     rentalFee: 5000,
     deposit: 4000,
     vehicleRental: 5000,
-    addonsTotal: 0,
+    addonsTotal: addonsTotal,
     totalPaid: 4000,
     totalDue: 3650,
     totalAmount: 7650,
-    addons: [
-      { id: "CS-001", name: "เบาะนั่งเด็ก", price: 300 },
-      { id: "BBQ-003", name: "ชุดปิ้งย่าง", price: 350 },
-      { id: "AW-012", name: "กันสาด", price: 400 },
-      { id: "CH-007", name: "เก้าอี้พับ (ชุด)", price: 150 },
-    ],
+    addons: bookingAddons,
     camps: [
       {
         name: "ป่าสนแคมปิ้ง",
