@@ -395,34 +395,12 @@ export const PickupInspectionModal = ({
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-muted-foreground text-sm flex items-center gap-2">
                     <Receipt className="w-4 h-4" />
-                    Add-on จาก Invoice ({invoiceAddons.length} รายการ)
-                  </p>
-                </div>
-                
-                {invoiceAddons.length > 0 && (
-                  <div className="space-y-2">
-                    {invoiceAddons.map((addon) => (
-                      <div key={addon.value} className="flex items-center justify-between gap-2 border border-border rounded-lg p-2 bg-muted/30">
-                        <div className="flex items-center gap-2 min-w-0">
-                          {addon.addonId && (
-                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-mono shrink-0">{addon.addonId}</Badge>
-                          )}
-                          <span className="text-sm font-medium text-muted-foreground">{addon.label}</span>
-                        </div>
-                        <span className="text-sm text-muted-foreground shrink-0">฿{addon.price.toLocaleString()}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-              {/* Add-on & Accessories */}
+              {/* Add-on & Accessories (all editable) */}
               <div className="pt-3 border-t border-border mt-3">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-muted-foreground text-sm flex items-center gap-2">
                     <Package className="w-4 h-4" />
-                    เพิ่ม Add-on & Accessories ({pickup.addons.length} รายการ)
+                    Add-on & Accessories ({pickup.addons.length} รายการ)
                   </p>
                 </div>
                 
