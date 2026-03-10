@@ -120,6 +120,7 @@ const StockPage = () => {
   const reservedCount = equipmentAddons.filter((a) => a.stockStatus === "reserved").length;
   const inUseCount = equipmentAddons.filter((a) => a.stockStatus === "in_use").length;
   const damagedBrokenCount = equipmentAddons.filter((a) => a.stockStatus === "damaged" || a.stockStatus === "broken").length;
+  const lostCount = equipmentAddons.filter((a) => a.stockStatus === "lost").length;
 
   const getStockStatusBadge = (status: Addon["stockStatus"], bookingRef?: string) => {
     switch (status) {
@@ -138,6 +139,7 @@ const StockPage = () => {
       }
       case "damaged": return <Badge className="bg-destructive/10 text-destructive border-destructive/20">ส่งซ่อม</Badge>;
       case "broken": return <Badge className="bg-muted text-muted-foreground border-muted-foreground/20">ชำรุด</Badge>;
+      case "lost": return <Badge className="bg-destructive/20 text-destructive border-destructive/30 font-semibold">สูญหาย</Badge>;
     }
   };
 
@@ -258,6 +260,15 @@ const StockPage = () => {
               <p className="text-xs text-muted-foreground">ซ่อม/ชำรุด</p>
             </div>
           </Card>
+          <Card className="p-4 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-destructive/20">
+              <AlertTriangle className="w-6 h-6 text-destructive" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-destructive">{lostCount}</p>
+              <p className="text-xs text-muted-foreground">สูญหาย</p>
+            </div>
+          </Card>
         </div>
 
         {/* Table */}
@@ -375,6 +386,7 @@ const StockPage = () => {
                   <SelectItem value="in_use">ถูกใช้</SelectItem>
                   <SelectItem value="damaged">ส่งซ่อม</SelectItem>
                   <SelectItem value="broken">ชำรุด</SelectItem>
+                  <SelectItem value="lost">สูญหาย</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -439,6 +451,7 @@ const StockPage = () => {
                   <SelectItem value="in_use">ถูกใช้</SelectItem>
                   <SelectItem value="damaged">ส่งซ่อม</SelectItem>
                   <SelectItem value="broken">ชำรุด</SelectItem>
+                  <SelectItem value="lost">สูญหาย</SelectItem>
                 </SelectContent>
               </Select>
             </div>
