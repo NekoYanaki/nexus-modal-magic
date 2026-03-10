@@ -84,11 +84,28 @@ export const ReturnInspectionModal = ({
   pickupAddons = [],
   onSave,
 }: ReturnInspectionModalProps) => {
+  const { addonTypes } = useAddons();
   const [isEditing, setIsEditing] = useState(false);
   const [returnInspection, setReturnInspection] = useState<ReturnInspectionData>(returnData);
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmed, setConfirmed] = useState(bookingStatus === "returned");
   const [paymentMethod, setPaymentMethod] = useState<string>("cash");
+  const [checkedAddons, setCheckedAddons] = useState<Record<string, boolean>>({});
+
+  // Filter pickup addons to only equipment types (not consumable)
+  const equipmentCategoryNames = useMemo(() => {
+    return new Set(addonTypes.filter(t => t.kind === "equipment").map(t => t.name));
+  }, [addonTypes]);
+
+  const equipmentAddons = useMemo(() => {
+    return pickupAddons.filter(a => equipmentCategoryNames.has(a.label));
+  }, [pickupAddons, equipmentCategoryNames]);
+
+  const checkedCount = equipmentAddons.filter(a => checkedAddons[a.value]).length;
+
+  const handleToggleAddon = (addonValue: string) => {
+    setCheckedAddons(prev => ({ ...prev, [addonValue]: !prev[addonValue] }));
+  };
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
