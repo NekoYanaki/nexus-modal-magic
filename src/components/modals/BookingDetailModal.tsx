@@ -60,7 +60,19 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
     return addonTypes.filter(t => t.kind === "consumable" && t.isActive && !bookingAddons.some(a => a.name === t.name));
   }, [addonTypes, bookingAddons]);
 
-  const handleAddAddon = (stockAddonId: string) => {
+  const handleAddAddon = (stockAddonId: string, type: "equipment" | "consumable" = "equipment") => {
+    if (type === "consumable") {
+      const addonType = addonTypes.find(t => t.id === stockAddonId);
+      if (!addonType) return;
+      if (bookingAddons.some(a => a.name === addonType.name)) {
+        toast.error("รายการนี้ถูกเพิ่มแล้ว");
+        return;
+      }
+      setBookingAddons(prev => [...prev, { id: addonType.id, name: addonType.name, price: addonType.price }]);
+      setAddonComboboxOpen(false);
+      toast.success(`เพิ่ม ${addonType.name} สำเร็จ`);
+      return;
+    }
     const stockAddon = stockAddons.find(a => a.id === stockAddonId);
     if (!stockAddon) return;
     if (bookingAddons.some(a => a.id === stockAddonId)) {
