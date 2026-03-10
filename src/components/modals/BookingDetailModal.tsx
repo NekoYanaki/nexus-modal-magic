@@ -32,26 +32,38 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
   const [pendingVehicle, setPendingVehicle] = useState<SelectableVehicle | null>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<SelectableVehicle | null>(null);
   const [isEditingAddons, setIsEditingAddons] = useState(false);
+  const [addonComboboxOpen, setAddonComboboxOpen] = useState(false);
   const [bookingAddons, setBookingAddons] = useState([
     { id: "CS-001", name: "เบาะนั่งเด็ก", price: 300 },
     { id: "BBQ-003", name: "ชุดปิ้งย่าง", price: 350 },
     { id: "AW-012", name: "กันสาด", price: 400 },
     { id: "CH-007", name: "เก้าอี้พับ (ชุด)", price: 150 },
   ]);
-  const [selectedAddonToAdd, setSelectedAddonToAdd] = useState("");
-  const { addonTypes } = useAddons();
+  const { addons: stockAddons } = useAddons();
 
-  const availableAddonTypes = addonTypes.filter(
-    (t) => t.isActive && !bookingAddons.some((a) => a.name === t.name)
-  );
+  // Available stock addons (active & available, not already added)
+  const availableStockAddons = useMemo(() => {
+    return stockAddons.filter(a => a.isActive && a.stockStatus === "available");
+  }, [stockAddons]);
 
-  const handleAddAddon = () => {
-    const addonType = addonTypes.find((t) => t.id === selectedAddonToAdd);
-    if (!addonType) return;
-    const newId = `${addonType.id}-${Date.now().toString().slice(-3)}`;
-    setBookingAddons((prev) => [...prev, { id: newId, name: addonType.name, price: addonType.price }]);
-    setSelectedAddonToAdd("");
-    toast.success(`เพิ่ม ${addonType.name} สำเร็จ`);
+  const categoryAvailableCount = useMemo(() => {
+    const counts: Record<string, number> = {};
+    availableStockAddons.forEach(a => {
+      counts[a.category] = (counts[a.category] || 0) + 1;
+    });
+    return counts;
+  }, [availableStockAddons]);
+
+  const handleAddAddon = (stockAddonId: string) => {
+    const stockAddon = stockAddons.find(a => a.id === stockAddonId);
+    if (!stockAddon) return;
+    if (bookingAddons.some(a => a.id === stockAddonId)) {
+      toast.error("รายการนี้ถูกเพิ่มแล้ว");
+      return;
+    }
+    setBookingAddons(prev => [...prev, { id: stockAddon.id, name: stockAddon.name, price: stockAddon.defaultPrice }]);
+    setAddonComboboxOpen(false);
+    toast.success(`เพิ่ม ${stockAddon.name} สำเร็จ`);
   };
 
   const handleRemoveAddon = (id: string) => {
@@ -60,6 +72,7 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
   };
 
   const addonsTotal = bookingAddons.reduce((sum, a) => sum + a.price, 0);
+
 
   const hasCamp = true;
 
