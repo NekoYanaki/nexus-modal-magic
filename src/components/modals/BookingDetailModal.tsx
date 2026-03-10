@@ -243,18 +243,18 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
 
             {/* Add-ons & Accessories */}
             <Card className="p-5 border border-border">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="font-semibold flex items-center gap-2">
-                  <Plus className="w-4 h-4 text-primary" />
-                  Add-ons & Accessories
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-semibold flex items-center gap-2 text-sm">
+                  <Package className="w-4 h-4 text-primary" />
+                  Add-on & Accessories ({bookingAddons.length} รายการ)
                 </h4>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
-                  className="h-7 text-xs text-muted-foreground"
+                  className="h-7 text-xs"
                   onClick={() => setIsEditingAddons(!isEditingAddons)}
                 >
-                  {isEditingAddons ? "เสร็จสิ้น" : "แก้ไข"}
+                  {isEditingAddons ? <><X className="w-3 h-3 mr-1" />เสร็จสิ้น</> : "แก้ไข"}
                 </Button>
               </div>
               <div className="space-y-2 text-sm">
