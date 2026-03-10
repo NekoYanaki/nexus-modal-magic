@@ -214,7 +214,7 @@ const StockPage = () => {
         </div>
 
         {/* Summary */}
-        <div className="grid grid-cols-5 gap-4 mb-6">
+        <div className="grid grid-cols-6 gap-4 mb-6">
           <Card className="p-4 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary/10">
               <Package className="w-6 h-6 text-primary" />
