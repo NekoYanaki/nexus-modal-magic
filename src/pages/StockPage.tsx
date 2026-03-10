@@ -260,6 +260,15 @@ const StockPage = () => {
               <p className="text-xs text-muted-foreground">ซ่อม/ชำรุด</p>
             </div>
           </Card>
+          <Card className="p-4 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-destructive/20">
+              <AlertTriangle className="w-6 h-6 text-destructive" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-destructive">{lostCount}</p>
+              <p className="text-xs text-muted-foreground">สูญหาย</p>
+            </div>
+          </Card>
         </div>
 
         {/* Table */}
