@@ -343,10 +343,9 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
                   </div>
                 )}
 
-                <div className="h-px bg-border my-2" />
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">รวม Add-on</span>
-                  <span className="font-semibold text-primary">฿{addonsTotal.toLocaleString()}</span>
+                <div className="flex items-center justify-between pt-2 border-t border-border mt-2">
+                  <span className="text-sm text-muted-foreground">รวม Add-on</span>
+                  <span className="text-sm font-semibold text-primary">฿{addonsTotal.toLocaleString()}</span>
                 </div>
               </div>
             </Card>
