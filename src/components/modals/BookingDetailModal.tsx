@@ -72,6 +72,10 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
     toast.success("ลบ Add-on สำเร็จ");
   };
 
+  const handleAddonPriceChange = (addonId: string, newPrice: number) => {
+    setBookingAddons(prev => prev.map(a => a.id === addonId ? { ...a, price: newPrice } : a));
+  };
+
   const addonsTotal = bookingAddons.reduce((sum, a) => sum + a.price, 0);
 
 
