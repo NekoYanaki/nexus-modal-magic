@@ -9,6 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { BookingDocumentModal } from "./BookingDocumentModal";
 import { VehicleSelectionDialog, type SelectableVehicle } from "./VehicleSelectionDialog";
