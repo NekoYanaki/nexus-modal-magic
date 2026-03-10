@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
-export type StockStatus = "available" | "reserved" | "in_use" | "damaged" | "broken";
+export type StockStatus = "available" | "reserved" | "in_use" | "damaged" | "broken" | "lost";
 export type AddonKind = "equipment" | "consumable";
 
 export interface AddonType {
