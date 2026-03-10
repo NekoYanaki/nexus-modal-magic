@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Pencil, Save, X, Upload, Image, LogOut, Plus, Trash2, FileText, CreditCard, Banknote, Car, Package, Receipt, CheckSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -90,7 +89,7 @@ export const ReturnInspectionModal = ({
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmed, setConfirmed] = useState(bookingStatus === "returned");
   const [paymentMethod, setPaymentMethod] = useState<string>("cash");
-  const [checkedAddons, setCheckedAddons] = useState<Record<string, boolean>>({});
+  const [addonStatuses, setAddonStatuses] = useState<Record<string, string>>({});
 
   // Filter pickup addons to only equipment types (not consumable)
   const equipmentCategoryNames = useMemo(() => {
@@ -101,10 +100,8 @@ export const ReturnInspectionModal = ({
     return pickupAddons.filter(a => equipmentCategoryNames.has(a.label));
   }, [pickupAddons, equipmentCategoryNames]);
 
-  const checkedCount = equipmentAddons.filter(a => checkedAddons[a.value]).length;
-
-  const handleToggleAddon = (addonValue: string) => {
-    setCheckedAddons(prev => ({ ...prev, [addonValue]: !prev[addonValue] }));
+  const handleAddonStatusChange = (addonValue: string, status: string) => {
+    setAddonStatuses(prev => ({ ...prev, [addonValue]: status }));
   };
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -233,45 +230,48 @@ export const ReturnInspectionModal = ({
             </div>
           </Card>
 
-          {/* Equipment Add-on Checklist */}
+          {/* Equipment Add-on Status */}
           {equipmentAddons.length > 0 && (
             <Card className="p-4 border-border">
               <h5 className="font-medium text-sm flex items-center gap-2 mb-3">
-                <CheckSquare className="w-4 h-4 text-primary" />
-                ตรวจสอบอุปกรณ์ก่อนคืน ({checkedCount}/{equipmentAddons.length})
+                <Package className="w-4 h-4 text-primary" />
+                ตรวจสอบอุปกรณ์ ({equipmentAddons.length} รายการ)
               </h5>
-              {checkedCount === equipmentAddons.length && (
-                <div className="mb-3 p-2 rounded-lg bg-success/10 border border-success/30">
-                  <p className="text-xs text-success font-medium text-center">✓ ตรวจสอบอุปกรณ์ครบทุกรายการแล้ว</p>
-                </div>
-              )}
               <div className="space-y-2">
-                {equipmentAddons.map((addon) => (
-                  <label
-                    key={addon.value}
-                    className={`flex items-center justify-between gap-3 border rounded-lg p-2.5 cursor-pointer transition-colors ${
-                      checkedAddons[addon.value]
-                        ? "border-success/40 bg-success/5"
-                        : "border-border bg-background/50"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <Checkbox
-                        checked={!!checkedAddons[addon.value]}
-                        onCheckedChange={() => handleToggleAddon(addon.value)}
-                      />
+                {equipmentAddons.map((addon) => {
+                  const status = addonStatuses[addon.value] || "returned";
+                  const statusStyles: Record<string, string> = {
+                    returned: "border-success/40 bg-success/5",
+                    damaged: "border-warning/40 bg-warning/5",
+                    lost: "border-destructive/40 bg-destructive/5",
+                  };
+                  return (
+                    <div
+                      key={addon.value}
+                      className={`flex items-center justify-between gap-3 border rounded-lg p-2.5 transition-colors ${statusStyles[status] || "border-border"}`}
+                    >
                       <div className="flex items-center gap-2 min-w-0">
                         {addon.addonId && (
                           <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-mono shrink-0">{addon.addonId}</Badge>
                         )}
-                        <span className={`text-sm font-medium ${checkedAddons[addon.value] ? "line-through text-muted-foreground" : ""}`}>
-                          {addon.label}
-                        </span>
+                        <span className="text-sm font-medium">{addon.label}</span>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-xs text-muted-foreground">฿{addon.price.toLocaleString()}</span>
+                        <Select value={status} onValueChange={(val) => handleAddonStatusChange(addon.value, val)}>
+                          <SelectTrigger className="h-7 w-[110px] text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="returned">คืนแล้ว</SelectItem>
+                            <SelectItem value="damaged">ชำรุด</SelectItem>
+                            <SelectItem value="lost">สูญหาย</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
-                    <span className="text-sm text-muted-foreground shrink-0">฿{addon.price.toLocaleString()}</span>
-                  </label>
-                ))}
+                  );
+                })}
               </div>
             </Card>
           )}
