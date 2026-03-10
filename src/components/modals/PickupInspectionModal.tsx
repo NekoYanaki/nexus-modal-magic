@@ -215,7 +215,25 @@ export const PickupInspectionModal = ({
   const allPickupAddons = pickup.addons;
 
   // Addon handlers - now uses stock addon by ID
-  const handleAddAddon = (stockAddonId: string) => {
+  const handleAddAddon = (stockAddonId: string, type: "equipment" | "consumable" = "equipment") => {
+    if (type === "consumable") {
+      const addonType = addonTypes.find(t => t.id === stockAddonId);
+      if (!addonType) return;
+      if (pickup.addons.some(a => a.label === addonType.name)) {
+        toast.error("รายการนี้ถูกเพิ่มแล้ว");
+        return;
+      }
+      setPickup(prev => ({
+        ...prev,
+        addons: [...prev.addons, {
+          value: addonType.id,
+          label: addonType.name,
+          price: addonType.price,
+          addonId: addonType.id,
+        }]
+      }));
+      return;
+    }
     const stockAddon = stockAddons.find(a => a.id === stockAddonId);
     if (!stockAddon) return;
     
