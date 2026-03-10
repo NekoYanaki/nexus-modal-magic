@@ -495,7 +495,7 @@ export const PickupInspectionModal = ({
                                   </CommandItem>
                                 ))}
                               </CommandGroup>
-                            )
+                            )}
                           </CommandList>
                         </Command>
                       </PopoverContent>
