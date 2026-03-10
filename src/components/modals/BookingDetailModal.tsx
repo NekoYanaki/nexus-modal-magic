@@ -1,6 +1,9 @@
-import { Car, Tent, RefreshCw, MapPin, Calendar, X, Printer, Plus, Trash2 } from "lucide-react";
+import { Car, Tent, RefreshCw, MapPin, Calendar, X, Printer, Plus, Trash2, Package, ChevronsUpDown, Check } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useAddons } from "@/contexts/AddonContext";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { useAddons, type Addon } from "@/contexts/AddonContext";
+import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
