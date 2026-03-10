@@ -9,6 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { BookingDocumentModal } from "./BookingDocumentModal";
 import { VehicleSelectionDialog, type SelectableVehicle } from "./VehicleSelectionDialog";
@@ -69,6 +70,10 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
   const handleRemoveAddon = (id: string) => {
     setBookingAddons((prev) => prev.filter((a) => a.id !== id));
     toast.success("ลบ Add-on สำเร็จ");
+  };
+
+  const handleAddonPriceChange = (addonId: string, newPrice: number) => {
+    setBookingAddons(prev => prev.map(a => a.id === addonId ? { ...a, price: newPrice } : a));
   };
 
   const addonsTotal = bookingAddons.reduce((sum, a) => sum + a.price, 0);
@@ -267,7 +272,15 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
                     <div className="flex items-center gap-2 shrink-0">
                       {isEditingAddons ? (
                         <>
-                          <span className="text-sm text-primary font-medium">฿{addon.price.toLocaleString()}</span>
+                          <div className="flex items-center gap-1">
+                            <span className="text-muted-foreground text-sm">฿</span>
+                            <Input
+                              type="number"
+                              value={addon.price}
+                              onChange={(e) => handleAddonPriceChange(addon.id, Number(e.target.value))}
+                              className="h-7 w-20 text-sm"
+                            />
+                          </div>
                           <Button
                             variant="ghost"
                             size="sm"
