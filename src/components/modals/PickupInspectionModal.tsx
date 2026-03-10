@@ -138,7 +138,7 @@ export const PickupInspectionModal = ({
   bookedVehicle = null,
   onSave,
 }: PickupInspectionModalProps) => {
-  const { addons: stockAddons } = useAddons();
+  const { addons: stockAddons, addonTypes } = useAddons();
   const [isEditing, setIsEditing] = useState(false);
   const [pickup, setPickup] = useState<PickupInspectionData>(() => mergeInvoiceAddons(pickupData, invoiceAddons));
   const [showVehicleSelection, setShowVehicleSelection] = useState(false);
@@ -178,6 +178,11 @@ export const PickupInspectionModal = ({
     return counts;
   }, [availableStockAddons]);
 
+  // Available consumable addon types
+  const availableConsumables = useMemo(() => {
+    return addonTypes.filter(t => t.kind === "consumable" && t.isActive && !pickup.addons.some(a => a.label === t.name));
+  }, [addonTypes, pickup.addons]);
+
   const handleDocumentUpload = (type: 'internationalLicense' | 'passport', file: File | null) => {
     setDocuments(prev => ({ ...prev, [type]: file }));
     if (file) {
@@ -210,7 +215,25 @@ export const PickupInspectionModal = ({
   const allPickupAddons = pickup.addons;
 
   // Addon handlers - now uses stock addon by ID
-  const handleAddAddon = (stockAddonId: string) => {
+  const handleAddAddon = (stockAddonId: string, type: "equipment" | "consumable" = "equipment") => {
+    if (type === "consumable") {
+      const addonType = addonTypes.find(t => t.id === stockAddonId);
+      if (!addonType) return;
+      if (pickup.addons.some(a => a.label === addonType.name)) {
+        toast.error("รายการนี้ถูกเพิ่มแล้ว");
+        return;
+      }
+      setPickup(prev => ({
+        ...prev,
+        addons: [...prev.addons, {
+          value: addonType.id,
+          label: addonType.name,
+          price: addonType.price,
+          addonId: addonType.id,
+        }]
+      }));
+      return;
+    }
     const stockAddon = stockAddons.find(a => a.id === stockAddonId);
     if (!stockAddon) return;
     
@@ -416,40 +439,63 @@ export const PickupInspectionModal = ({
                           <CommandInput placeholder="ค้นหาด้วยชื่อหรือ ID..." className="h-9" />
                           <CommandList>
                             <CommandEmpty>ไม่พบรายการที่พร้อมใช้งาน</CommandEmpty>
-                            {Object.entries(
+                            
+                            {/* Equipment Section */}
+                            {Object.keys(
                               availableStockAddons
                                 .filter(opt => !pickup.addons.some(a => a.addonId === opt.id))
-                                .reduce<Record<string, Addon[]>>((groups, addon) => {
-                                  if (!groups[addon.category]) groups[addon.category] = [];
-                                  groups[addon.category].push(addon);
-                                  return groups;
-                                }, {})
-                            ).map(([category, items]) => (
-                              <CommandGroup key={category} heading={`${category} (พร้อมใช้ ${categoryAvailableCount[category] || 0})`}>
-                                {items.map(option => (
+                                .reduce<Record<string, Addon[]>>((g, a) => { if (!g[a.category]) g[a.category] = []; g[a.category].push(a); return g; }, {})
+                            ).length > 0 && (
+                              <CommandGroup heading="🔧 อุปกรณ์ (Equipment)">
+                                {Object.entries(
+                                  availableStockAddons
+                                    .filter(opt => !pickup.addons.some(a => a.addonId === opt.id))
+                                    .reduce<Record<string, Addon[]>>((g, a) => { if (!g[a.category]) g[a.category] = []; g[a.category].push(a); return g; }, {})
+                                ).map(([category, items]) => (
+                                  items.map(option => (
+                                    <CommandItem
+                                      key={option.id}
+                                      value={`${option.id} ${option.name} equipment`}
+                                      onSelect={() => {
+                                        handleAddAddon(option.id, "equipment");
+                                        setAddonComboboxOpen(false);
+                                      }}
+                                    >
+                                      <Check className={cn("mr-2 h-4 w-4", pickup.addons.some(a => a.addonId === option.id) ? "opacity-100" : "opacity-0")} />
+                                      <div className="flex items-center gap-2 flex-1">
+                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">{option.id}</Badge>
+                                        <span>{option.name}</span>
+                                        <Badge variant="secondary" className="text-[9px] px-1 py-0">{category}</Badge>
+                                      </div>
+                                      <span className="text-muted-foreground text-xs ml-2">฿{option.defaultPrice.toLocaleString()}</span>
+                                    </CommandItem>
+                                  ))
+                                )).flat()}
+                              </CommandGroup>
+                            )}
+
+                            {/* Consumable Section */}
+                            {availableConsumables.length > 0 && (
+                              <CommandGroup heading="📦 วัสดุสิ้นเปลือง (Consumable)">
+                                {availableConsumables.map(option => (
                                   <CommandItem
                                     key={option.id}
-                                    value={`${option.id} ${option.name}`}
+                                    value={`${option.id} ${option.name} consumable`}
                                     onSelect={() => {
-                                      handleAddAddon(option.id);
+                                      handleAddAddon(option.id, "consumable");
                                       setAddonComboboxOpen(false);
                                     }}
                                   >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4",
-                                        pickup.addons.some(a => a.addonId === option.id) ? "opacity-100" : "opacity-0"
-                                      )}
-                                    />
+                                    <Check className={cn("mr-2 h-4 w-4", pickup.addons.some(a => a.label === option.name) ? "opacity-100" : "opacity-0")} />
                                     <div className="flex items-center gap-2 flex-1">
-                                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">{option.id}</Badge>
+                                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono bg-amber-50 text-amber-700 border-amber-200">{option.id}</Badge>
                                       <span>{option.name}</span>
                                     </div>
-                                    <span className="text-muted-foreground text-xs ml-2">฿{option.defaultPrice.toLocaleString()}</span>
+                                    <span className="text-muted-foreground text-xs ml-2">฿{option.price.toLocaleString()}</span>
                                   </CommandItem>
                                 ))}
                               </CommandGroup>
-                            ))}
+                            )}
                           </CommandList>
                         </Command>
                       </PopoverContent>
