@@ -225,7 +225,74 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
               </div>
             </Card>
 
-            {/* Camps — only if booked */}
+            {/* Add-ons & Accessories */}
+            <Card className="p-5 border border-border">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-semibold flex items-center gap-2">
+                  <Plus className="w-4 h-4 text-primary" />
+                  Add-ons & Accessories
+                </h4>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs text-muted-foreground"
+                  onClick={() => setIsEditingAddons(!isEditingAddons)}
+                >
+                  {isEditingAddons ? "เสร็จสิ้น" : "แก้ไข"}
+                </Button>
+              </div>
+              <div className="space-y-2 text-sm">
+                {bookingAddons.map((addon, i) => (
+                  <div key={addon.id} className="flex items-center justify-between p-2 border border-border rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono bg-muted/50">{addon.id}</Badge>
+                      <span className="text-sm">{addon.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm">฿{addon.price.toLocaleString()}</span>
+                      {isEditingAddons && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                          onClick={() => handleRemoveAddon(addon.id)}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {isEditingAddons && availableAddonTypes.length > 0 && (
+                  <div className="flex items-center gap-2 pt-2">
+                    <Select value={selectedAddonToAdd} onValueChange={setSelectedAddonToAdd}>
+                      <SelectTrigger className="h-8 text-xs flex-1">
+                        <SelectValue placeholder="เลือก Add-on ที่ต้องการเพิ่ม" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableAddonTypes.map((t) => (
+                          <SelectItem key={t.id} value={t.id} className="text-xs">
+                            {t.name} — ฿{t.price.toLocaleString()}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button size="sm" className="h-8 text-xs gap-1" onClick={handleAddAddon} disabled={!selectedAddonToAdd}>
+                      <Plus className="w-3.5 h-3.5" />
+                      เพิ่ม
+                    </Button>
+                  </div>
+                )}
+
+                <div className="h-px bg-border my-2" />
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">รวม Add-on</span>
+                  <span className="font-semibold text-primary">฿{addonsTotal.toLocaleString()}</span>
+                </div>
+              </div>
+            </Card>
+
             {hasCamp && (
               <Card className="p-5 border border-border">
                 <h4 className="font-semibold flex items-center gap-2 mb-4">
