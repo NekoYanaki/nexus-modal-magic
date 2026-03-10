@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Card } from "@/components/ui/card";
@@ -6,10 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Pencil, Save, X, Upload, Image, LogOut, Plus, Trash2, FileText, CreditCard, Banknote, Car, Package, Receipt } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Pencil, Save, X, Upload, Image, LogOut, Plus, Trash2, FileText, CreditCard, Banknote, Car, Package, Receipt, CheckSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
+import { useAddons } from "@/contexts/AddonContext";
 
 interface ConditionRecord {
   id: string;
@@ -82,11 +84,28 @@ export const ReturnInspectionModal = ({
   pickupAddons = [],
   onSave,
 }: ReturnInspectionModalProps) => {
+  const { addonTypes } = useAddons();
   const [isEditing, setIsEditing] = useState(false);
   const [returnInspection, setReturnInspection] = useState<ReturnInspectionData>(returnData);
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmed, setConfirmed] = useState(bookingStatus === "returned");
   const [paymentMethod, setPaymentMethod] = useState<string>("cash");
+  const [checkedAddons, setCheckedAddons] = useState<Record<string, boolean>>({});
+
+  // Filter pickup addons to only equipment types (not consumable)
+  const equipmentCategoryNames = useMemo(() => {
+    return new Set(addonTypes.filter(t => t.kind === "equipment").map(t => t.name));
+  }, [addonTypes]);
+
+  const equipmentAddons = useMemo(() => {
+    return pickupAddons.filter(a => equipmentCategoryNames.has(a.label));
+  }, [pickupAddons, equipmentCategoryNames]);
+
+  const checkedCount = equipmentAddons.filter(a => checkedAddons[a.value]).length;
+
+  const handleToggleAddon = (addonValue: string) => {
+    setCheckedAddons(prev => ({ ...prev, [addonValue]: !prev[addonValue] }));
+  };
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -214,15 +233,58 @@ export const ReturnInspectionModal = ({
             </div>
           </Card>
 
-          {/* Pickup Add-ons (Read-only checklist) */}
-          {pickupAddons.length > 0 && (
-            <Card className="p-4 border-blue-200 dark:border-blue-800 bg-blue-50/20 dark:bg-blue-950/10">
+          {/* Equipment Add-on Checklist */}
+          {equipmentAddons.length > 0 && (
+            <Card className="p-4 border-border">
               <h5 className="font-medium text-sm flex items-center gap-2 mb-3">
-                <Package className="w-4 h-4 text-blue-600" />
-                Add-on จากตอนรับรถ ({pickupAddons.length} รายการ)
+                <CheckSquare className="w-4 h-4 text-primary" />
+                ตรวจสอบอุปกรณ์ก่อนคืน ({checkedCount}/{equipmentAddons.length})
+              </h5>
+              {checkedCount === equipmentAddons.length && (
+                <div className="mb-3 p-2 rounded-lg bg-success/10 border border-success/30">
+                  <p className="text-xs text-success font-medium text-center">✓ ตรวจสอบอุปกรณ์ครบทุกรายการแล้ว</p>
+                </div>
+              )}
+              <div className="space-y-2">
+                {equipmentAddons.map((addon) => (
+                  <label
+                    key={addon.value}
+                    className={`flex items-center justify-between gap-3 border rounded-lg p-2.5 cursor-pointer transition-colors ${
+                      checkedAddons[addon.value]
+                        ? "border-success/40 bg-success/5"
+                        : "border-border bg-background/50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Checkbox
+                        checked={!!checkedAddons[addon.value]}
+                        onCheckedChange={() => handleToggleAddon(addon.value)}
+                      />
+                      <div className="flex items-center gap-2 min-w-0">
+                        {addon.addonId && (
+                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-mono shrink-0">{addon.addonId}</Badge>
+                        )}
+                        <span className={`text-sm font-medium ${checkedAddons[addon.value] ? "line-through text-muted-foreground" : ""}`}>
+                          {addon.label}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-sm text-muted-foreground shrink-0">฿{addon.price.toLocaleString()}</span>
+                  </label>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {/* Non-equipment Add-ons (consumables - read-only summary) */}
+          {pickupAddons.filter(a => !equipmentCategoryNames.has(a.label)).length > 0 && (
+            <Card className="p-4 border-border">
+              <h5 className="font-medium text-sm flex items-center gap-2 mb-3">
+                <Package className="w-4 h-4 text-muted-foreground" />
+                วัสดุสิ้นเปลือง ({pickupAddons.filter(a => !equipmentCategoryNames.has(a.label)).length} รายการ)
               </h5>
               <div className="space-y-2">
-                {pickupAddons.map((addon) => (
+                {pickupAddons.filter(a => !equipmentCategoryNames.has(a.label)).map((addon) => (
                   <div key={addon.value} className="flex items-center justify-between gap-2 border border-border rounded-lg p-2 bg-muted/30">
                     <div className="flex items-center gap-2 min-w-0">
                       {addon.addonId && (
@@ -233,10 +295,6 @@ export const ReturnInspectionModal = ({
                     <span className="text-sm text-muted-foreground shrink-0">฿{addon.price.toLocaleString()}</span>
                   </div>
                 ))}
-                <div className="flex items-center justify-between pt-2 border-t border-border">
-                  <span className="text-sm text-muted-foreground">รวม Add-on</span>
-                  <span className="text-sm font-semibold">฿{pickupAddons.reduce((sum, a) => sum + a.price, 0).toLocaleString()}</span>
-                </div>
               </div>
             </Card>
           )}
