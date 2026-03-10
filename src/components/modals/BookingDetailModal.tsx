@@ -272,7 +272,15 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
                     <div className="flex items-center gap-2 shrink-0">
                       {isEditingAddons ? (
                         <>
-                          <span className="text-sm text-primary font-medium">฿{addon.price.toLocaleString()}</span>
+                          <div className="flex items-center gap-1">
+                            <span className="text-muted-foreground text-sm">฿</span>
+                            <Input
+                              type="number"
+                              value={addon.price}
+                              onChange={(e) => handleAddonPriceChange(addon.id, Number(e.target.value))}
+                              className="h-7 w-20 text-sm"
+                            />
+                          </div>
                           <Button
                             variant="ghost"
                             size="sm"
