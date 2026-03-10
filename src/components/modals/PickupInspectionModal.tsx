@@ -256,7 +256,7 @@ export const PickupInspectionModal = ({
 
   const handleCancel = () => {
     setIsEditing(false);
-    setPickup(pickupData);
+    setPickup(mergeInvoiceAddons(pickupData, invoiceAddons));
   };
 
   const handlePrintReceipt = () => {
