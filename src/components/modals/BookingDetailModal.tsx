@@ -40,9 +40,9 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
     { id: "AW-012", name: "กันสาด", price: 400 },
     { id: "CH-007", name: "เก้าอี้พับ (ชุด)", price: 150 },
   ]);
-  const { addons: stockAddons } = useAddons();
+  const { addons: stockAddons, addonTypes } = useAddons();
 
-  // Available stock addons (active & available, not already added)
+  // Available stock addons (equipment - active & available, not already added)
   const availableStockAddons = useMemo(() => {
     return stockAddons.filter(a => a.isActive && a.stockStatus === "available");
   }, [stockAddons]);
@@ -54,6 +54,11 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
     });
     return counts;
   }, [availableStockAddons]);
+
+  // Available consumable addon types
+  const availableConsumables = useMemo(() => {
+    return addonTypes.filter(t => t.kind === "consumable" && t.isActive && !bookingAddons.some(a => a.name === t.name));
+  }, [addonTypes, bookingAddons]);
 
   const handleAddAddon = (stockAddonId: string) => {
     const stockAddon = stockAddons.find(a => a.id === stockAddonId);
