@@ -230,45 +230,48 @@ export const ReturnInspectionModal = ({
             </div>
           </Card>
 
-          {/* Equipment Add-on Checklist */}
+          {/* Equipment Add-on Status */}
           {equipmentAddons.length > 0 && (
             <Card className="p-4 border-border">
               <h5 className="font-medium text-sm flex items-center gap-2 mb-3">
-                <CheckSquare className="w-4 h-4 text-primary" />
-                ตรวจสอบอุปกรณ์ก่อนคืน ({checkedCount}/{equipmentAddons.length})
+                <Package className="w-4 h-4 text-primary" />
+                ตรวจสอบอุปกรณ์ ({equipmentAddons.length} รายการ)
               </h5>
-              {checkedCount === equipmentAddons.length && (
-                <div className="mb-3 p-2 rounded-lg bg-success/10 border border-success/30">
-                  <p className="text-xs text-success font-medium text-center">✓ ตรวจสอบอุปกรณ์ครบทุกรายการแล้ว</p>
-                </div>
-              )}
               <div className="space-y-2">
-                {equipmentAddons.map((addon) => (
-                  <label
-                    key={addon.value}
-                    className={`flex items-center justify-between gap-3 border rounded-lg p-2.5 cursor-pointer transition-colors ${
-                      checkedAddons[addon.value]
-                        ? "border-success/40 bg-success/5"
-                        : "border-border bg-background/50"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <Checkbox
-                        checked={!!checkedAddons[addon.value]}
-                        onCheckedChange={() => handleToggleAddon(addon.value)}
-                      />
+                {equipmentAddons.map((addon) => {
+                  const status = addonStatuses[addon.value] || "returned";
+                  const statusStyles: Record<string, string> = {
+                    returned: "border-success/40 bg-success/5",
+                    damaged: "border-warning/40 bg-warning/5",
+                    lost: "border-destructive/40 bg-destructive/5",
+                  };
+                  return (
+                    <div
+                      key={addon.value}
+                      className={`flex items-center justify-between gap-3 border rounded-lg p-2.5 transition-colors ${statusStyles[status] || "border-border"}`}
+                    >
                       <div className="flex items-center gap-2 min-w-0">
                         {addon.addonId && (
                           <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-mono shrink-0">{addon.addonId}</Badge>
                         )}
-                        <span className={`text-sm font-medium ${checkedAddons[addon.value] ? "line-through text-muted-foreground" : ""}`}>
-                          {addon.label}
-                        </span>
+                        <span className="text-sm font-medium">{addon.label}</span>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-xs text-muted-foreground">฿{addon.price.toLocaleString()}</span>
+                        <Select value={status} onValueChange={(val) => handleAddonStatusChange(addon.value, val)}>
+                          <SelectTrigger className="h-7 w-[110px] text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="returned">คืนแล้ว</SelectItem>
+                            <SelectItem value="damaged">ชำรุด</SelectItem>
+                            <SelectItem value="lost">สูญหาย</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
-                    <span className="text-sm text-muted-foreground shrink-0">฿{addon.price.toLocaleString()}</span>
-                  </label>
-                ))}
+                  );
+                })}
               </div>
             </Card>
           )}
