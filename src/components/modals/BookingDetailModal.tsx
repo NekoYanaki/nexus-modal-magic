@@ -1,4 +1,4 @@
-import { Car, Tent, RefreshCw, MapPin, Calendar, X, Printer, Plus, Trash2, Package, ChevronsUpDown, Check } from "lucide-react";
+import { Car, Tent, RefreshCw, MapPin, Calendar, X, Printer, Plus, Trash2, Package, ChevronsUpDown, Check, Save } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
