@@ -139,6 +139,7 @@ const StockPage = () => {
       }
       case "damaged": return <Badge className="bg-destructive/10 text-destructive border-destructive/20">ส่งซ่อม</Badge>;
       case "broken": return <Badge className="bg-muted text-muted-foreground border-muted-foreground/20">ชำรุด</Badge>;
+      case "lost": return <Badge className="bg-destructive/20 text-destructive border-destructive/30 font-semibold">สูญหาย</Badge>;
     }
   };
 
