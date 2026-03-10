@@ -178,6 +178,11 @@ export const PickupInspectionModal = ({
     return counts;
   }, [availableStockAddons]);
 
+  // Available consumable addon types
+  const availableConsumables = useMemo(() => {
+    return addonTypes.filter(t => t.kind === "consumable" && t.isActive && !pickup.addons.some(a => a.label === t.name));
+  }, [addonTypes, pickup.addons]);
+
   const handleDocumentUpload = (type: 'internationalLicense' | 'passport', file: File | null) => {
     setDocuments(prev => ({ ...prev, [type]: file }));
     if (file) {
