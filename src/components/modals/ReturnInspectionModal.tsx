@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Card } from "@/components/ui/card";
@@ -6,10 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Pencil, Save, X, Upload, Image, LogOut, Plus, Trash2, FileText, CreditCard, Banknote, Car, Package, Receipt } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Pencil, Save, X, Upload, Image, LogOut, Plus, Trash2, FileText, CreditCard, Banknote, Car, Package, Receipt, CheckSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
+import { useAddons } from "@/contexts/AddonContext";
 
 interface ConditionRecord {
   id: string;
