@@ -97,6 +97,16 @@ const defaultPickup: PickupInspectionData = {
   addons: [],
 };
 
+// Helper to merge invoice addons into pickup addons (initial state)
+const mergeInvoiceAddons = (pickupData: PickupInspectionData, invoiceAddons: AddonItem[]): PickupInspectionData => {
+  const existingIds = new Set(pickupData.addons.map(a => a.value));
+  const newFromInvoice = invoiceAddons.filter(a => !existingIds.has(a.value));
+  return {
+    ...pickupData,
+    addons: [...newFromInvoice, ...pickupData.addons],
+  };
+};
+
 // Mock invoice addons (from original booking)
 const defaultInvoiceAddons: AddonItem[] = [
   { value: 'CS-001', label: 'เบาะนั่งเด็ก', price: 300, addonId: 'CS-001' },
@@ -130,7 +140,7 @@ export const PickupInspectionModal = ({
 }: PickupInspectionModalProps) => {
   const { addons: stockAddons } = useAddons();
   const [isEditing, setIsEditing] = useState(false);
-  const [pickup, setPickup] = useState<PickupInspectionData>(pickupData);
+  const [pickup, setPickup] = useState<PickupInspectionData>(() => mergeInvoiceAddons(pickupData, invoiceAddons));
   const [showVehicleSelection, setShowVehicleSelection] = useState(false);
   const [assignedVehicle, setAssignedVehicle] = useState<SelectableVehicle | null>(bookedVehicle);
   const [showChangeReason, setShowChangeReason] = useState(false);
@@ -196,12 +206,8 @@ export const PickupInspectionModal = ({
   // Calculate insurance price (only if added at pickup, not from booking)
   const insurancePrice = bookedInsurance ? 0 : (selectedInsurance?.price || 0);
 
-  const invoiceAddonTotal = invoiceAddons.reduce((sum, addon) => sum + addon.price, 0);
-
-  // Combine all addons for external use (invoice + newly added)
-  const allPickupAddons = useMemo(() => {
-    return [...invoiceAddons, ...pickup.addons];
-  }, [invoiceAddons, pickup.addons]);
+  // All addons are now in pickup.addons (merged from invoice + newly added)
+  const allPickupAddons = pickup.addons;
 
   // Addon handlers - now uses stock addon by ID
   const handleAddAddon = (stockAddonId: string) => {
@@ -250,7 +256,7 @@ export const PickupInspectionModal = ({
 
   const handleCancel = () => {
     setIsEditing(false);
-    setPickup(pickupData);
+    setPickup(mergeInvoiceAddons(pickupData, invoiceAddons));
   };
 
   const handlePrintReceipt = () => {
@@ -379,40 +385,14 @@ export const PickupInspectionModal = ({
                     <p className="font-medium">{pickup.mileage} km</p>
                   )}
               </div>
-
-              {/* Invoice Add-ons (Read-only) */}
-              <div className="pt-3 border-t border-border mt-3">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-muted-foreground text-sm flex items-center gap-2">
-                    <Receipt className="w-4 h-4" />
-                    Add-on จาก Invoice ({invoiceAddons.length} รายการ)
-                  </p>
-                </div>
-                
-                {invoiceAddons.length > 0 && (
-                  <div className="space-y-2">
-                    {invoiceAddons.map((addon) => (
-                      <div key={addon.value} className="flex items-center justify-between gap-2 border border-border rounded-lg p-2 bg-muted/30">
-                        <div className="flex items-center gap-2 min-w-0">
-                          {addon.addonId && (
-                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-mono shrink-0">{addon.addonId}</Badge>
-                          )}
-                          <span className="text-sm font-medium text-muted-foreground">{addon.label}</span>
-                        </div>
-                        <span className="text-sm text-muted-foreground shrink-0">฿{addon.price.toLocaleString()}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
             </div>
 
-              {/* Add-on & Accessories */}
+              {/* Add-on & Accessories (all editable) */}
               <div className="pt-3 border-t border-border mt-3">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-muted-foreground text-sm flex items-center gap-2">
                     <Package className="w-4 h-4" />
-                    เพิ่ม Add-on & Accessories ({pickup.addons.length} รายการ)
+                    Add-on & Accessories ({pickup.addons.length} รายการ)
                   </p>
                 </div>
                 
