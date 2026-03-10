@@ -120,6 +120,7 @@ const StockPage = () => {
   const reservedCount = equipmentAddons.filter((a) => a.stockStatus === "reserved").length;
   const inUseCount = equipmentAddons.filter((a) => a.stockStatus === "in_use").length;
   const damagedBrokenCount = equipmentAddons.filter((a) => a.stockStatus === "damaged" || a.stockStatus === "broken").length;
+  const lostCount = equipmentAddons.filter((a) => a.stockStatus === "lost").length;
 
   const getStockStatusBadge = (status: Addon["stockStatus"], bookingRef?: string) => {
     switch (status) {
