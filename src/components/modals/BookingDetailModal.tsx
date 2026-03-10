@@ -1,4 +1,6 @@
-import { Car, Tent, RefreshCw, MapPin, Calendar, X, Printer } from "lucide-react";
+import { Car, Tent, RefreshCw, MapPin, Calendar, X, Printer, Plus, Trash2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useAddons } from "@/contexts/AddonContext";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +28,35 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
   const [changeReason, setChangeReason] = useState("");
   const [pendingVehicle, setPendingVehicle] = useState<SelectableVehicle | null>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<SelectableVehicle | null>(null);
+  const [isEditingAddons, setIsEditingAddons] = useState(false);
+  const [bookingAddons, setBookingAddons] = useState([
+    { id: "CS-001", name: "เบาะนั่งเด็ก", price: 300 },
+    { id: "BBQ-003", name: "ชุดปิ้งย่าง", price: 350 },
+    { id: "AW-012", name: "กันสาด", price: 400 },
+    { id: "CH-007", name: "เก้าอี้พับ (ชุด)", price: 150 },
+  ]);
+  const [selectedAddonToAdd, setSelectedAddonToAdd] = useState("");
+  const { addonTypes } = useAddons();
+
+  const availableAddonTypes = addonTypes.filter(
+    (t) => t.isActive && !bookingAddons.some((a) => a.name === t.name)
+  );
+
+  const handleAddAddon = () => {
+    const addonType = addonTypes.find((t) => t.id === selectedAddonToAdd);
+    if (!addonType) return;
+    const newId = `${addonType.id}-${Date.now().toString().slice(-3)}`;
+    setBookingAddons((prev) => [...prev, { id: newId, name: addonType.name, price: addonType.price }]);
+    setSelectedAddonToAdd("");
+    toast.success(`เพิ่ม ${addonType.name} สำเร็จ`);
+  };
+
+  const handleRemoveAddon = (id: string) => {
+    setBookingAddons((prev) => prev.filter((a) => a.id !== id));
+    toast.success("ลบ Add-on สำเร็จ");
+  };
+
+  const addonsTotal = bookingAddons.reduce((sum, a) => sum + a.price, 0);
 
   const hasCamp = true;
 
@@ -46,16 +77,11 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
     rentalFee: 5000,
     deposit: 4000,
     vehicleRental: 5000,
-    addonsTotal: 0,
+    addonsTotal: addonsTotal,
     totalPaid: 4000,
     totalDue: 3650,
     totalAmount: 7650,
-    addons: [
-      { id: "CS-001", name: "เบาะนั่งเด็ก", price: 300 },
-      { id: "BBQ-003", name: "ชุดปิ้งย่าง", price: 350 },
-      { id: "AW-012", name: "กันสาด", price: 400 },
-      { id: "CH-007", name: "เก้าอี้พับ (ชุด)", price: 150 },
-    ],
+    addons: bookingAddons,
     camps: [
       {
         name: "ป่าสนแคมปิ้ง",
@@ -199,7 +225,74 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
               </div>
             </Card>
 
-            {/* Camps — only if booked */}
+            {/* Add-ons & Accessories */}
+            <Card className="p-5 border border-border">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-semibold flex items-center gap-2">
+                  <Plus className="w-4 h-4 text-primary" />
+                  Add-ons & Accessories
+                </h4>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs text-muted-foreground"
+                  onClick={() => setIsEditingAddons(!isEditingAddons)}
+                >
+                  {isEditingAddons ? "เสร็จสิ้น" : "แก้ไข"}
+                </Button>
+              </div>
+              <div className="space-y-2 text-sm">
+                {bookingAddons.map((addon, i) => (
+                  <div key={addon.id} className="flex items-center justify-between p-2 border border-border rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono bg-muted/50">{addon.id}</Badge>
+                      <span className="text-sm">{addon.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm">฿{addon.price.toLocaleString()}</span>
+                      {isEditingAddons && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                          onClick={() => handleRemoveAddon(addon.id)}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {isEditingAddons && availableAddonTypes.length > 0 && (
+                  <div className="flex items-center gap-2 pt-2">
+                    <Select value={selectedAddonToAdd} onValueChange={setSelectedAddonToAdd}>
+                      <SelectTrigger className="h-8 text-xs flex-1">
+                        <SelectValue placeholder="เลือก Add-on ที่ต้องการเพิ่ม" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableAddonTypes.map((t) => (
+                          <SelectItem key={t.id} value={t.id} className="text-xs">
+                            {t.name} — ฿{t.price.toLocaleString()}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button size="sm" className="h-8 text-xs gap-1" onClick={handleAddAddon} disabled={!selectedAddonToAdd}>
+                      <Plus className="w-3.5 h-3.5" />
+                      เพิ่ม
+                    </Button>
+                  </div>
+                )}
+
+                <div className="h-px bg-border my-2" />
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">รวม Add-on</span>
+                  <span className="font-semibold text-primary">฿{addonsTotal.toLocaleString()}</span>
+                </div>
+              </div>
+            </Card>
+
             {hasCamp && (
               <Card className="p-5 border border-border">
                 <h4 className="font-semibold flex items-center gap-2 mb-4">
@@ -263,29 +356,7 @@ export const BookingDetailModal = ({ open, onClose }: BookingDetailModalProps) =
               </div>
             </Card>
 
-            {/* Add-ons & Accessories */}
-            <Card className="p-5 border border-border">
-              <h4 className="font-semibold flex items-center gap-2 mb-4">
-                <span className="text-primary font-bold">+</span>
-                Add-ons & Accessories
-              </h4>
-              <div className="space-y-2 text-sm">
-                {mockData.addons.map((addon, i) => (
-                  <div key={i} className="flex items-center justify-between p-2 border border-border rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono bg-muted/50">{addon.id}</Badge>
-                      <span className="text-sm">{addon.name}</span>
-                    </div>
-                    <span className="font-medium text-sm">฿{addon.price.toLocaleString()}</span>
-                  </div>
-                ))}
-                <div className="h-px bg-border my-2" />
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">รวม Add-on</span>
-                  <span className="font-semibold text-primary">฿{mockData.addonsTotal.toLocaleString()}</span>
-                </div>
-              </div>
-            </Card>
+
           </div>
         </div>
       </DialogContent>
