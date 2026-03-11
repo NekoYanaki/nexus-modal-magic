@@ -284,35 +284,6 @@ export function VehicleMaintenanceModal({ open, onClose, vehicle }: VehicleMaint
     return "ok";
   };
 
-  // ── Maintenance helpers ──
-  const toggleTask = (taskId: string) => {
-    setTasks(tasks.map(task => task.id === taskId ? { ...task, checked: !task.checked } : task));
-  };
-  const handleAddTask = () => {
-    if (!newTaskLabel.trim()) return;
-    setTasks(prev => [...prev, { id: Date.now().toString(), label: newTaskLabel.trim(), checked: false }]);
-    setNewTaskLabel("");
-  };
-  const handleDeleteTask = (taskId: string) => {
-    setTasks(prev => prev.filter(t => t.id !== taskId));
-  };
-  const handleStartEditTask = (task: MaintenanceTask) => {
-    setEditingTaskId(task.id);
-    setEditingTaskLabel(task.label);
-  };
-  const handleSaveEditTask = () => {
-    if (!editingTaskLabel.trim() || !editingTaskId) return;
-    setTasks(prev => prev.map(t => t.id === editingTaskId ? { ...t, label: editingTaskLabel.trim() } : t));
-    setEditingTaskId(null);
-    setEditingTaskLabel("");
-  };
-  const handleStartJob = () => setHasActiveJob(true);
-  const handleCompleteJob = () => {
-    setHasActiveJob(false);
-    setTasks(tasks.map(task => ({ ...task, checked: false })));
-    setMileageAfterService("");
-    setMechanicNotes("");
-  };
 
   const getStatusBadge = (status: MaintenanceItem["status"]) => {
     switch (status) {
