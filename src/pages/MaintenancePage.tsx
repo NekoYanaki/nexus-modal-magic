@@ -277,11 +277,11 @@ const MaintenancePage = () => {
   };
 
   // Stats
-  const totalMaintenance = mockMaintenanceVehicles.length;
-  const pendingCount = mockMaintenanceVehicles.filter((v) => v.maintenanceStatus === "pending").length;
-  const inProgressCount = mockMaintenanceVehicles.filter((v) => v.maintenanceStatus === "in_progress").length;
+  const totalMaintenance = maintenanceList.length;
+  const pendingCount = maintenanceList.filter((v) => v.maintenanceStatus === "pending").length;
+  const inProgressCount = maintenanceList.filter((v) => v.maintenanceStatus === "in_progress").length;
   
-  const completedCount = mockMaintenanceVehicles.filter((v) => v.maintenanceStatus === "completed").length;
+  const completedCount = maintenanceList.filter((v) => v.maintenanceStatus === "completed").length;
 
   const sidebarItems = [
     { icon: Home, label: "Dashboard", href: "/" },
