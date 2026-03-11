@@ -43,6 +43,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { VehicleMaintenanceModal } from "@/components/modals/VehicleMaintenanceModal";
+import { VehicleSelectionDialog, type SelectableVehicle } from "@/components/modals/VehicleSelectionDialog";
 import { Link } from "react-router-dom";
 
 interface MaintenanceVehicle {
