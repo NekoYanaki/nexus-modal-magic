@@ -233,7 +233,7 @@ const MaintenancePage = () => {
 
   const handleVehicleSelectedForCreate = (v: SelectableVehicle) => {
     const newVehicle: MaintenanceVehicle = {
-      id: v.id,
+      id: v.id + "-" + Date.now(),
       name: v.name,
       year: v.year,
       licensePlate: v.licensePlate,
@@ -251,8 +251,18 @@ const MaintenancePage = () => {
       estimatedEnd: "-",
       issue: "",
     };
-    setCreateVehicle(newVehicle);
+    setPendingVehicle(newVehicle);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmCreate = () => {
+    if (!pendingVehicle) return;
+    setMaintenanceList(prev => [pendingVehicle, ...prev]);
+    setCreateVehicle(pendingVehicle);
+    setConfirmOpen(false);
+    setPendingVehicle(null);
     setCreateModalOpen(true);
+    toast({ title: "สร้างรายการซ่อมบำรุงสำเร็จ", description: `${pendingVehicle.name} ถูกเปลี่ยนสถานะเป็นซ่อมบำรุงแล้ว` });
   };
 
   const getMaintenanceStatusBadge = (status: MaintenanceVehicle["maintenanceStatus"]) => {
