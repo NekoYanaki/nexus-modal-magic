@@ -217,13 +217,6 @@ export function VehicleMaintenanceModal({ open, onClose, vehicle }: VehicleMaint
     toast({ title: "ลบรายการเรียบร้อย" });
   };
 
-  const [tasks, setTasks] = useState<MaintenanceTask[]>([
-    { id: "1", label: "เปลี่ยนแบตเตอรี่ (Replace Battery)", checked: false },
-    { id: "2", label: "ถ่ายน้ำมันเครื่อง (Oil Change)", checked: false },
-  ]);
-  const [newTaskLabel, setNewTaskLabel] = useState("");
-  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
-  const [editingTaskLabel, setEditingTaskLabel] = useState("");
 
   const [maintenanceHistory] = useState<MaintenanceHistory[]>([
     { id: "1", date: "15 ม.ค. 2023", items: "เปลี่ยนแบตเตอรี่", mileage: 115000, status: "completed", partsUsed: "แบตเตอรี่ 12V x1" },
