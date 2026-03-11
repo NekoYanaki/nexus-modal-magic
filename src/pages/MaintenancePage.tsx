@@ -208,8 +208,12 @@ const MaintenancePage = () => {
   const [vehicleSelectOpen, setVehicleSelectOpen] = useState(false);
   const [createVehicle, setCreateVehicle] = useState<MaintenanceVehicle | null>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingVehicle, setPendingVehicle] = useState<MaintenanceVehicle | null>(null);
+  const [maintenanceList, setMaintenanceList] = useState<MaintenanceVehicle[]>(mockMaintenanceVehicles);
+  const { toast } = useToast();
 
-  const filteredVehicles = mockMaintenanceVehicles.filter((vehicle) => {
+  const filteredVehicles = maintenanceList.filter((vehicle) => {
     const matchesSearch =
       vehicle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       vehicle.licensePlate.toLowerCase().includes(searchQuery.toLowerCase()) ||
