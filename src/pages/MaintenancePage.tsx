@@ -1,6 +1,17 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -197,8 +208,12 @@ const MaintenancePage = () => {
   const [vehicleSelectOpen, setVehicleSelectOpen] = useState(false);
   const [createVehicle, setCreateVehicle] = useState<MaintenanceVehicle | null>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingVehicle, setPendingVehicle] = useState<MaintenanceVehicle | null>(null);
+  const [maintenanceList, setMaintenanceList] = useState<MaintenanceVehicle[]>(mockMaintenanceVehicles);
+  const { toast } = useToast();
 
-  const filteredVehicles = mockMaintenanceVehicles.filter((vehicle) => {
+  const filteredVehicles = maintenanceList.filter((vehicle) => {
     const matchesSearch =
       vehicle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       vehicle.licensePlate.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -218,7 +233,7 @@ const MaintenancePage = () => {
 
   const handleVehicleSelectedForCreate = (v: SelectableVehicle) => {
     const newVehicle: MaintenanceVehicle = {
-      id: v.id,
+      id: v.id + "-" + Date.now(),
       name: v.name,
       year: v.year,
       licensePlate: v.licensePlate,
@@ -236,8 +251,18 @@ const MaintenancePage = () => {
       estimatedEnd: "-",
       issue: "",
     };
-    setCreateVehicle(newVehicle);
+    setPendingVehicle(newVehicle);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmCreate = () => {
+    if (!pendingVehicle) return;
+    setMaintenanceList(prev => [pendingVehicle, ...prev]);
+    setCreateVehicle(pendingVehicle);
+    setConfirmOpen(false);
+    setPendingVehicle(null);
     setCreateModalOpen(true);
+    toast({ title: "สร้างรายการซ่อมบำรุงสำเร็จ", description: `${pendingVehicle.name} ถูกเปลี่ยนสถานะเป็นซ่อมบำรุงแล้ว` });
   };
 
   const getMaintenanceStatusBadge = (status: MaintenanceVehicle["maintenanceStatus"]) => {
@@ -252,11 +277,11 @@ const MaintenancePage = () => {
   };
 
   // Stats
-  const totalMaintenance = mockMaintenanceVehicles.length;
-  const pendingCount = mockMaintenanceVehicles.filter((v) => v.maintenanceStatus === "pending").length;
-  const inProgressCount = mockMaintenanceVehicles.filter((v) => v.maintenanceStatus === "in_progress").length;
+  const totalMaintenance = maintenanceList.length;
+  const pendingCount = maintenanceList.filter((v) => v.maintenanceStatus === "pending").length;
+  const inProgressCount = maintenanceList.filter((v) => v.maintenanceStatus === "in_progress").length;
   
-  const completedCount = mockMaintenanceVehicles.filter((v) => v.maintenanceStatus === "completed").length;
+  const completedCount = maintenanceList.filter((v) => v.maintenanceStatus === "completed").length;
 
   const sidebarItems = [
     { icon: Home, label: "Dashboard", href: "/" },
@@ -486,6 +511,33 @@ const MaintenancePage = () => {
           vehicle={createVehicle}
         />
       )}
+
+      {/* Confirm Create Maintenance */}
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ยืนยันสร้างการซ่อมบำรุง</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p>ต้องการเปลี่ยนสถานะรถเป็น <span className="font-semibold text-warning">ซ่อมบำรุง</span> ใช่หรือไม่?</p>
+                {pendingVehicle && (
+                  <div className="rounded-lg border p-3 bg-muted/50 space-y-1">
+                    <p className="font-semibold">{pendingVehicle.name} ({pendingVehicle.year})</p>
+                    <p className="text-sm">ทะเบียน: {pendingVehicle.licensePlate}</p>
+                    <p className="text-sm">ประเภท: {pendingVehicle.type}</p>
+                    <p className="text-sm">{pendingVehicle.techInfo}</p>
+                  </div>
+                )}
+                <p className="text-sm text-muted-foreground">รถจะถูกเปลี่ยนสถานะเป็น "ซ่อมบำรุง" และเพิ่มเข้ารายการซ่อมทันที</p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingVehicle(null)}>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmCreate}>ยืนยัน</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
