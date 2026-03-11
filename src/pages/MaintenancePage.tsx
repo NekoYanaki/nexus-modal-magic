@@ -204,6 +204,9 @@ const MaintenancePage = () => {
     return matchesSearch && matchesStatus && matchesType;
   });
 
+  const totalPages = Math.ceil(filteredVehicles.length / ITEMS_PER_PAGE);
+  const pagedVehicles = filteredVehicles.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
   const handleViewDetails = (vehicle: MaintenanceVehicle) => {
     setSelectedVehicle(vehicle);
     setModalOpen(true);
