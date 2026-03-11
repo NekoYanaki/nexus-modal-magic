@@ -162,13 +162,37 @@ const mockMaintenanceVehicles: MaintenanceVehicle[] = [
   },
 ];
 
+const ITEMS_PER_PAGE = 10;
+
+const Pagination = ({ currentPage, totalPages, onPageChange }: { currentPage: number; totalPages: number; onPageChange: (p: number) => void }) => {
+  if (totalPages <= 1) return null;
+  return (
+    <div className="flex items-center justify-between px-4 py-3 border-t">
+      <p className="text-sm text-muted-foreground">หน้า {currentPage} / {totalPages}</p>
+      <div className="flex items-center gap-1">
+        <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => onPageChange(currentPage - 1)}>
+          <ChevronLeft className="w-4 h-4" />
+        </Button>
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+          <Button key={p} variant={p === currentPage ? "default" : "outline"} size="sm" className="w-8" onClick={() => onPageChange(p)}>
+            {p}
+          </Button>
+        ))}
+        <Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => onPageChange(currentPage + 1)}>
+          <ChevronRight className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 const MaintenancePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [maintenanceStatusFilter, setMaintenanceStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [selectedVehicle, setSelectedVehicle] = useState<MaintenanceVehicle | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const filteredVehicles = mockMaintenanceVehicles.filter((vehicle) => {
     const matchesSearch =
@@ -179,6 +203,9 @@ const MaintenancePage = () => {
     const matchesType = typeFilter === "all" || vehicle.maintenanceType === typeFilter;
     return matchesSearch && matchesStatus && matchesType;
   });
+
+  const totalPages = Math.ceil(filteredVehicles.length / ITEMS_PER_PAGE);
+  const pagedVehicles = filteredVehicles.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const handleViewDetails = (vehicle: MaintenanceVehicle) => {
     setSelectedVehicle(vehicle);
@@ -316,10 +343,10 @@ const MaintenancePage = () => {
                 placeholder="ค้นหาด้วยชื่อรถ, ทะเบียน หรือปัญหา..."
                 className="pl-10"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
               />
             </div>
-            <Select value={maintenanceStatusFilter} onValueChange={setMaintenanceStatusFilter}>
+            <Select value={maintenanceStatusFilter} onValueChange={(v) => { setMaintenanceStatusFilter(v); setCurrentPage(1); }}>
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="ทุกสถานะ" />
               </SelectTrigger>
@@ -330,7 +357,7 @@ const MaintenancePage = () => {
                 <SelectItem value="completed">เสร็จสิ้น</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <Select value={typeFilter} onValueChange={(v) => { setTypeFilter(v); setCurrentPage(1); }}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="ทุกประเภทงาน" />
               </SelectTrigger>
@@ -360,7 +387,7 @@ const MaintenancePage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredVehicles.map((vehicle) => (
+              {pagedVehicles.map((vehicle) => (
                 <TableRow key={vehicle.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
@@ -397,40 +424,7 @@ const MaintenancePage = () => {
             </TableBody>
           </Table>
 
-          {/* Pagination */}
-          <div className="flex items-center justify-between mt-6">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>แสดง</span>
-              <Select
-                value={itemsPerPage.toString()}
-                onValueChange={(v) => setItemsPerPage(Number(v))}
-              >
-                <SelectTrigger className="w-16 h-8">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="20">20</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                </SelectContent>
-              </Select>
-              <span>รายการต่อหน้า</span>
-            </div>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <span>
-                แสดงผล 1 - {filteredVehicles.length} จาก {filteredVehicles.length} รายการ
-              </span>
-              <div className="flex items-center gap-1">
-                <Button variant="outline" size="icon" className="h-8 w-8" disabled>
-                  <ChevronLeft className="w-4 h-4" />
-                </Button>
-                <span className="px-2">หน้า 1 จาก 1</span>
-                <Button variant="outline" size="icon" className="h-8 w-8" disabled>
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
         </Card>
       </main>
 
