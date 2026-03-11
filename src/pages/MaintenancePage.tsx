@@ -468,6 +468,22 @@ const MaintenancePage = () => {
           vehicle={selectedVehicle}
         />
       )}
+
+      {/* Vehicle Selection for Create */}
+      <VehicleSelectionDialog
+        open={vehicleSelectOpen}
+        onClose={() => setVehicleSelectOpen(false)}
+        onSelect={handleVehicleSelectedForCreate}
+      />
+
+      {/* Create Maintenance Modal */}
+      {createVehicle && (
+        <VehicleMaintenanceModal
+          open={createModalOpen}
+          onClose={() => setCreateModalOpen(false)}
+          vehicle={createVehicle}
+        />
+      )}
     </div>
   );
 };
