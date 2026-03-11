@@ -361,7 +361,13 @@ const MaintenancePage = () => {
 
         {/* Vehicle Maintenance List */}
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">รายการซ่อมบำรุง</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">รายการซ่อมบำรุง</h2>
+            <Button size="sm" className="gap-2" onClick={() => setVehicleSelectOpen(true)}>
+              <Plus className="w-4 h-4" />
+              สร้างการซ่อมบำรุง
+            </Button>
+          </div>
 
           {/* Filters */}
           <div className="flex items-center gap-4 mb-6">
