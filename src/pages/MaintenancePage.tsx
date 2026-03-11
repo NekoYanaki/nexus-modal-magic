@@ -294,7 +294,11 @@ const MaintenancePage = () => {
             <h1 className="text-2xl font-bold">ซ่อมบำรุง</h1>
             <p className="text-muted-foreground">ติดตามสถานะการซ่อมบำรุงรถทั้งหมดในระบบ</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <Button size="sm" className="gap-2" onClick={() => setVehicleSelectOpen(true)}>
+              <Plus className="w-4 h-4" />
+              สร้างการซ่อมบำรุง
+            </Button>
             <Bell className="w-5 h-5 text-muted-foreground" />
             <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
               <Users className="w-4 h-4" />
