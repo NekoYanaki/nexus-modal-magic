@@ -118,9 +118,6 @@ export function VehicleMaintenanceModal({ open, onClose, vehicle }: VehicleMaint
   const [activeTab, setActiveTab] = useState("parts-maintenance");
   const [isEditing, setIsEditing] = useState(false);
   const [currentMileage, setCurrentMileage] = useState(vehicle.currentMileage);
-  const [mileageAfterService, setMileageAfterService] = useState("");
-  const [mechanicNotes, setMechanicNotes] = useState("");
-  const [hasActiveJob, setHasActiveJob] = useState(false);
 
   // Parts stock state
   const initialParts = mockPartsStock[vehicle.id] || mockPartsStock["default"];
