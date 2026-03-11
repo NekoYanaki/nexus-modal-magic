@@ -340,7 +340,7 @@ const MaintenancePage = () => {
                 placeholder="ค้นหาด้วยชื่อรถ, ทะเบียน หรือปัญหา..."
                 className="pl-10"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
               />
             </div>
             <Select value={maintenanceStatusFilter} onValueChange={setMaintenanceStatusFilter}>
