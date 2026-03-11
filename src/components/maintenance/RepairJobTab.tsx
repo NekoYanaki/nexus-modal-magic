@@ -150,34 +150,36 @@ export function RepairJobTab({ vehicleId }: RepairJobTabProps) {
 
   return (
     <div className="space-y-4">
-      {/* Summary */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      {/* Job Header */}
+      <Card className="p-4 border-primary/20">
+        <div className="flex items-center justify-between mb-1">
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <Wrench className="w-5 h-5 text-primary" />
-            รายการงานซ่อม
+            งานซ่อม
           </h3>
-          <span className="text-sm text-muted-foreground">
-            {completedCount}/{items.length} เสร็จ
-          </span>
-        </div>
-        <div className="flex items-center gap-3">
           <span className="text-sm font-medium">
             รวมทั้งหมด: <span className="text-primary font-bold">{totalCost.toLocaleString()} ฿</span>
           </span>
-          <Button size="sm" onClick={() => { resetForm(); setShowForm(true); }}>
-            <Plus className="w-4 h-4 mr-1" /> เพิ่มรายการซ่อม
-          </Button>
         </div>
+        <p className="text-sm text-muted-foreground">
+          {items.length} หัวข้อ · {completedCount}/{items.length} เสร็จสิ้น
+        </p>
+      </Card>
+
+      {/* Add topic button */}
+      <div className="flex justify-end">
+        <Button size="sm" variant="outline" onClick={() => { resetForm(); setShowForm(true); }}>
+          <Plus className="w-4 h-4 mr-1" /> เพิ่มหัวข้อซ่อม
+        </Button>
       </div>
 
       {/* Add/Edit Form */}
       {showForm && (
         <Card className="p-4 border-primary/30 bg-primary/5">
-          <h4 className="font-semibold mb-3">{editingId ? "แก้ไขรายการซ่อม" : "เพิ่มรายการซ่อมใหม่"}</h4>
+          <h4 className="font-semibold mb-3">{editingId ? "แก้ไขหัวข้อซ่อม" : "เพิ่มหัวข้อซ่อมใหม่"}</h4>
           <div className="space-y-3">
             <div>
-              <label className="text-xs text-muted-foreground">ชื่อรายการ *</label>
+              <label className="text-xs text-muted-foreground">ชื่อหัวข้อ *</label>
               <Input
                 placeholder="เช่น เปลี่ยนหัวเทียน, ซ่อมระบบแอร์"
                 value={form.name}
@@ -187,7 +189,7 @@ export function RepairJobTab({ vehicleId }: RepairJobTabProps) {
             <div>
               <label className="text-xs text-muted-foreground">รายละเอียด</label>
               <Textarea
-                placeholder="อธิบายรายละเอียดงานซ่อม..."
+                placeholder="อธิบายรายละเอียดการซ่อม..."
                 value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                 rows={2}
@@ -215,7 +217,6 @@ export function RepairJobTab({ vehicleId }: RepairJobTabProps) {
                 </div>
               </div>
             </div>
-            {/* Attachments preview */}
             {formAttachments.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {formAttachments.map((att) => (
@@ -239,48 +240,53 @@ export function RepairJobTab({ vehicleId }: RepairJobTabProps) {
         </Card>
       )}
 
-      {/* Items list */}
+      {/* Topics list */}
       {items.length === 0 ? (
         <div className="text-center py-12">
           <Wrench className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-muted-foreground">ยังไม่มีรายการงานซ่อม</p>
-          <p className="text-sm text-muted-foreground">กดปุ่ม "เพิ่มรายการซ่อม" เพื่อเริ่มสร้าง</p>
+          <p className="text-muted-foreground">ยังไม่มีหัวข้อซ่อม</p>
+          <p className="text-sm text-muted-foreground">กดปุ่ม "เพิ่มหัวข้อซ่อม" เพื่อเริ่มสร้าง</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {items.map((item) => (
-            <Card key={item.id} className="p-4 group hover:shadow-sm transition-shadow">
+        <div className="space-y-2">
+          {items.map((item, index) => (
+            <Card key={item.id} className="p-3 group hover:shadow-sm transition-shadow">
               <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-semibold">{item.name}</h4>
-                    <div onClick={() => handleStatusChange(item.id, nextStatus(item.status))}>
-                      {getStatusBadge(item.status)}
-                    </div>
-                  </div>
-                  {item.description && (
-                    <p className="text-sm text-muted-foreground mb-2">{item.description}</p>
-                  )}
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm font-medium text-primary">{item.price.toLocaleString()} ฿</span>
-                    {item.attachments.length > 0 && (
-                      <div className="flex items-center gap-1">
-                        {item.attachments.map((att) => (
-                          <span key={att.id} className="inline-flex items-center gap-1 bg-secondary/50 rounded px-2 py-0.5 text-xs">
-                            {att.type === "image" ? <ImageIcon className="w-3 h-3" /> : <FileText className="w-3 h-3" />}
-                            {att.name}
-                          </span>
-                        ))}
+                <div className="flex items-start gap-3 flex-1 min-w-0">
+                  <span className="text-xs font-mono text-muted-foreground bg-muted rounded-full w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">
+                    {index + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <h4 className="font-medium text-sm">{item.name}</h4>
+                      <div onClick={() => handleStatusChange(item.id, nextStatus(item.status))}>
+                        {getStatusBadge(item.status)}
                       </div>
+                    </div>
+                    {item.description && (
+                      <p className="text-xs text-muted-foreground mb-1">{item.description}</p>
                     )}
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-medium text-primary">{item.price.toLocaleString()} ฿</span>
+                      {item.attachments.length > 0 && (
+                        <div className="flex items-center gap-1">
+                          {item.attachments.map((att) => (
+                            <span key={att.id} className="inline-flex items-center gap-1 bg-secondary/50 rounded px-1.5 py-0.5 text-[10px]">
+                              {att.type === "image" ? <ImageIcon className="w-2.5 h-2.5" /> : <FileText className="w-2.5 h-2.5" />}
+                              {att.name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(item)}>
-                    <Edit2 className="w-4 h-4" />
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(item)}>
+                    <Edit2 className="w-3.5 h-3.5" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDelete(item.id)}>
-                    <Trash2 className="w-4 h-4" />
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleDelete(item.id)}>
+                    <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </div>
               </div>
