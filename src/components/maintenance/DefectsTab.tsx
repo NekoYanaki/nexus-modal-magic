@@ -53,8 +53,8 @@ export function DefectsTab({ vehicleId }: DefectsTabProps) {
 
   const handleAddItem = () => {
     setItems((prev) => [
-      ...prev,
       { id: Date.now().toString(), description: "", images: [] },
+      ...prev,
     ]);
   };
 
