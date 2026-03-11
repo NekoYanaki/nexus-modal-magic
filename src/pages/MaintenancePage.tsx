@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -42,6 +43,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { VehicleMaintenanceModal } from "@/components/modals/VehicleMaintenanceModal";
+import { VehicleSelectionDialog, type SelectableVehicle } from "@/components/modals/VehicleSelectionDialog";
 import { Link } from "react-router-dom";
 
 interface MaintenanceVehicle {
@@ -192,6 +194,9 @@ const MaintenancePage = () => {
   const [selectedVehicle, setSelectedVehicle] = useState<MaintenanceVehicle | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [vehicleSelectOpen, setVehicleSelectOpen] = useState(false);
+  const [createVehicle, setCreateVehicle] = useState<MaintenanceVehicle | null>(null);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
   const filteredVehicles = mockMaintenanceVehicles.filter((vehicle) => {
     const matchesSearch =
@@ -209,6 +214,30 @@ const MaintenancePage = () => {
   const handleViewDetails = (vehicle: MaintenanceVehicle) => {
     setSelectedVehicle(vehicle);
     setModalOpen(true);
+  };
+
+  const handleVehicleSelectedForCreate = (v: SelectableVehicle) => {
+    const newVehicle: MaintenanceVehicle = {
+      id: v.id,
+      name: v.name,
+      year: v.year,
+      licensePlate: v.licensePlate,
+      type: v.type,
+      techInfo: v.techInfo,
+      pricePerDay: v.pricePerDay,
+      status: "maintenance",
+      seats: v.seats,
+      doors: v.doors ?? 4,
+      currentMileage: 0,
+      maintenanceStatus: "pending",
+      maintenanceType: "-",
+      mechanic: "ยังไม่ระบุ",
+      startDate: new Date().toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" }),
+      estimatedEnd: "-",
+      issue: "",
+    };
+    setCreateVehicle(newVehicle);
+    setCreateModalOpen(true);
   };
 
   const getMaintenanceStatusBadge = (status: MaintenanceVehicle["maintenanceStatus"]) => {
@@ -289,7 +318,11 @@ const MaintenancePage = () => {
             <h1 className="text-2xl font-bold">ซ่อมบำรุง</h1>
             <p className="text-muted-foreground">ติดตามสถานะการซ่อมบำรุงรถทั้งหมดในระบบ</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <Button size="sm" className="gap-2" onClick={() => setVehicleSelectOpen(true)}>
+              <Plus className="w-4 h-4" />
+              สร้างการซ่อมบำรุง
+            </Button>
             <Bell className="w-5 h-5 text-muted-foreground" />
             <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
               <Users className="w-4 h-4" />
@@ -433,6 +466,22 @@ const MaintenancePage = () => {
           open={modalOpen}
           onClose={() => setModalOpen(false)}
           vehicle={selectedVehicle}
+        />
+      )}
+
+      {/* Vehicle Selection for Create */}
+      <VehicleSelectionDialog
+        open={vehicleSelectOpen}
+        onClose={() => setVehicleSelectOpen(false)}
+        onSelect={handleVehicleSelectedForCreate}
+      />
+
+      {/* Create Maintenance Modal */}
+      {createVehicle && (
+        <VehicleMaintenanceModal
+          open={createModalOpen}
+          onClose={() => setCreateModalOpen(false)}
+          vehicle={createVehicle}
         />
       )}
     </div>
