@@ -387,7 +387,7 @@ const MaintenancePage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredVehicles.map((vehicle) => (
+              {pagedVehicles.map((vehicle) => (
                 <TableRow key={vehicle.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
