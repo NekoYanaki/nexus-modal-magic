@@ -536,91 +536,13 @@ export function VehicleMaintenanceModal({ open, onClose, vehicle }: VehicleMaint
               </div>
             </TabsContent>
 
-            {/* ═══ Job Tab (unchanged) ═══ */}
             <TabsContent value="job" className="p-6 mt-0">
-              <Card className={`p-6 ${hasActiveJob ? "border-success" : "border-dashed"}`}>
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-2">
-                    <Wrench className="w-5 h-5 text-warning" />
-                    <h3 className="text-lg font-semibold">Maintenance Job Panel</h3>
-                  </div>
-                  {hasActiveJob && <Badge className="bg-success/10 text-success border-success/20">ACTIVE JOB</Badge>}
-                </div>
-                {hasActiveJob ? (
-                  <div className="max-w-2xl">
-                    <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b">
-                      <div><p className="text-xs text-muted-foreground">Job Start Time</p><p className="font-medium">20 Jan 2024, 09:30</p></div>
-                      <div><p className="text-xs text-muted-foreground">Assigned Mechanic</p><div className="flex items-center gap-2"><div className="w-6 h-6 bg-secondary rounded-full flex items-center justify-center text-xs font-medium">S</div><span className="font-medium">Somchai K.</span></div></div>
-                    </div>
-                    <div className="space-y-3 mb-6">
-                      <div className="flex items-center justify-between">
-                        <h5 className="font-medium">Task Checklist</h5>
-                        <span className="text-xs text-muted-foreground">{tasks.filter(t => t.checked).length}/{tasks.length} เสร็จ</span>
-                      </div>
-                      {tasks.map((task) => (
-                        <div key={task.id} className="flex items-center gap-3 p-3 border rounded-lg group hover:bg-secondary/30">
-                          <Checkbox checked={task.checked} onCheckedChange={() => toggleTask(task.id)} />
-                          {editingTaskId === task.id ? (
-                            <div className="flex-1 flex items-center gap-2">
-                              <Input
-                                value={editingTaskLabel}
-                                onChange={(e) => setEditingTaskLabel(e.target.value)}
-                                className="h-8 text-sm"
-                                onKeyDown={(e) => e.key === "Enter" && handleSaveEditTask()}
-                                autoFocus
-                              />
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleSaveEditTask}><Save className="w-3 h-3" /></Button>
-                            </div>
-                          ) : (
-                            <>
-                              <span className={`flex-1 cursor-pointer ${task.checked ? "line-through text-muted-foreground" : ""}`} onClick={() => toggleTask(task.id)}>{task.label}</span>
-                              <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleStartEditTask(task)}><Edit2 className="w-3 h-3" /></Button>
-                                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleDeleteTask(task.id)}><Minus className="w-3 h-3" /></Button>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      ))}
-                      {/* Add new task inline */}
-                      <div className="flex items-center gap-2">
-                        <Input
-                          placeholder="เพิ่มรายการใหม่..."
-                          value={newTaskLabel}
-                          onChange={(e) => setNewTaskLabel(e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && handleAddTask()}
-                          className="h-9 text-sm"
-                        />
-                        <Button variant="outline" size="sm" onClick={handleAddTask} disabled={!newTaskLabel.trim()}>
-                          <Plus className="w-4 h-4 mr-1" /> เพิ่ม
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="text-sm text-muted-foreground">Mileage After Service</label>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Input placeholder="e.g. 125440" value={mileageAfterService} onChange={(e) => setMileageAfterService(e.target.value)} className="max-w-xs" />
-                          <span className="text-muted-foreground">km</span>
-                        </div>
-                      </div>
-                      <div>
-                        <label className="text-sm text-muted-foreground">Mechanic Notes</label>
-                        <Textarea placeholder="Any issues found or recommendations..." value={mechanicNotes} onChange={(e) => setMechanicNotes(e.target.value)} className="mt-1 max-w-xl" rows={3} />
-                      </div>
-                      <Button className="bg-success hover:bg-success/90" onClick={handleCompleteJob}>
-                        <CheckCircle className="w-4 h-4 mr-2" /> Complete Maintenance & Release Vehicle
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <Wrench className="w-16 h-16 text-muted-foreground/50 mx-auto mb-4" />
-                    <p className="text-muted-foreground mb-4">ไม่มีงานซ่อมบำรุงที่กำลังดำเนินการ</p>
-                    <Button onClick={handleStartJob}><Wrench className="w-4 h-4 mr-2" /> เริ่มงานซ่อมบำรุง</Button>
-                  </div>
-                )}
-              </Card>
+              <RepairJobTab vehicleId={vehicle.id} />
+            </TabsContent>
+
+            {/* ═══ Defects Tab ═══ */}
+            <TabsContent value="defects" className="p-6 mt-0">
+              <DefectsTab vehicleId={vehicle.id} />
             </TabsContent>
 
           </Tabs>
