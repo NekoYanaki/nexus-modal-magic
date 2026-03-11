@@ -36,6 +36,8 @@ import {
 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
+import { RepairJobTab } from "@/components/maintenance/RepairJobTab";
+import { DefectsTab } from "@/components/maintenance/DefectsTab";
 
 // ── Types ──
 interface PartStock {
