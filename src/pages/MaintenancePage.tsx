@@ -162,13 +162,37 @@ const mockMaintenanceVehicles: MaintenanceVehicle[] = [
   },
 ];
 
+const ITEMS_PER_PAGE = 10;
+
+const Pagination = ({ currentPage, totalPages, onPageChange }: { currentPage: number; totalPages: number; onPageChange: (p: number) => void }) => {
+  if (totalPages <= 1) return null;
+  return (
+    <div className="flex items-center justify-between px-4 py-3 border-t">
+      <p className="text-sm text-muted-foreground">หน้า {currentPage} / {totalPages}</p>
+      <div className="flex items-center gap-1">
+        <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => onPageChange(currentPage - 1)}>
+          <ChevronLeft className="w-4 h-4" />
+        </Button>
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+          <Button key={p} variant={p === currentPage ? "default" : "outline"} size="sm" className="w-8" onClick={() => onPageChange(p)}>
+            {p}
+          </Button>
+        ))}
+        <Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => onPageChange(currentPage + 1)}>
+          <ChevronRight className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 const MaintenancePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [maintenanceStatusFilter, setMaintenanceStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [selectedVehicle, setSelectedVehicle] = useState<MaintenanceVehicle | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const filteredVehicles = mockMaintenanceVehicles.filter((vehicle) => {
     const matchesSearch =
