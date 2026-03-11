@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,6 +9,8 @@ import {
   Trash2,
   ImageIcon,
   X,
+  Camera,
+  Upload,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -22,12 +24,20 @@ const mockDefects: DefectItem[] = [
   {
     id: "d1",
     description: "รอยขีดข่วนกันชนหน้าซ้าย (เดิม)",
-    images: [{ id: "i1", name: "รอยขีดข่วน_หน้า.jpg", url: "" }],
+    images: [{ id: "i1", name: "รอยขีดข่วน_หน้า.jpg", url: "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=200&h=200&fit=crop" }],
   },
   {
     id: "d2",
-    description: "78787",
-    images: [{ id: "i2", name: "กระจก_แตก_1.jpg", url: "" }],
+    description: "กระจกมองข้างซ้ายแตกร้าว ต้องเปลี่ยนใหม่",
+    images: [
+      { id: "i2", name: "กระจก_แตก_1.jpg", url: "https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=200&h=200&fit=crop" },
+      { id: "i3", name: "กระจก_แตก_2.jpg", url: "https://images.unsplash.com/photo-1549317661-bd32c8ce0237?w=200&h=200&fit=crop" },
+    ],
+  },
+  {
+    id: "d3",
+    description: "บุ๋มประตูหลังขวา ไม่มีรอยถลอกของสี",
+    images: [{ id: "i4", name: "รอยบุ๋ม_ประตูหลัง.jpg", url: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=200&h=200&fit=crop" }],
   },
 ];
 
@@ -38,7 +48,8 @@ interface DefectsTabProps {
 export function DefectsTab({ vehicleId }: DefectsTabProps) {
   const { toast } = useToast();
   const [items, setItems] = useState<DefectItem[]>(mockDefects);
-  const [totalDamage, setTotalDamage] = useState<string>("5000");
+  const [totalDamage, setTotalDamage] = useState<string>("16500");
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const handleAddItem = () => {
     setItems((prev) => [
@@ -58,20 +69,31 @@ export function DefectsTab({ vehicleId }: DefectsTabProps) {
     );
   };
 
-  const handleAddImage = (itemId: string) => {
+  const handleFileUpload = (itemId: string, files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const newImages = Array.from(files).map((file) => ({
+      id: Date.now().toString() + Math.random().toString(36).slice(2),
+      name: file.name,
+      url: URL.createObjectURL(file),
+    }));
     setItems((prev) =>
       prev.map((i) =>
-        i.id === itemId
-          ? {
-              ...i,
-              images: [
-                ...i.images,
-                { id: Date.now().toString(), name: `ภาพ_${i.images.length + 1}.jpg`, url: "" },
-              ],
-            }
-          : i
+        i.id === itemId ? { ...i, images: [...i.images, ...newImages] } : i
       )
     );
+    toast({ title: `เพิ่ม ${newImages.length} รูปเรียบร้อย` });
+  };
+
+  const handleCameraCapture = (itemId: string) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.capture = "environment";
+    input.onchange = (e) => {
+      const target = e.target as HTMLInputElement;
+      handleFileUpload(itemId, target.files);
+    };
+    input.click();
   };
 
   const handleRemoveImage = (itemId: string, imgId: string) => {
@@ -138,9 +160,19 @@ export function DefectsTab({ vehicleId }: DefectsTabProps) {
                     {item.images.map((img) => (
                       <div
                         key={img.id}
-                        className="relative w-16 h-16 rounded-md border border-border bg-muted flex items-center justify-center group/img"
+                        className="relative w-16 h-16 rounded-md border border-border overflow-hidden group/img"
                       >
-                        <ImageIcon className="w-6 h-6 text-muted-foreground/40" />
+                        {img.url ? (
+                          <img
+                            src={img.url}
+                            alt={img.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-muted flex items-center justify-center">
+                            <ImageIcon className="w-6 h-6 text-muted-foreground/40" />
+                          </div>
+                        )}
                         <button
                           onClick={() => handleRemoveImage(item.id, img.id)}
                           className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity"
@@ -149,12 +181,32 @@ export function DefectsTab({ vehicleId }: DefectsTabProps) {
                         </button>
                       </div>
                     ))}
+
+                    {/* Camera button */}
                     <button
-                      onClick={() => handleAddImage(item.id)}
-                      className="w-16 h-16 rounded-md border border-dashed border-border bg-muted/50 flex items-center justify-center hover:bg-muted transition-colors"
+                      onClick={() => handleCameraCapture(item.id)}
+                      className="w-16 h-16 rounded-md border border-dashed border-border bg-muted/50 flex flex-col items-center justify-center hover:bg-muted transition-colors gap-0.5"
                     >
-                      <Plus className="w-5 h-5 text-muted-foreground/50" />
+                      <Camera className="w-4 h-4 text-muted-foreground/60" />
+                      <span className="text-[10px] text-muted-foreground/60">ถ่ายรูป</span>
                     </button>
+
+                    {/* Upload button */}
+                    <button
+                      onClick={() => fileInputRefs.current[item.id]?.click()}
+                      className="w-16 h-16 rounded-md border border-dashed border-border bg-muted/50 flex flex-col items-center justify-center hover:bg-muted transition-colors gap-0.5"
+                    >
+                      <Upload className="w-4 h-4 text-muted-foreground/60" />
+                      <span className="text-[10px] text-muted-foreground/60">อัปโหลด</span>
+                    </button>
+                    <input
+                      ref={(el) => { fileInputRefs.current[item.id] = el; }}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => handleFileUpload(item.id, e.target.files)}
+                    />
                   </div>
                 </div>
               </div>
