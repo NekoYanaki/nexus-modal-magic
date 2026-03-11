@@ -424,40 +424,7 @@ const MaintenancePage = () => {
             </TableBody>
           </Table>
 
-          {/* Pagination */}
-          <div className="flex items-center justify-between mt-6">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>แสดง</span>
-              <Select
-                value={itemsPerPage.toString()}
-                onValueChange={(v) => setItemsPerPage(Number(v))}
-              >
-                <SelectTrigger className="w-16 h-8">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="20">20</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                </SelectContent>
-              </Select>
-              <span>รายการต่อหน้า</span>
-            </div>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <span>
-                แสดงผล 1 - {filteredVehicles.length} จาก {filteredVehicles.length} รายการ
-              </span>
-              <div className="flex items-center gap-1">
-                <Button variant="outline" size="icon" className="h-8 w-8" disabled>
-                  <ChevronLeft className="w-4 h-4" />
-                </Button>
-                <span className="px-2">หน้า 1 จาก 1</span>
-                <Button variant="outline" size="icon" className="h-8 w-8" disabled>
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
         </Card>
       </main>
 
