@@ -165,7 +165,7 @@ const mockMaintenanceVehicles: MaintenanceVehicle[] = [
 const ITEMS_PER_PAGE = 10;
 
 const Pagination = ({ currentPage, totalPages, onPageChange }: { currentPage: number; totalPages: number; onPageChange: (p: number) => void }) => {
-  if (totalPages <= 1) return null;
+  const totalItems = currentPage; // just for layout reference
   return (
     <div className="flex items-center justify-between px-4 py-3 border-t">
       <p className="text-sm text-muted-foreground">หน้า {currentPage} / {totalPages}</p>
