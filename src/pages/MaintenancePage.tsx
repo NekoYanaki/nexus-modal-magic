@@ -216,6 +216,30 @@ const MaintenancePage = () => {
     setModalOpen(true);
   };
 
+  const handleVehicleSelectedForCreate = (v: SelectableVehicle) => {
+    const newVehicle: MaintenanceVehicle = {
+      id: v.id,
+      name: v.name,
+      year: v.year,
+      licensePlate: v.licensePlate,
+      type: v.type,
+      techInfo: v.techInfo,
+      pricePerDay: v.pricePerDay,
+      status: "maintenance",
+      seats: v.seats,
+      doors: v.doors ?? 4,
+      currentMileage: 0,
+      maintenanceStatus: "pending",
+      maintenanceType: "-",
+      mechanic: "ยังไม่ระบุ",
+      startDate: new Date().toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" }),
+      estimatedEnd: "-",
+      issue: "",
+    };
+    setCreateVehicle(newVehicle);
+    setCreateModalOpen(true);
+  };
+
   const getMaintenanceStatusBadge = (status: MaintenanceVehicle["maintenanceStatus"]) => {
     switch (status) {
       case "pending":
