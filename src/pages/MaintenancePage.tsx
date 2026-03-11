@@ -354,7 +354,7 @@ const MaintenancePage = () => {
                 <SelectItem value="completed">เสร็จสิ้น</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <Select value={typeFilter} onValueChange={(v) => { setTypeFilter(v); setCurrentPage(1); }}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="ทุกประเภทงาน" />
               </SelectTrigger>
