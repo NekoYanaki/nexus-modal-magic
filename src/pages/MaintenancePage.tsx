@@ -194,6 +194,9 @@ const MaintenancePage = () => {
   const [selectedVehicle, setSelectedVehicle] = useState<MaintenanceVehicle | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [vehicleSelectOpen, setVehicleSelectOpen] = useState(false);
+  const [createVehicle, setCreateVehicle] = useState<MaintenanceVehicle | null>(null);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
   const filteredVehicles = mockMaintenanceVehicles.filter((vehicle) => {
     const matchesSearch =
