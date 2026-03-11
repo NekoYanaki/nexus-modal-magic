@@ -343,7 +343,7 @@ const MaintenancePage = () => {
                 onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
               />
             </div>
-            <Select value={maintenanceStatusFilter} onValueChange={setMaintenanceStatusFilter}>
+            <Select value={maintenanceStatusFilter} onValueChange={(v) => { setMaintenanceStatusFilter(v); setCurrentPage(1); }}>
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="ทุกสถานะ" />
               </SelectTrigger>
