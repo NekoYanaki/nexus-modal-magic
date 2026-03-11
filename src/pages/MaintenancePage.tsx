@@ -511,6 +511,33 @@ const MaintenancePage = () => {
           vehicle={createVehicle}
         />
       )}
+
+      {/* Confirm Create Maintenance */}
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ยืนยันสร้างการซ่อมบำรุง</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p>ต้องการเปลี่ยนสถานะรถเป็น <span className="font-semibold text-warning">ซ่อมบำรุง</span> ใช่หรือไม่?</p>
+                {pendingVehicle && (
+                  <div className="rounded-lg border p-3 bg-muted/50 space-y-1">
+                    <p className="font-semibold">{pendingVehicle.name} ({pendingVehicle.year})</p>
+                    <p className="text-sm">ทะเบียน: {pendingVehicle.licensePlate}</p>
+                    <p className="text-sm">ประเภท: {pendingVehicle.type}</p>
+                    <p className="text-sm">{pendingVehicle.techInfo}</p>
+                  </div>
+                )}
+                <p className="text-sm text-muted-foreground">รถจะถูกเปลี่ยนสถานะเป็น "ซ่อมบำรุง" และเพิ่มเข้ารายการซ่อมทันที</p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingVehicle(null)}>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmCreate}>ยืนยัน</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
